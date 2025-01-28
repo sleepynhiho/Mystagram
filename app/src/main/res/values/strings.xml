@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mystagram</string>
+    <string name="profile_image">Profile Image</string>
+    <string name="add_story">Add Story</string>
+    <string name="your_story">Your story</string>
+    <string name="story_placeholder">%1$s\'s Story</string>
+    <string name="app_logo">Mystagram Logo</string>
+    <string name="messenger">Messenger</string>
+    <string name="user_story">%1$s\'s story</string>
+    <string name="views">views</string>
+</resources>

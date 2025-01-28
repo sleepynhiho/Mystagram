@@ -1,0 +1,28 @@
+package com.forrestgump.ig.ui.navigation
+
+import com.forrestgump.ig.R
+
+sealed class Routes(
+    val name: String = "",
+    val route: String = "",
+    val iconOutlined: Int? = null,
+    val iconFilled: Int? = null
+) {
+    data object SplashScreen: Routes(name = "Splash", route = "SplashScreen")
+    data object InnerContainer: Routes(name = "InnerScreen", route = "InnerContainer")
+    data object HomeScreen: Routes(iconOutlined = R.drawable.home_outlined, iconFilled = R.drawable.home_filled, name = "Home", route = "HomeScreen")
+    data object SearchScreen: Routes(iconOutlined = R.drawable.search, iconFilled = R.drawable.search_selected, name = "Search", route = "SearchScreen")
+    data object AddContentScreen: Routes(iconOutlined = R.drawable.add_outlined, name = "UploadContent", route = "AddContentScreen")
+    data object NotificationScreen: Routes(iconOutlined = R.drawable.heart_outlined, iconFilled = R.drawable.heart_filled, name = "Notification", route = "NotificationScreen")
+    data object MyProfileScreen: Routes(name = "MyProfile", route = "MyProfileScreen")
+
+    data object Items {
+        val list = listOf(
+            HomeScreen,
+            SearchScreen,
+            AddContentScreen,
+            NotificationScreen,
+            MyProfileScreen
+        )
+    }
+}
