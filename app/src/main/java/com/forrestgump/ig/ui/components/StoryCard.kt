@@ -56,7 +56,6 @@ fun StoryCard(
     )
 
     val isAllStoryViewed = userStory.stories.last().views.contains(currentUserId)
-
     Box(
         modifier = Modifier
             .padding(horizontal = 10.dp)
@@ -96,11 +95,13 @@ fun StoryCard(
                                 )
                             } else {
                                 listOf(
-                                    Color(0xFFFF00DE),
-                                    Color(0xFFC7181E),
-                                    Color(0xFFC7181E),
-                                    Color(0xFFFFEB3B),
-                                    Color(0xFFC7181E),
+                                    Color(0xFFDC00B4),
+                                    Color(0xFFEf018A),
+                                    Color(0xFFFF4B29),
+                                    Color(0xFFffa400),
+                                    Color(0xFFff8b00),
+                                    Color(0xFFff1d50),
+                                    Color(0xFFd300c5)
                                 )
                             }
                         ),

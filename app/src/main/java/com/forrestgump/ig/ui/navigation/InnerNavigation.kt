@@ -9,9 +9,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavHostController
@@ -32,7 +29,7 @@ import com.forrestgump.ig.ui.screens.search.SearchScreen
 @UnstableApi
 @Composable
 fun InnerNavigation(
-    innerPadding: PaddingValues,
+    contentPadding: PaddingValues,
     navHostController: NavHostController,
     viewModelHome: HomeViewModel = hiltViewModel(),
     viewModelAdd: AddContentViewModel = hiltViewModel(),
@@ -57,7 +54,7 @@ fun InnerNavigation(
 
 
             HomeScreen(
-                innerPadding = innerPadding,
+                contentPadding = contentPadding,
                 uiState = uiState,
                 following = uiStateProfile.following,
                 profileImage = uiStateProfile.profileImage,

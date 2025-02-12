@@ -34,7 +34,7 @@ import com.forrestgump.ig.utils.models.UserStory
 @UnstableApi
 @Composable
 fun HomeScreen(
-    innerPadding: PaddingValues,
+    contentPadding: PaddingValues,
     uiState: UiState,
     following: List<String>,
     profileImage: String,
@@ -54,44 +54,43 @@ fun HomeScreen(
     ) {
         uiState.isLoading = false
         if (!uiState.isLoading) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.CenterHorizontally
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Posts(
+                    contentPadding = contentPadding,
+                    posts = uiState.posts,
+                    state = state
                 ) {
-                    Posts(
-                        innerPadding = innerPadding,
-                        posts = uiState.posts,
-                        state = state
-                    ) {
-                        TopNavBar()
+                    TopNavBar()
 
-                        Stories(
-                            profileImage = profileImage,
-                            currentUserId = currentUserId,
-                            onAddStoryClick = onAddStoryClick,
-                            onViewMyStoryClick = {
-                                userStoryIndex = 0
-                                selectedStory = Stories.MY_STORY
-                                setShowStoryScreen(true)
-                            },
-                            onStoryClick = { storyIndex ->
-                                userStoryIndex = storyIndex
-                                selectedStory = Stories.USER_STORY
-                                setShowStoryScreen(true)
-                            },
-                            userStories = uiState.userStories,
-                            myStories = uiState.myStories
-                        )
+                    Stories(
+                        profileImage = profileImage,
+                        currentUserId = currentUserId,
+                        onAddStoryClick = onAddStoryClick,
+                        onViewMyStoryClick = {
+                            userStoryIndex = 0
+                            selectedStory = Stories.MY_STORY
+                            setShowStoryScreen(true)
+                        },
+                        onStoryClick = { storyIndex ->
+                            userStoryIndex = storyIndex
+                            selectedStory = Stories.USER_STORY
+                            setShowStoryScreen(true)
+                        },
+                        userStories = uiState.userStories,
+                        myStories = uiState.myStories
+                    )
 
-                        HorizontalDivider(
-                            modifier = Modifier.padding(top = 8.dp),
-                            thickness = 0.5.dp,
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)
-                        )
-                    }
+                    HorizontalDivider(
+                        modifier = Modifier.padding(top = 8.dp),
+                        thickness = 0.5.dp,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)
+                    )
                 }
+            }
         } else {
             Loading()
         }
@@ -104,7 +103,7 @@ fun HomeScreen(
             if (selectedStory == Stories.MY_STORY) uiState.myStories else uiState.userStories
         },
         currentUserId = currentUserId,
-        innerPadding = innerPadding,
+        contentPadding = contentPadding,
         updateViews = updateViews,
         onDismiss = { setShowStoryScreen(false) }
     )
@@ -113,65 +112,34 @@ fun HomeScreen(
 @UnstableApi
 @Preview(
     showBackground = true,
-    backgroundColor = 0XFF000000
+    backgroundColor = 0xFF000000
 )
 @Composable
 fun HomeScreenPreview() {
     val userStories = listOf(
         UserStory(
-            username = "android",
-            profileImage = "",
-            stories = listOf(
-                Story(
-                    userId = "android"
-                )
-            )
-        ),
-        UserStory(
             username = "abc",
             profileImage = "",
-            stories = listOf(
-                Story(
-                    userId = "abc"
-                )
-            )
-        ),
-        UserStory(
-            username = "abc",
-            profileImage = "",
-            stories = listOf(
-                Story(
-                    userId = "abc",
-                )
-            )
-        ),
-        UserStory(
-            username = "abc",
-            profileImage = "",
-            stories = listOf(
-                Story(
-                    userId = "abc"
-                )
-            )
+            stories = listOf(Story(userId = "abc"))
         )
     )
 
+    val uiState = UiState(
+        userStories = userStories,
+        myStories = userStories,
+        posts = listOf(Post(mediaList = listOf("https://via.placeholder.com/150"), username = "cab")),
+        isLoading = false,
+        showStoryScreen = false
+    )
+
     HomeScreen(
-        innerPadding = PaddingValues(),
-        uiState = UiState(
-            userStories = userStories,
-            posts = listOf(
-                Post(
-                    mediaList = listOf(""),
-                    username = "cab",
-                )
-            )
-        ),
+        contentPadding = PaddingValues(),
+        uiState = uiState,
         following = listOf("1"),
-        profileImage = "",
-        currentUserId = "12345",
-        onAddStoryClick = { },
-        updateViews = { },
-        setShowStoryScreen = { }
+        profileImage = "https://static.vecteezy.com/system/resources/previews/004/899/680/non_2x/beautiful-blonde-woman-with-makeup-avatar-for-a-beauty-salon-illustration-in-the-cartoon-style-vector.jpg",
+        currentUserId = "abc",
+        onAddStoryClick = {},
+        updateViews = {},
+        setShowStoryScreen = {}
     )
 }
