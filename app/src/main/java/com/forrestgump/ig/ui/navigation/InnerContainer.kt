@@ -42,9 +42,9 @@ fun InnerContainer(
                 )
             }
         },
-        content = { innerPadding ->
+        content = { contentPadding ->
             InnerNavigation(
-                innerPadding = innerPadding,
+                contentPadding = contentPadding,
                 viewModelProfile = viewModelProfile,
                 navHostController = navHostController,
             )

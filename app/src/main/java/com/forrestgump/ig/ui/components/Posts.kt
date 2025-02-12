@@ -13,18 +13,18 @@ import com.forrestgump.ig.utils.models.Post
 
 @Composable
 fun Posts(
-    innerPadding: PaddingValues = PaddingValues(),
+    contentPadding: PaddingValues = PaddingValues(),
     posts: List<Post>,
-    enableHeader: Boolean = true,
-    state: LazyListState,
-    topContent: @Composable () -> Unit = { }
+    state: LazyListState  = rememberLazyListState(),
+    showTopContent: Boolean = true,
+    topContent: @Composable () -> Unit = { } // nhận nội dung bên trong {} làm topcontent
 ) {
 
     LazyColumn(
-        contentPadding = innerPadding,
+        contentPadding = contentPadding,
         state = state,
         content = {
-            if (enableHeader) {
+            if (showTopContent) {
                 item(key = "topContent") {
                     Column {
                         topContent()
@@ -32,13 +32,6 @@ fun Posts(
                 }
             }
 
-            if (posts.isNotEmpty()) {
-                items(
-                    items = posts,
-                    key = { post -> "${post.userId}${post.timeStamp}" }
-                ) {
-                }
-            }
         }
     )
 
@@ -59,6 +52,9 @@ private fun PostsPreview() {
                 username = "def",
             ),
         ),
-        state = rememberLazyListState()
+        topContent = {
+            androidx.compose.material3.Text("This is top content")
+        }
     )
 }
+

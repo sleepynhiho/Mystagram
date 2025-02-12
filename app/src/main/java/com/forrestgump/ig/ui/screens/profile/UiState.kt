@@ -1,7 +1,5 @@
 package com.forrestgump.ig.ui.screens.profile
 
-import android.net.Uri
-import com.forrestgump.ig.remote.models.AppUser
 import com.forrestgump.ig.utils.models.Post
 
 data class UiState(

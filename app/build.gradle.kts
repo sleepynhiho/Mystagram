@@ -75,8 +75,6 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     debugImplementation(libs.androidx.ui.tooling)
 
-
-
     implementation(libs.coil.compose)
     implementation(libs.coil.video.decoder)
 
