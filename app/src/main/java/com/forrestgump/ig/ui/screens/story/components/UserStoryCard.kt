@@ -62,7 +62,6 @@ fun UserStoryCard(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(vertical = 35.dp)
             .then(modifier), // Thêm modifier từ bên ngoài
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -75,8 +74,7 @@ fun UserStoryCard(
         ) {
             Surface(
                 modifier = Modifier.fillMaxSize(),
-                color = Color.Blue,
-                shape = RoundedCornerShape(10.dp)
+                color = Color.Blue
             ) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -105,7 +103,7 @@ fun UserStoryCard(
                         )
                     )
 
-                    // Top and bottom bar
+                    // Top bar
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -164,11 +162,12 @@ fun StoryHeader(
             model = userStory.profileImage,
             modifier = Modifier
                 .size(30.dp)
-                .clip(CircleShape)
-                .padding(end = 10.dp),
+                .clip(CircleShape),
             contentScale = ContentScale.Crop,
             contentDescription = userStory.username
         )
+
+        Spacer(modifier = Modifier.width(10.dp))
 
         // Author's username
         Text(

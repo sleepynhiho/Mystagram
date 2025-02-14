@@ -56,14 +56,12 @@ fun InnerNavigation(
             HomeScreen(
                 contentPadding = contentPadding,
                 uiState = uiState,
-                following = uiStateProfile.following,
-                profileImage = uiStateProfile.profileImage,
+                userProfileImage = uiStateProfile.profileImage,
                 currentUserId = "",
-                onAddStoryClick = {
+                onAddStoryClicked = {
                     navHostController.navigate("${Routes.AddContentScreen.route}/STORY")
                 },
-                updateViews = viewModelHome::updateStoryViews,
-                setShowStoryScreen = viewModelHome::setShowStoryScreen
+                onStoryScreenToggle = viewModelHome::onStoryScreenToggle
             )
         }
 

@@ -11,7 +11,7 @@ import com.forrestgump.ig.utils.models.UserStory
 fun Stories(
     profileImage: String,
     currentUserId: String,
-    onAddStoryClick: () -> Unit,
+    onAddStoryClicked: () -> Unit,
     onViewMyStoryClick: () -> Unit,
     onStoryClick: (storyIndex: Int) -> Unit,
     userStories: List<UserStory>,
@@ -29,7 +29,7 @@ fun Stories(
                 } else {
                     AddStoryCard(
                         profileImage = profileImage,
-                        onClick = onAddStoryClick
+                        onClick = onAddStoryClicked
                     )
                 }
             }
@@ -56,7 +56,7 @@ fun StoriesPreview() {
     Stories(
         profileImage = "",
         currentUserId = "",
-        onAddStoryClick = { },
+        onAddStoryClicked = { },
         onViewMyStoryClick = { },
         onStoryClick = { },
         userStories = listOf(
