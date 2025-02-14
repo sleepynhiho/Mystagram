@@ -48,9 +48,7 @@ fun StoryProgressTrack(
         val progressAnimation = remember { Animatable(0f) }
 
         LaunchedEffect(isStoryActive, isPaused) {
-            Log.d("NHI", "HEREEEEEEEEEE")
             if (isStoryActive && !isPaused) {
-                Log.d("NHI", "INNNNNNNNN")
                 val currentTime = System.currentTimeMillis()
                 if (lastElapsedTime == 0L) lastElapsedTime = currentTime
                 val remainingDuration =

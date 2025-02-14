@@ -26,7 +26,6 @@ fun StoryScreen(
     userStories: () -> List<UserStory>,
     currentUserId: String,
     onDismiss: () -> Unit,
-
 ) {
     AnimatedVisibility(
         visible = visible,

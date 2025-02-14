@@ -22,6 +22,7 @@ import com.forrestgump.ig.ui.screens.profile.MyProfileScreen
 import com.forrestgump.ig.ui.screens.profile.ProfileViewModel
 import com.forrestgump.ig.ui.screens.add.AddContentScreen
 import com.forrestgump.ig.ui.screens.add.AddContentViewModel
+import com.forrestgump.ig.ui.screens.messages.MessagesScreen
 import com.forrestgump.ig.ui.screens.notification.NotificationScreen
 import com.forrestgump.ig.ui.screens.search.SearchScreen
 
@@ -61,7 +62,10 @@ fun InnerNavigation(
                 onAddStoryClicked = {
                     navHostController.navigate("${Routes.AddContentScreen.route}/STORY")
                 },
-                onStoryScreenToggle = viewModelHome::onStoryScreenToggle
+                onStoryScreenClicked = viewModelHome::onStoryScreenClicked,
+                onMessagesScreenClicked = {
+                    navHostController.navigate(Routes.MessagesScreen.route)
+                }
             )
         }
 
@@ -135,9 +139,26 @@ fun InnerNavigation(
             }
         ) {
             AddContentScreen(
-                onBackClick = {
-                }
+                onBackClick = { }
             )
+        }
+
+        composable(
+            route = Routes.MessagesScreen.route,
+            enterTransition = {
+                slideInHorizontally(
+                    animationSpec = tween(),
+                    initialOffsetX = { -it }
+                )
+            },
+            exitTransition = {
+                slideOutHorizontally(
+                    animationSpec = tween(),
+                    targetOffsetX = { -it }
+                )
+            }
+        ) {
+            MessagesScreen(myUsername = "sleepy")
         }
     }
 }

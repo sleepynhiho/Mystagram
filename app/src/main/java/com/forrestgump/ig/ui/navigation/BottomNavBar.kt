@@ -41,7 +41,7 @@ fun BottomNavBar(
     profileImage: String,
     navHostController: NavHostController
 ) {
-    val items = Routes.Items.list
+    val items = Routes.Items.bottomNavItems
     val navBackStackEntry by navHostController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
@@ -70,14 +70,16 @@ fun BottomNavBar(
                 BottomNavBarItem(
                     isSelected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
                     item = item,
-                    isProfile = item.route == Routes.MyProfileScreen.route,
-                    profileImage = profileImage,
+                    isMyProfileScreen = item.route == Routes.MyProfileScreen.route,
+                    myProfileImage = profileImage,
                     onClick = {
                         val route =
-                            if (item.route == Routes.AddContentScreen.route) "${item.route}/POST" else item.route
+                            if (item.route == Routes.AddContentScreen.route)
+                                "${item.route}/POST"
+                            else item.route
                         navHostController.navigate(route) {
-                            popUpTo(Routes.HomeScreen.route)
-                            launchSingleTop = true
+                            popUpTo(Routes.HomeScreen.route) // always back to home screen
+                            launchSingleTop = true // avoid tap multiple times
                         }
                     }
                 )
@@ -90,13 +92,13 @@ fun BottomNavBar(
 fun BottomNavBarItem(
     isSelected: Boolean,
     item: Routes,
-    isProfile: Boolean = false,
-    profileImage: String,
+    isMyProfileScreen: Boolean = false,
+    myProfileImage: String,
     onClick: (Routes) -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val image = profileImage.ifEmpty { R.drawable.default_profile_img }
-    if (!isProfile) {
+    val image = myProfileImage.ifEmpty { R.drawable.default_profile_img }
+    if (!isMyProfileScreen) {
         Box(
             modifier = Modifier.clickable(
                 indication = null,

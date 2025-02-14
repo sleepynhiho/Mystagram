@@ -18,7 +18,6 @@ import com.forrestgump.ig.ui.screens.home.HomeViewModel
 fun InnerContainer(
     viewModelProfile: ProfileViewModel = hiltViewModel(),
     viewModelHome: HomeViewModel = hiltViewModel() // Truyền vào để dễ test hơn
-
 ) {
     val navHostController = rememberNavController()
     val navBackStackEntry by navHostController.currentBackStackEntryAsState()
