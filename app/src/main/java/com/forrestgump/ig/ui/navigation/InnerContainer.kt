@@ -11,20 +11,24 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.forrestgump.ig.ui.screens.profile.ProfileViewModel
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
+import com.forrestgump.ig.ui.screens.home.HomeViewModel
 
 @UnstableApi
 @Composable
 fun InnerContainer(
     viewModelProfile: ProfileViewModel = hiltViewModel(),
+    viewModelHome: HomeViewModel = hiltViewModel() // Truyền vào để dễ test hơn
+
 ) {
     val navHostController = rememberNavController()
     val navBackStackEntry by navHostController.currentBackStackEntryAsState()
-    val CurrentScreen = navBackStackEntry?.destination?.route
+    val currentScreen = navBackStackEntry?.destination?.route
 
-    val uiState by viewModelProfile.uiState.collectAsState()
+    val uiStateProfile by viewModelProfile.uiState.collectAsState()
+    val uiStateHome by viewModelHome.uiState.collectAsState()
 
-    val showBottomBar = when(CurrentScreen) {
-        Routes.HomeScreen.route -> true
+    val showBottomNavBar = when(currentScreen) {
+        Routes.HomeScreen.route -> !uiStateHome.showStoryScreen
         Routes.SearchScreen.route -> true
         Routes.NotificationScreen.route -> true
         Routes.MyProfileScreen.route -> true
@@ -35,9 +39,9 @@ fun InnerContainer(
         modifier = Modifier.fillMaxSize(),
         containerColor = MainBackground,
         bottomBar = {
-            if (showBottomBar) {
+            if (showBottomNavBar) {
                 BottomNavBar(
-                    profileImage = uiState.profileImage,
+                    profileImage = uiStateProfile.profileImage,
                     navHostController = navHostController
                 )
             }

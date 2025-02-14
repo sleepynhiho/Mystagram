@@ -7,11 +7,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.tooling.preview.Preview
-import com.forrestgump.ig.ui.components.StoryCard
 import com.forrestgump.ig.ui.screens.story.components.UserStoryCard
 import com.forrestgump.ig.utils.models.Story
 import com.forrestgump.ig.utils.models.UserStory
@@ -23,13 +22,11 @@ enum class Stories {
 
 @Composable
 fun StoryScreen(
-    storyIndex: Int,
     visible: Boolean,
     userStories: () -> List<UserStory>,
     currentUserId: String,
-    contentPadding: PaddingValues,
-    updateViews: (Story) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+
 ) {
     AnimatedVisibility(
         visible = visible,
@@ -43,12 +40,21 @@ fun StoryScreen(
         ) + fadeOut(animationSpec = tween(durationMillis = 600))
     ) {
 
-
-
+        UserStoryCard(
+            currentUserId = currentUserId,
+            currentStoryIndex = 0,
+            userStory = userStories()[0],
+            modifier = Modifier,
+            isStoryActive = true,
+            isPaused = false,
+            isStopped = false,
+            onProgressComplete = {  }
+        )
 
         BackHandler(onBack = onDismiss)
     }
 }
+
 
 @Preview(
     showBackground = true,
@@ -57,7 +63,6 @@ fun StoryScreen(
 @Composable
 private fun StoryScreenPreview() {
     StoryScreen(
-        storyIndex = 0,
         visible = true,
         userStories = {
             listOf(
@@ -76,8 +81,6 @@ private fun StoryScreenPreview() {
             )
         },
         currentUserId = "",
-        contentPadding = PaddingValues(),
-        updateViews = { },
         onDismiss = { }
     )
 }

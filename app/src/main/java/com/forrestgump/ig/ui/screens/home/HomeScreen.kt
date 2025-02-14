@@ -36,17 +36,32 @@ import com.forrestgump.ig.utils.models.UserStory
 fun HomeScreen(
     contentPadding: PaddingValues,
     uiState: UiState,
-    following: List<String>,
-    profileImage: String,
+    userProfileImage: String,
     currentUserId: String,
-    onAddStoryClick: () -> Unit,
-    updateViews: (Story) -> Unit,
-    setShowStoryScreen: (Boolean) -> Unit
+    onAddStoryClicked: () -> Unit,
+    onStoryScreenToggle: (Boolean) -> Unit
 ) {
-    val state = rememberLazyListState()
+    val lazyListState = rememberLazyListState()
 
     var userStoryIndex by remember { mutableIntStateOf(0) }
-    var selectedStory by remember { mutableStateOf(Stories.USER_STORY) }
+    var selectedStoryType by remember { mutableStateOf(Stories.USER_STORY) }
+
+    // Thêm mock data nếu userStories rỗng
+    val mockUserStories = listOf(
+        UserStory(
+            username = "johndoe",
+            profileImage = "https://randomuser.me/api/portraits/men/1.jpg",
+            stories = listOf(
+                Story(userId = "johndoe", image = "https://via.placeholder.com/300", timestamp = System.currentTimeMillis())
+            )
+        )
+    )
+
+    val finalUiState = if (uiState.userStories.isEmpty()) {
+        uiState.copy(userStories = mockUserStories, myStories = mockUserStories.take(1))
+    } else {
+        uiState
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -61,27 +76,26 @@ fun HomeScreen(
             ) {
                 Posts(
                     contentPadding = contentPadding,
-                    posts = uiState.posts,
-                    state = state
+                    posts = uiState.posts
                 ) {
                     TopNavBar()
 
                     Stories(
-                        profileImage = profileImage,
+                        profileImage = userProfileImage,
                         currentUserId = currentUserId,
-                        onAddStoryClick = onAddStoryClick,
+                        onAddStoryClicked = onAddStoryClicked,
                         onViewMyStoryClick = {
                             userStoryIndex = 0
-                            selectedStory = Stories.MY_STORY
-                            setShowStoryScreen(true)
+                            selectedStoryType = Stories.MY_STORY
+                            onStoryScreenToggle(true)
                         },
                         onStoryClick = { storyIndex ->
                             userStoryIndex = storyIndex
-                            selectedStory = Stories.USER_STORY
-                            setShowStoryScreen(true)
+                            selectedStoryType = Stories.USER_STORY
+                            onStoryScreenToggle(true)
                         },
-                        userStories = uiState.userStories,
-                        myStories = uiState.myStories
+                        userStories = finalUiState.userStories,
+                        myStories = finalUiState.myStories
                     )
 
                     HorizontalDivider(
@@ -97,16 +111,15 @@ fun HomeScreen(
     }
 
     StoryScreen(
-        storyIndex = userStoryIndex,
-        visible = uiState.showStoryScreen,
+        visible = finalUiState.showStoryScreen,
         userStories = {
-            if (selectedStory == Stories.MY_STORY) uiState.myStories else uiState.userStories
+            if (selectedStoryType == Stories.MY_STORY) finalUiState.myStories else finalUiState.userStories
         },
         currentUserId = currentUserId,
-        contentPadding = contentPadding,
-        updateViews = updateViews,
-        onDismiss = { setShowStoryScreen(false) }
+        onDismiss = { onStoryScreenToggle(false) }
     )
+    
+    
 }
 
 @UnstableApi
@@ -135,11 +148,9 @@ fun HomeScreenPreview() {
     HomeScreen(
         contentPadding = PaddingValues(),
         uiState = uiState,
-        following = listOf("1"),
-        profileImage = "https://static.vecteezy.com/system/resources/previews/004/899/680/non_2x/beautiful-blonde-woman-with-makeup-avatar-for-a-beauty-salon-illustration-in-the-cartoon-style-vector.jpg",
-        currentUserId = "abc",
-        onAddStoryClick = {},
-        updateViews = {},
-        setShowStoryScreen = {}
+        userProfileImage = "https://static.vecteezy.com/system/resources/previews/004/899/680/non_2x/beautiful-blonde-woman-with-makeup-avatar-for-a-beauty-salon-illustration-in-the-cartoon-style-vector.jpg",
+        currentUserId = "123",
+        onAddStoryClicked = {},
+        onStoryScreenToggle = {}
     )
 }

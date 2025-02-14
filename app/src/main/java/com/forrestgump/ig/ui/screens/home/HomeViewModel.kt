@@ -1,7 +1,6 @@
 package com.forrestgump.ig.ui.screens.home
 
 import androidx.lifecycle.ViewModel
-import com.forrestgump.ig.utils.models.Story
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -15,11 +14,7 @@ class HomeViewModel @Inject constructor(
         private set
 
 
-    fun updateStoryViews(story: Story) {
-
-    }
-
-    fun setShowStoryScreen(value: Boolean) {
+    fun onStoryScreenToggle(value: Boolean) {
         uiState.update { it.copy(showStoryScreen = value) }
     }
 
