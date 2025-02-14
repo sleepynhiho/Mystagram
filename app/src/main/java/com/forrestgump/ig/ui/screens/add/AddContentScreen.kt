@@ -27,7 +27,7 @@ fun AddContentScreen(
 @UnstableApi
 @Preview
 @Composable
-private fun ShareContentScreenPreview() {
+private fun AddContentScreenPreview() {
     AddContentScreen(
         onBackClick = { }
     )

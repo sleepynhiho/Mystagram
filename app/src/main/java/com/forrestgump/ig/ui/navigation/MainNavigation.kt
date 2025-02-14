@@ -68,9 +68,7 @@ fun MainNavigation(viewModel: AuthViewModel = hiltViewModel()) {
                 startDestination = Routes.InnerContainer.route
             }
 
-            InnerContainer(
-
-            )
+            InnerContainer()
         }
     }
 }

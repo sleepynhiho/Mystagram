@@ -8,7 +8,7 @@ import com.forrestgump.ig.utils.models.Story
 import com.forrestgump.ig.utils.models.UserStory
 
 @Composable
-fun Stories(
+fun StoryList(
     profileImage: String,
     currentUserId: String,
     onAddStoryClicked: () -> Unit,
@@ -21,7 +21,7 @@ fun Stories(
         content = {
             item(key = "addStory") {
                 if (myStories.isNotEmpty() && myStories.first().stories.isNotEmpty()) {
-                    StoryCard(
+                    UserStoryCard(
                         userStory = myStories.first(),
                         currentUserId = currentUserId,
                         onClick = onViewMyStoryClick
@@ -39,7 +39,7 @@ fun Stories(
                     items = userStories,
                     key = { userStory -> userStory.userId }
                 ) { story ->
-                    StoryCard(
+                    UserStoryCard(
                         userStory = story,
                         currentUserId = currentUserId,
                         onClick = { onStoryClick(userStories.indexOf(story)) }
@@ -52,8 +52,8 @@ fun Stories(
 
 @Preview
 @Composable
-fun StoriesPreview() {
-    Stories(
+fun StoryListPreview() {
+    StoryList(
         profileImage = "",
         currentUserId = "",
         onAddStoryClicked = { },

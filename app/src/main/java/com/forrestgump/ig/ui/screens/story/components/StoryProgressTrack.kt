@@ -1,5 +1,6 @@
 package com.forrestgump.ig.ui.screens.story.components
 
+import android.util.Log
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
@@ -46,22 +47,25 @@ fun StoryProgressTrack(
         var lastElapsedTime by remember { mutableLongStateOf(0L) }
         val progressAnimation = remember { Animatable(0f) }
 
-        LaunchedEffect(isStoryActive, isPaused, isStopped) {
-            if (isStoryActive && !isPaused && !isStopped) {
+        LaunchedEffect(isStoryActive, isPaused) {
+            Log.d("NHI", "HEREEEEEEEEEE")
+            if (isStoryActive && !isPaused) {
+                Log.d("NHI", "INNNNNNNNN")
                 val currentTime = System.currentTimeMillis()
                 if (lastElapsedTime == 0L) lastElapsedTime = currentTime
                 val remainingDuration =
                     (maxDuration - (currentTime - lastElapsedTime).toInt()).coerceAtLeast(minDuration)
-
+                progressAnimation.snapTo(0f)
                 progressAnimation.animateTo(
                     targetValue = 1f,
                     animationSpec = tween(durationMillis = remainingDuration, easing = LinearEasing)
-                ) {
-                    if (value >= 1f) onProgressComplete()
-                }
+                )
+                onProgressComplete()
             } else if (!isStoryActive) {
-                lastElapsedTime = 0L
-                if (progressAnimation.value > 0f) progressAnimation.snapTo(1f)
+//                lastElapsedTime = 0L
+//                if (progressAnimation.value > 0f)
+//                    progressAnimation.snapTo(1f)
+                progressAnimation.snapTo(0f)
             }
         }
 
@@ -71,19 +75,21 @@ fun StoryProgressTrack(
                 .height(1.dp),
             contentAlignment = Alignment.CenterStart
         ) {
+            // Background track
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 2.dp)
                     .background(Color(0x59FFFFFF))
             )
+            // Animated progress
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(progressAnimation.value)
                     .padding(horizontal = 2.dp)
                     .clip(RoundedCornerShape(20.dp))
-                    .background(color = Color.White),
+                    .background(Color.White),
             )
         }
     }

@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.tooling.preview.Preview
-import com.forrestgump.ig.ui.screens.story.components.UserStoryCard
+import com.forrestgump.ig.ui.screens.story.components.UserStoryDetail
 import com.forrestgump.ig.utils.models.Story
 import com.forrestgump.ig.utils.models.UserStory
 
@@ -40,7 +40,7 @@ fun StoryScreen(
         ) + fadeOut(animationSpec = tween(durationMillis = 600))
     ) {
 
-        UserStoryCard(
+        UserStoryDetail (
             currentUserId = currentUserId,
             currentStoryIndex = 0,
             userStory = userStories()[0],
@@ -48,7 +48,9 @@ fun StoryScreen(
             isStoryActive = true,
             isPaused = false,
             isStopped = false,
-            onProgressComplete = {  }
+            onProgressComplete = {
+                onDismiss()
+            }
         )
 
         BackHandler(onBack = onDismiss)

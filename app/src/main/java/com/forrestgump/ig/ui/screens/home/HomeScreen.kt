@@ -25,7 +25,7 @@ import com.forrestgump.ig.ui.screens.story.StoryScreen
 import com.forrestgump.ig.ui.screens.story.Stories
 import com.forrestgump.ig.ui.components.Loading
 import com.forrestgump.ig.ui.components.Posts
-import com.forrestgump.ig.ui.components.Stories
+import com.forrestgump.ig.ui.components.StoryList
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.forrestgump.ig.utils.models.Post
 import com.forrestgump.ig.utils.models.Story
@@ -80,7 +80,7 @@ fun HomeScreen(
                 ) {
                     TopNavBar()
 
-                    Stories(
+                    StoryList(
                         profileImage = userProfileImage,
                         currentUserId = currentUserId,
                         onAddStoryClicked = onAddStoryClicked,
