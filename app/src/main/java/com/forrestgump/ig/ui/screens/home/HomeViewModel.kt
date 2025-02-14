@@ -14,7 +14,7 @@ class HomeViewModel @Inject constructor(
         private set
 
 
-    fun onStoryScreenToggle(value: Boolean) {
+    fun onStoryScreenClicked(value: Boolean) {
         uiState.update { it.copy(showStoryScreen = value) }
     }
 

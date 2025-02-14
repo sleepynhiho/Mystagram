@@ -39,9 +39,9 @@ fun HomeScreen(
     userProfileImage: String,
     currentUserId: String,
     onAddStoryClicked: () -> Unit,
-    onStoryScreenToggle: (Boolean) -> Unit
+    onStoryScreenClicked: (Boolean) -> Unit,
+    onMessagesScreenClicked: () -> Unit
 ) {
-    val lazyListState = rememberLazyListState()
 
     var userStoryIndex by remember { mutableIntStateOf(0) }
     var selectedStoryType by remember { mutableStateOf(Stories.USER_STORY) }
@@ -78,7 +78,7 @@ fun HomeScreen(
                     contentPadding = contentPadding,
                     posts = uiState.posts
                 ) {
-                    TopNavBar()
+                    TopNavBar(onMessagesScreenClicked)
 
                     StoryList(
                         profileImage = userProfileImage,
@@ -87,12 +87,12 @@ fun HomeScreen(
                         onViewMyStoryClick = {
                             userStoryIndex = 0
                             selectedStoryType = Stories.MY_STORY
-                            onStoryScreenToggle(true)
+                            onStoryScreenClicked(true)
                         },
                         onStoryClick = { storyIndex ->
                             userStoryIndex = storyIndex
                             selectedStoryType = Stories.USER_STORY
-                            onStoryScreenToggle(true)
+                            onStoryScreenClicked(true)
                         },
                         userStories = finalUiState.userStories,
                         myStories = finalUiState.myStories
@@ -116,7 +116,7 @@ fun HomeScreen(
             if (selectedStoryType == Stories.MY_STORY) finalUiState.myStories else finalUiState.userStories
         },
         currentUserId = currentUserId,
-        onDismiss = { onStoryScreenToggle(false) }
+        onDismiss = { onStoryScreenClicked(false) }
     )
     
     
@@ -151,6 +151,7 @@ fun HomeScreenPreview() {
         userProfileImage = "https://static.vecteezy.com/system/resources/previews/004/899/680/non_2x/beautiful-blonde-woman-with-makeup-avatar-for-a-beauty-salon-illustration-in-the-cartoon-style-vector.jpg",
         currentUserId = "123",
         onAddStoryClicked = {},
-        onStoryScreenToggle = {}
+        onStoryScreenClicked = {},
+        onMessagesScreenClicked = {},
     )
 }

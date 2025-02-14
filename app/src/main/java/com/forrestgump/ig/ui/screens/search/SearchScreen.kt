@@ -6,11 +6,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.forrestgump.ig.ui.components.Loading
+import com.forrestgump.ig.ui.screens.profile.UiState
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 
 @Composable
 fun SearchScreen(
-    uiState: com.forrestgump.ig.ui.screens.profile.UiState,
+    uiState: UiState,
 ) {
 
     uiState.isLoading = false

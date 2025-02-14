@@ -1,6 +1,7 @@
 package com.forrestgump.ig.ui.screens.home.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,7 +21,7 @@ import com.forrestgump.ig.R
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 
 @Composable
-internal fun TopNavBar() {
+fun TopNavBar(onMessagesScreenClicked: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -29,29 +30,34 @@ internal fun TopNavBar() {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        // App logo
         Icon(
             modifier = Modifier
                 .fillMaxWidth()
-                .size(32.dp)
-                .weight(0.5f),
-            painter = painterResource(id = R.drawable.instagram_logo),
+                .size(40.dp)
+                .weight(0.7f)
+                .padding(horizontal = 15.dp),
+            painter = painterResource(id = R.drawable.mystagram_logo),
             tint = MaterialTheme.colorScheme.onBackground,
             contentDescription = stringResource(id = R.string.app_logo)
         )
-        
+
         Row(
             modifier = Modifier
-                .padding(horizontal = 15.dp)
                 .fillMaxWidth()
+                .padding(horizontal = 15.dp)
                 .weight(1f),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.End
         ) {
+            // Messages
             Icon(
-                modifier = Modifier.size(28.dp),
-                painter = painterResource(id = R.drawable.messenger),
+                modifier = Modifier
+                    .size(28.dp)
+                    .clickable { onMessagesScreenClicked() },
+                painter = painterResource(id = R.drawable.messages),
                 tint = MaterialTheme.colorScheme.onBackground,
-                contentDescription = stringResource(R.string.messenger)
+                contentDescription = stringResource(R.string.messages)
             )
         }
     }
@@ -60,5 +66,5 @@ internal fun TopNavBar() {
 @Preview
 @Composable
 fun TopNavBarPreview() {
-    TopNavBar()
+    TopNavBar(onMessagesScreenClicked = {})
 }

@@ -15,14 +15,19 @@ sealed class Routes(
     data object AddContentScreen: Routes(iconOutlined = R.drawable.add_outlined, name = "UploadContent", route = "AddContentScreen")
     data object NotificationScreen: Routes(iconOutlined = R.drawable.heart_outlined, iconFilled = R.drawable.heart_filled, name = "Notification", route = "NotificationScreen")
     data object MyProfileScreen: Routes(name = "MyProfile", route = "MyProfileScreen")
+    data object MessagesScreen: Routes(name = "Messages", route = "Messages")
 
     data object Items {
-        val list = listOf(
+        val bottomNavItems = listOf(
             HomeScreen,
             SearchScreen,
             AddContentScreen,
             NotificationScreen,
             MyProfileScreen
+        )
+
+        val topNavItems = listOf(
+            MessagesScreen
         )
     }
 }
