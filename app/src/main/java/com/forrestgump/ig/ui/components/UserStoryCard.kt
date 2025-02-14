@@ -43,7 +43,7 @@ import com.forrestgump.ig.utils.models.Story
 import com.forrestgump.ig.utils.models.UserStory
 
 @Composable
-fun StoryCard(
+fun UserStoryCard(
     userStory: UserStory,
     currentUserId: String,
     onClick: () -> Unit
@@ -139,8 +139,8 @@ fun StoryCard(
 
 @Preview
 @Composable
-fun StoryCardPreview() {
-    StoryCard(
+fun UserStoryCardPreview() {
+    UserStoryCard(
         userStory = UserStory(
             stories = listOf(
                 Story(
