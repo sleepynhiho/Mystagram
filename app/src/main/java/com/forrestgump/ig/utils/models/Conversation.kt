@@ -1,8 +1,9 @@
 package com.forrestgump.ig.utils.models
 
 data class Conversation(
-    val id: String,
-    val senderName: String,
+    val userID: String,
+    val username: String,
+    val userProfileImage: String,
     val lastMessage: String,
     val timestamp: Long,
     val isRead: Boolean = false

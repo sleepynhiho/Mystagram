@@ -13,4 +13,5 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="back_home">Back home</string>
     <string name="add_new_message">Add new message</string>
+    <string name="messages_header">Messages</string>
 </resources>

@@ -37,11 +37,11 @@ import com.forrestgump.ig.utils.constants.Utils.LightBlue
 
 @Composable
 internal fun AddStoryCard(
-    profileImage: String,
+    myProfileImage: String,
     onClick: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val image = profileImage.ifEmpty { R.drawable.default_profile_img }
+    val image = myProfileImage.ifEmpty { R.drawable.default_profile_img }
     Column(
         modifier = Modifier
             .padding(horizontal = 10.dp)
@@ -108,7 +108,7 @@ internal fun AddStoryCard(
 @Composable
 fun AddStoryCardPreview() {
     AddStoryCard(
-        profileImage = "",
+        myProfileImage = "",
         onClick = { }
     )
 }

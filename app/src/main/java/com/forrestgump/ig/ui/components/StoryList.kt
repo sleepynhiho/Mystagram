@@ -28,7 +28,7 @@ fun StoryList(
                     )
                 } else {
                     AddStoryCard(
-                        profileImage = profileImage,
+                        myProfileImage = profileImage,
                         onClick = onAddStoryClicked
                     )
                 }

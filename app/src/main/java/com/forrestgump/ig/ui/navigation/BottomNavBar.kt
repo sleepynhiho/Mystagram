@@ -38,7 +38,7 @@ import com.forrestgump.ig.utils.constants.Utils.MainBackground
 
 @Composable
 fun BottomNavBar(
-    profileImage: String,
+    myProfileImage: String,
     navHostController: NavHostController
 ) {
     val items = Routes.Items.bottomNavItems
@@ -71,7 +71,7 @@ fun BottomNavBar(
                     isSelected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
                     item = item,
                     isMyProfileScreen = item.route == Routes.MyProfileScreen.route,
-                    myProfileImage = profileImage,
+                    myProfileImage = myProfileImage,
                     onClick = {
                         val route =
                             if (item.route == Routes.AddContentScreen.route)
@@ -153,7 +153,7 @@ fun BottomNavBarItem(
 @Composable
 fun BottomNavBarPreview() {
     BottomNavBar(
-        profileImage = "",
+        myProfileImage = "",
         navHostController = rememberNavController()
     )
 }
