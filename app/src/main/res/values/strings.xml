@@ -14,4 +14,5 @@
     <string name="back_home">Back home</string>
     <string name="add_new_message">Add new message</string>
     <string name="messages_header">Messages</string>
+    <string name="close_story">Close story</string>
 </resources>

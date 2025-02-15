@@ -2,11 +2,13 @@ package com.forrestgump.ig.ui.screens.story.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +27,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -131,7 +135,8 @@ fun UserStoryDetail(
                         StoryHeader(
                             currentUserId = currentUserId,
                             userStory = userStory,
-                            currentStoryIndex = currentStoryIndex
+                            currentStoryIndex = currentStoryIndex,
+                            onProgressComplete = onProgressComplete
                         )
                     }
                 }
@@ -145,47 +150,68 @@ fun StoryHeader(
     currentUserId: String,
     userStory: UserStory,
     currentStoryIndex: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onProgressComplete: () -> Unit
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 15.dp),
+            .padding(horizontal = 15.dp)
+            .height(43.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
-        // Author's profile image
-        AsyncImage(
-            model = userStory.profileImage,
+        Row(
             modifier = Modifier
-                .size(30.dp)
-                .clip(CircleShape),
-            contentScale = ContentScale.Crop,
-            contentDescription = userStory.username
+                .fillMaxHeight()
+                .weight(1f),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
         )
-
-        Spacer(modifier = Modifier.width(10.dp))
-
-        // Author's username
-        Text(
-            text = if (userStory.userId == currentUserId) stringResource(id = R.string.your_story) else userStory.username,
-            style = TextStyle(
-                color = Color.White,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
+        {
+            // Author's profile image
+            AsyncImage(
+                model = userStory.profileImage,
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop,
+                contentDescription = userStory.username
             )
-        )
 
-        Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(10.dp))
 
-        // Story's timestamp
-        Text(
-            text = userStory.stories[currentStoryIndex].timestamp.formatAsElapsedTime(),
-            style = TextStyle(
-                color = Color.White.copy(alpha = 0.6f),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Normal
+            // Author's username
+            Text(
+                text = if (userStory.userId == currentUserId) stringResource(id = R.string.your_story) else userStory.username,
+                style = TextStyle(
+                    color = Color.White,
+                    fontSize = 19.sp,
+                    fontWeight = FontWeight.Bold
+                )
             )
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            // Story's timestamp
+            Text(
+                text = userStory.stories[currentStoryIndex].timestamp.formatAsElapsedTime(),
+                style = TextStyle(
+                    color = Color.White.copy(alpha = 0.6f),
+                    fontSize = 19.sp,
+                    fontWeight = FontWeight.Normal
+                ),
+            )
+        }
+
+        // Close story button
+        Icon(
+            painter = painterResource(R.drawable.close_story),
+            tint = Color.White,
+            contentDescription = stringResource( R.string.close_story),
+            modifier = Modifier.clickable {
+                onProgressComplete()
+            }
         )
     }
 }
