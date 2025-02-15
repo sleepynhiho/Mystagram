@@ -40,7 +40,7 @@ fun InnerContainer(
         bottomBar = {
             if (showBottomNavBar) {
                 BottomNavBar(
-                    profileImage = uiStateProfile.profileImage,
+                    myProfileImage = uiStateProfile.profileImage,
                     navHostController = navHostController
                 )
             }
