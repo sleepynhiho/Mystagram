@@ -1,7 +1,6 @@
 package com.forrestgump.ig.utils.models
 
 data class User(
-    var userId: String = "",
     var username: String = "",
     var name: String = "user",
     var email: String = "",

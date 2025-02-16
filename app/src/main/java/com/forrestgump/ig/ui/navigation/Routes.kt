@@ -15,7 +15,8 @@ sealed class Routes(
     data object AddContentScreen: Routes(iconOutlined = R.drawable.add_outlined, name = "UploadContent", route = "AddContentScreen")
     data object NotificationScreen: Routes(iconOutlined = R.drawable.heart_outlined, iconFilled = R.drawable.heart_filled, name = "Notification", route = "NotificationScreen")
     data object MyProfileScreen: Routes(name = "MyProfile", route = "MyProfileScreen")
-    data object MessagesScreen: Routes(name = "Messages", route = "Messages")
+    data object MessagesScreen: Routes(name = "Messages", route = "MessagesScreen")
+    data object MessageDetailScreen: Routes(name = "MessageDetail", route = "message_detail")
 
     data object Items {
         val bottomNavItems = listOf(

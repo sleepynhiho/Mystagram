@@ -15,4 +15,6 @@
     <string name="add_new_message">Add new message</string>
     <string name="messages_header">Messages</string>
     <string name="close_story">Close story</string>
+    <string name="upload_image">Upload image in message</string>
+    <string name="send_message">Send message</string>
 </resources>

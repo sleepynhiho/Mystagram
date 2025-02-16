@@ -1,6 +1,7 @@
 package com.forrestgump.ig.ui.screens.messages.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,15 +33,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.forrestgump.ig.R
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.forrestgump.ig.utils.models.Conversation
+import com.forrestgump.ig.utils.models.Message
 
 @Composable
 fun MessagesList(
     conversations: List<Conversation>,
-    innerPadding: PaddingValues
+    innerPadding: PaddingValues,
+    navHostController: NavHostController
 ) {
     LazyColumn(
         contentPadding = innerPadding,
@@ -49,8 +54,8 @@ fun MessagesList(
             .background(color = MainBackground),
         content = {
             item { MessagesHeader() }
-            items(conversations) {
-                conversation -> MessagesListItem(conversation = conversation)
+            items(conversations) { conversation ->
+                MessagesListItem(conversation = conversation, navHostController = navHostController)
             }
         }
     )
@@ -71,9 +76,9 @@ fun MessagesHeader() {
                 .padding(horizontal = 10.dp),
             text = stringResource(R.string.messages_header),
             style = TextStyle(
-                fontSize = 21.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                lineHeight = 27.sp
+                lineHeight = 20.sp
             )
         )
     }
@@ -81,20 +86,24 @@ fun MessagesHeader() {
 
 @Composable
 fun MessagesListItem(
-    conversation: Conversation
+    conversation: Conversation,
+    navHostController: NavHostController
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(color = MainBackground)
-            .height(96.dp),
+            .height(72.dp)
+            .clickable {
+                navHostController.navigate("message_detail/${conversation.username}")
+            },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
         Spacer(modifier = Modifier.width(10.dp))
         Surface(
             modifier = Modifier
-                .size(74.dp),
+                .size(56.dp),
             shape = CircleShape,
         ) {
             AsyncImage(
@@ -111,22 +120,24 @@ fun MessagesListItem(
             modifier = Modifier
                 .fillMaxHeight()
                 .weight(1f),
-            verticalArrangement = Arrangement.SpaceEvenly,
+            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.Start
         ) {
             Text(
                 text = conversation.username,
                 style = TextStyle(
-                    fontSize = 19.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Normal,
                     color = MaterialTheme.colorScheme.onBackground
                 )
             )
 
+            Spacer(modifier = Modifier.height(8.dp))
+
             Text(
-                text = conversation.lastMessage,
+                text = conversation.messages.lastOrNull()?.content ?: "No messages",
                 style = TextStyle(
-                    fontSize = 19.sp,
+                    fontSize = 14.sp,
                     fontWeight = if (conversation.isRead) FontWeight.Normal else FontWeight.Bold,
                     color = if (conversation.isRead) Color(0xFF737373) else MaterialTheme.colorScheme.onBackground
                 )
@@ -153,22 +164,39 @@ fun MessagesListPreview() {
     MessagesList(
         conversations = listOf(
             Conversation(
-                userID = "1",
                 username = "sleepy",
                 userProfileImage = R.drawable.default_profile_img.toString(),
-                lastMessage = "Good morning!",
                 timestamp = 234234L,
-                isRead = false
+                isRead = false,
+                messages = listOf(
+                    Message(
+                        messageID = "1",
+                        senderUsername = "1",
+                        receiverUsername = "2",
+                        content = "Good morning!",
+                        timestamp = 234234L,
+                        isRead = false
+                    )
+                )
             ),
             Conversation(
-                userID = "2",
                 username = "John Doe",
                 userProfileImage = R.drawable.default_profile_img.toString(),
-                lastMessage = "Hey, what's up?",
                 timestamp = 234234L,
-                isRead = true
+                isRead = true,
+                messages = listOf(
+                    Message(
+                        messageID = "2",
+                        senderUsername = "2",
+                        receiverUsername = "1",
+                        content = "Hey, what's up?",
+                        timestamp = 234235L,
+                        isRead = true
+                    )
+                )
             )
         ),
-        innerPadding = PaddingValues(0.dp)
+        innerPadding = PaddingValues(0.dp),
+        navHostController = rememberNavController()
     )
 }
