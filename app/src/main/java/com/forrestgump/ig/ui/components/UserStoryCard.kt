@@ -45,7 +45,7 @@ import com.forrestgump.ig.utils.models.UserStory
 @Composable
 fun UserStoryCard(
     userStory: UserStory,
-    currentUserId: String,
+    currentUsername: String,
     onClick: () -> Unit
 ) {
     var scale by remember { mutableFloatStateOf(1f) }
@@ -55,7 +55,7 @@ fun UserStoryCard(
         label = "storyCardAnimation"
     )
 
-    val isAllStoryViewed = userStory.stories.last().views.contains(currentUserId)
+    val isAllStoryViewed = userStory.stories.last().views.contains(currentUsername)
     Box(
         modifier = Modifier
             .padding(horizontal = 10.dp)
@@ -125,7 +125,7 @@ fun UserStoryCard(
 
             Text(
                 modifier = Modifier.padding(vertical = 2.dp),
-                text = if (userStory.userId != currentUserId) userStory.username
+                text = if (userStory.username != currentUsername) userStory.username
                 else stringResource(id = R.string.your_story),
                 style = TextStyle(
                     fontSize = 12.sp,
@@ -144,12 +144,12 @@ fun UserStoryCardPreview() {
         userStory = UserStory(
             stories = listOf(
                 Story(
-                    userId = "abc",
+                    username = "abc",
                     views = listOf("1")
                 )
             )
         ),
-        currentUserId = "1",
+        currentUsername = "1",
         onClick = { }
     )
 }

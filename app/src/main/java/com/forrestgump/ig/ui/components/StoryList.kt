@@ -10,7 +10,7 @@ import com.forrestgump.ig.utils.models.UserStory
 @Composable
 fun StoryList(
     profileImage: String,
-    currentUserId: String,
+    currentUsername: String,
     onAddStoryClicked: () -> Unit,
     onViewMyStoryClick: () -> Unit,
     onStoryClick: (storyIndex: Int) -> Unit,
@@ -23,7 +23,7 @@ fun StoryList(
                 if (myStories.isNotEmpty() && myStories.first().stories.isNotEmpty()) {
                     UserStoryCard(
                         userStory = myStories.first(),
-                        currentUserId = currentUserId,
+                        currentUsername = currentUsername,
                         onClick = onViewMyStoryClick
                     )
                 } else {
@@ -37,11 +37,11 @@ fun StoryList(
             if (userStories.isNotEmpty()) {
                 items(
                     items = userStories,
-                    key = { userStory -> userStory.userId }
+                    key = { userStory -> userStory.username }
                 ) { story ->
                     UserStoryCard(
                         userStory = story,
-                        currentUserId = currentUserId,
+                        currentUsername = currentUsername,
                         onClick = { onStoryClick(userStories.indexOf(story)) }
                     )
                 }
@@ -55,7 +55,7 @@ fun StoryList(
 fun StoryListPreview() {
     StoryList(
         profileImage = "",
-        currentUserId = "",
+        currentUsername = "",
         onAddStoryClicked = { },
         onViewMyStoryClick = { },
         onStoryClick = { },
@@ -63,19 +63,19 @@ fun StoryListPreview() {
             UserStory(
                 stories = listOf(
                     Story(
-                        userId = "132"
+                        username = "132"
                     ),
                     Story(
-                        userId = "dfg"
+                        username = "dfg"
                     ),
                     Story(
-                        userId = "hli"
+                        username = "hli"
                     ),
                     Story(
-                        userId = "mus"
+                        username = "mus"
                     ),
                     Story(
-                        userId = "google"
+                        username = "google"
                     )
                 )
             )
@@ -84,10 +84,10 @@ fun StoryListPreview() {
             UserStory(
                 stories = listOf(
                     Story(
-                        userId = "dsd"
+                        username = "dsd"
                     ),
                     Story(
-                        userId = "avc"
+                        username = "avc"
                     )
                 )
             )

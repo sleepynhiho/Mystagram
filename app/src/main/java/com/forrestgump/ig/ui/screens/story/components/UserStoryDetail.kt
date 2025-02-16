@@ -43,7 +43,7 @@ import com.forrestgump.ig.utils.models.UserStory
 
 @Composable
 fun UserStoryDetail(
-    currentUserId: String,
+    currentUsername: String,
     currentStoryIndex: Int,
     userStory: UserStory,
     modifier: Modifier = Modifier,
@@ -124,7 +124,9 @@ fun UserStoryDetail(
                             userStory.stories.forEach { story ->
                                 StoryProgressTrack(
                                     modifier = Modifier.weight(1f),
-                                    isStoryActive = isStoryActive && currentStoryIndex == userStory.stories.indexOf(story),
+                                    isStoryActive = isStoryActive && currentStoryIndex == userStory.stories.indexOf(
+                                        story
+                                    ),
                                     isPaused = isPaused,
                                     isStopped = isStopped,
                                     onProgressComplete = onProgressComplete
@@ -133,7 +135,7 @@ fun UserStoryDetail(
                         }
 
                         StoryHeader(
-                            currentUserId = currentUserId,
+                            currentUsername = currentUsername,
                             userStory = userStory,
                             currentStoryIndex = currentStoryIndex,
                             onProgressComplete = onProgressComplete
@@ -145,9 +147,9 @@ fun UserStoryDetail(
     }
 }
 
-@Composable 
+@Composable
 fun StoryHeader(
-    currentUserId: String,
+    currentUsername: String,
     userStory: UserStory,
     currentStoryIndex: Int,
     modifier: Modifier = Modifier,
@@ -169,21 +171,25 @@ fun StoryHeader(
             horizontalArrangement = Arrangement.Start
         )
         {
-            // Author's profile image
-            AsyncImage(
-                model = userStory.profileImage,
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop,
-                contentDescription = userStory.username
-            )
+            Surface(
+                modifier = Modifier.size(42.dp),
+                shape = CircleShape
+            ) {
+                // Author's profile image
+                AsyncImage(
+                    model = userStory.profileImage,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    contentDescription = userStory.username
+                )
+            }
+
 
             Spacer(modifier = Modifier.width(10.dp))
 
             // Author's username
             Text(
-                text = if (userStory.userId == currentUserId) stringResource(id = R.string.your_story) else userStory.username,
+                text = if (userStory.username == currentUsername) stringResource(id = R.string.your_story) else userStory.username,
                 style = TextStyle(
                     color = Color.White,
                     fontSize = 19.sp,
@@ -208,7 +214,7 @@ fun StoryHeader(
         Icon(
             painter = painterResource(R.drawable.close_story),
             tint = Color.White,
-            contentDescription = stringResource( R.string.close_story),
+            contentDescription = stringResource(R.string.close_story),
             modifier = Modifier.clickable {
                 onProgressComplete()
             }
@@ -219,9 +225,8 @@ fun StoryHeader(
 @Preview(showBackground = true)
 @Composable
 private fun UserStoryDetailPreview() {
-    UserStoryDetail (
+    UserStoryDetail(
         userStory = UserStory(
-            userId = "1",
             username = "sleepy",
             profileImage = R.drawable.default_profile_img.toString(),
             stories = listOf(
@@ -229,19 +234,18 @@ private fun UserStoryDetailPreview() {
                     timestamp = 1719840723950L,
                     image = R.drawable.default_profile_img.toString(),
                     mimeType = "image/jpg",
-                    userId = "1"
                 ),
                 Story(
                     timestamp = 12000L
                 )
             )
         ),
-        currentUserId = "1",
+        currentUsername = "1",
         currentStoryIndex = 0,
         isPaused = false,
         modifier = Modifier,
         isStoryActive = true,
         isStopped = false,
-        onProgressComplete = {  }
+        onProgressComplete = { }
     )
 }

@@ -37,7 +37,7 @@ fun HomeScreen(
     contentPadding: PaddingValues,
     uiState: UiState,
     userProfileImage: String,
-    currentUserId: String,
+    currentUsername: String,
     onAddStoryClicked: () -> Unit,
     onStoryScreenClicked: (Boolean) -> Unit,
     onMessagesScreenClicked: () -> Unit
@@ -52,7 +52,7 @@ fun HomeScreen(
             username = "johndoe",
             profileImage = "https://randomuser.me/api/portraits/men/1.jpg",
             stories = listOf(
-                Story(userId = "johndoe", image = "https://via.placeholder.com/300", timestamp = System.currentTimeMillis())
+                Story(username = "johndoe", image = "https://via.placeholder.com/300", timestamp = System.currentTimeMillis())
             )
         )
     )
@@ -82,7 +82,7 @@ fun HomeScreen(
 
                     StoryList(
                         profileImage = userProfileImage,
-                        currentUserId = currentUserId,
+                        currentUsername = currentUsername,
                         onAddStoryClicked = onAddStoryClicked,
                         onViewMyStoryClick = {
                             userStoryIndex = 0
@@ -115,7 +115,7 @@ fun HomeScreen(
         userStories = {
             if (selectedStoryType == Stories.MY_STORY) finalUiState.myStories else finalUiState.userStories
         },
-        currentUserId = currentUserId,
+        currentUsername = currentUsername,
         onDismiss = { onStoryScreenClicked(false) }
     )
     
@@ -133,7 +133,7 @@ fun HomeScreenPreview() {
         UserStory(
             username = "abc",
             profileImage = "",
-            stories = listOf(Story(userId = "abc"))
+            stories = listOf(Story(username = "abc"))
         )
     )
 
@@ -149,7 +149,7 @@ fun HomeScreenPreview() {
         contentPadding = PaddingValues(),
         uiState = uiState,
         userProfileImage = "https://static.vecteezy.com/system/resources/previews/004/899/680/non_2x/beautiful-blonde-woman-with-makeup-avatar-for-a-beauty-salon-illustration-in-the-cartoon-style-vector.jpg",
-        currentUserId = "123",
+        currentUsername = "123",
         onAddStoryClicked = {},
         onStoryScreenClicked = {},
         onMessagesScreenClicked = {},

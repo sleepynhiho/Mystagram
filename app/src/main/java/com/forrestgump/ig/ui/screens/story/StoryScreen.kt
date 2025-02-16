@@ -24,7 +24,7 @@ enum class Stories {
 fun StoryScreen(
     visible: Boolean,
     userStories: () -> List<UserStory>,
-    currentUserId: String,
+    currentUsername: String,
     onDismiss: () -> Unit,
 ) {
     AnimatedVisibility(
@@ -40,7 +40,7 @@ fun StoryScreen(
     ) {
 
         UserStoryDetail (
-            currentUserId = currentUserId,
+            currentUsername = currentUsername,
             currentStoryIndex = 0,
             userStory = userStories()[0],
             modifier = Modifier,
@@ -81,7 +81,7 @@ private fun StoryScreenPreview() {
                 )
             )
         },
-        currentUserId = "",
+        currentUsername = "",
         onDismiss = { }
     )
 }

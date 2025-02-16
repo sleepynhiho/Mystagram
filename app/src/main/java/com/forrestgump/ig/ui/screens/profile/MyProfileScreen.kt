@@ -7,7 +7,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.forrestgump.ig.ui.components.Loading
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
-import com.forrestgump.ig.ui.screens.profile.UiState
 
 @Composable
 fun MyProfileScreen(

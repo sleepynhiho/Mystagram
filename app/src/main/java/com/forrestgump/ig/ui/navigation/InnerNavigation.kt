@@ -23,10 +23,12 @@ import com.forrestgump.ig.ui.screens.profile.MyProfileScreen
 import com.forrestgump.ig.ui.screens.profile.ProfileViewModel
 import com.forrestgump.ig.ui.screens.add.AddContentScreen
 import com.forrestgump.ig.ui.screens.add.AddContentViewModel
+import com.forrestgump.ig.ui.screens.messages.MessageDetailScreen
 import com.forrestgump.ig.ui.screens.messages.MessagesScreen
 import com.forrestgump.ig.ui.screens.notification.NotificationScreen
 import com.forrestgump.ig.ui.screens.search.SearchScreen
 import com.forrestgump.ig.utils.models.Conversation
+import com.forrestgump.ig.utils.models.Message
 
 
 @UnstableApi
@@ -60,7 +62,7 @@ fun InnerNavigation(
                 contentPadding = contentPadding,
                 uiState = uiState,
                 userProfileImage = uiStateProfile.profileImage,
-                currentUserId = "",
+                currentUsername = "",
                 onAddStoryClicked = {
                     navHostController.navigate("${Routes.AddContentScreen.route}/STORY")
                 },
@@ -145,44 +147,167 @@ fun InnerNavigation(
             )
         }
 
+        val dummyConversations = listOf(
+            Conversation(
+                username = "Alice",
+                userProfileImage = "https://randomuser.me/api/portraits/women/1.jpg",
+                timestamp = System.currentTimeMillis(),
+                isRead = false,
+                messages = listOf(
+                    Message(
+                        "101",
+                        "sleepy",
+                        "Alice",
+                        "Hello Alice!",
+                        System.currentTimeMillis(),
+                        false
+                    ),
+                    Message(
+                        "102",
+                        "Alice",
+                        "sleepy",
+                        "Hey, how are you?",
+                        System.currentTimeMillis(),
+                        true
+                    )
+                )
+            ),
+            Conversation(
+                username = "Bob",
+                userProfileImage = "https://randomuser.me/api/portraits/men/2.jpg",
+                timestamp = System.currentTimeMillis(),
+                isRead = true,
+                messages = listOf(
+                    Message("103", "sleepy", "Bob", "Hi Bob!", System.currentTimeMillis(), false),
+                    Message(
+                        "104",
+                        "Bob",
+                        "sleepy",
+                        "Let's meet up.",
+                        System.currentTimeMillis(),
+                        true
+                    )
+                )
+            ),
+            Conversation(
+                username = "Charlie",
+                userProfileImage = "https://randomuser.me/api/portraits/men/3.jpg",
+                timestamp = System.currentTimeMillis(),
+                isRead = false,
+                messages = listOf(
+                    Message(
+                        "105",
+                        "sleepy",
+                        "Charlie",
+                        "What's up?",
+                        System.currentTimeMillis(),
+                        false
+                    ),
+                    Message(
+                        "106",
+                        "Charlie",
+                        "sleepy",
+                        "All good!",
+                        System.currentTimeMillis(),
+                        true
+                    )
+                )
+            ),
+            Conversation(
+                username = "David",
+                userProfileImage = "https://randomuser.me/api/portraits/men/4.jpg",
+                timestamp = System.currentTimeMillis(),
+                isRead = true,
+                messages = listOf(
+                    Message(
+                        "107",
+                        "sleepy",
+                        "David",
+                        "Good morning!",
+                        System.currentTimeMillis(),
+                        true
+                    ),
+                    Message(
+                        "108",
+                        "David",
+                        "sleepy",
+                        "Morning! How's your day?",
+                        System.currentTimeMillis(),
+                        false
+                    )
+                )
+            ),
+            Conversation(
+                username = "Eve",
+                userProfileImage = "https://randomuser.me/api/portraits/women/5.jpg",
+                timestamp = System.currentTimeMillis(),
+                isRead = false,
+                messages = listOf(
+                    Message(
+                        "109",
+                        "sleepy",
+                        "Eve",
+                        "See you soon!",
+                        System.currentTimeMillis(),
+                        false
+                    ),
+                    Message("110", "Eve", "sleepy", "Bye!", System.currentTimeMillis(), true)
+                )
+            )
+        )
+
+
         composable(
             route = Routes.MessagesScreen.route,
             enterTransition = {
                 slideInHorizontally(
                     animationSpec = tween(),
-                    initialOffsetX = { -it }
+                    initialOffsetX = { it }
                 )
             },
             exitTransition = {
                 slideOutHorizontally(
                     animationSpec = tween(),
-                    targetOffsetX = { -it }
+                    targetOffsetX = { it }
                 )
             }
         ) {
             MessagesScreen(
                 myUsername = "sleepy",
-                conversations = listOf(
-                    Conversation("1", "Alice", "https://randomuser.me/api/portraits/women/1.jpg", "Hello!", System.currentTimeMillis(), false),
-                    Conversation("2", "Bob", "https://randomuser.me/api/portraits/men/2.jpg", "How are you?", System.currentTimeMillis(), true),
-                    Conversation("3", "Charlie", "https://randomuser.me/api/portraits/men/3.jpg", "What's up?", System.currentTimeMillis(), false),
-                    Conversation("4", "David", "https://randomuser.me/api/portraits/men/4.jpg", "Good morning!", System.currentTimeMillis(), true),
-                    Conversation("5", "Eve", "https://randomuser.me/api/portraits/women/5.jpg", "See you soon!", System.currentTimeMillis(), false),
-                    Conversation("6", "Frank", "https://randomuser.me/api/portraits/men/6.jpg", "Nice to meet you.", System.currentTimeMillis(), true),
-                    Conversation("7", "Grace", "https://randomuser.me/api/portraits/women/7.jpg", "Can we talk?", System.currentTimeMillis(), false),
-                    Conversation("8", "Hank", "https://randomuser.me/api/portraits/men/8.jpg", "Just chilling.", System.currentTimeMillis(), true),
-                    Conversation("9", "Ivy", "https://randomuser.me/api/portraits/women/9.jpg", "Call me later.", System.currentTimeMillis(), false),
-                    Conversation("10", "Jack", "https://randomuser.me/api/portraits/men/10.jpg", "Happy birthday!", System.currentTimeMillis(), true),
-                    Conversation("11", "Kate", "https://randomuser.me/api/portraits/women/11.jpg", "Let's hang out.", System.currentTimeMillis(), false),
-                    Conversation("12", "Leo", "https://randomuser.me/api/portraits/men/12.jpg", "See you tomorrow.", System.currentTimeMillis(), true),
-                    Conversation("13", "Mia", "https://randomuser.me/api/portraits/women/13.jpg", "I'll be there.", System.currentTimeMillis(), false),
-                    Conversation("14", "Noah", "https://randomuser.me/api/portraits/men/14.jpg", "Sure thing!", System.currentTimeMillis(), true),
-                    Conversation("15", "Olivia", "https://randomuser.me/api/portraits/women/15.jpg", "Text me later.", System.currentTimeMillis(), false)
-                ),
+                conversations = dummyConversations,
                 navHostController = navHostController
             )
         }
 
+
+
+        composable(
+            route = "${Routes.MessageDetailScreen.route}/{username}",
+            arguments = listOf(navArgument("username") { type = NavType.StringType }),
+            enterTransition = {
+                slideInHorizontally(
+                    animationSpec = tween(),
+                    initialOffsetX = { it }
+                )
+            },
+            exitTransition = {
+                slideOutHorizontally(
+                    animationSpec = tween(),
+                    targetOffsetX = { it }
+                )
+            }
+        ) { backStackEntry ->
+            val username = backStackEntry.arguments?.getString("username") ?: return@composable
+
+            val conversation = dummyConversations.find { it.username == username }
+                ?: return@composable
+
+            MessageDetailScreen(
+                myUsername = "sleepy",
+                conversation = conversation,
+                navHostController = navHostController
+            )
+        }
 
     }
 }

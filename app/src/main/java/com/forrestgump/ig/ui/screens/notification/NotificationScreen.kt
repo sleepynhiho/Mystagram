@@ -19,6 +19,7 @@ fun NotificationScreen(
             modifier = Modifier.fillMaxSize(),
             color = MainBackground
         ) {
+
         }
     } else {
         Loading()
