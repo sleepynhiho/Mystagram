@@ -142,7 +142,7 @@ fun InnerNavigation(
             }
         ) {
             AddContentScreen(
-                onBackClick = { }
+                navHostController
             )
         }
 
