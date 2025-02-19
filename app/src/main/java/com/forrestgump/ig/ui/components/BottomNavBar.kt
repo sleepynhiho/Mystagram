@@ -1,4 +1,4 @@
-package com.forrestgump.ig.ui.navigation
+package com.forrestgump.ig.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -34,6 +34,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.forrestgump.ig.R
+import com.forrestgump.ig.ui.navigation.Routes
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 
 @Composable

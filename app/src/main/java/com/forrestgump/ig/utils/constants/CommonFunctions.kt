@@ -1,12 +1,22 @@
 package com.forrestgump.ig.utils.constants
 
-fun Long.formatAsElapsedTime(): String {
-    val elapsedTime = System.currentTimeMillis() - this
+import java.util.Date
+
+fun Date.formatAsElapsedTime(): String {
+    val elapsedTime = System.currentTimeMillis() - this.time
+    if (elapsedTime < 0) return "0s"
+
+    val secondMillis = 1_000L
+    val minuteMillis = 60 * secondMillis
+    val hourMillis = 60 * minuteMillis
+    val dayMillis = 24 * hourMillis
+    val yearMillis = (365.25 * dayMillis).toLong()
+
     return when {
-        elapsedTime < 60_000 -> "${elapsedTime / 1_000}s"
-        elapsedTime < 3_600_000 -> "${elapsedTime / 60_000}m"
-        elapsedTime < 86_400_000 -> "${elapsedTime / 3_600_000}h"
-        elapsedTime < 31_536_000_000 -> "${elapsedTime / 86_400_000}d"
-        else -> "${elapsedTime /31_536_000_000}y"
+        elapsedTime < minuteMillis -> "${elapsedTime / secondMillis}s"
+        elapsedTime < hourMillis -> "${elapsedTime / minuteMillis}m"
+        elapsedTime < dayMillis -> "${elapsedTime / hourMillis}h"
+        elapsedTime < yearMillis -> "${elapsedTime / dayMillis}d"
+        else -> "${elapsedTime / yearMillis}y"
     }
 }

@@ -1,4 +1,4 @@
-package com.forrestgump.ig.ui.components
+package com.forrestgump.ig.ui.screens.story.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -36,7 +36,7 @@ import com.forrestgump.ig.R
 import com.forrestgump.ig.utils.constants.Utils.LightBlue
 
 @Composable
-internal fun AddStoryCard(
+fun AddStoryCard(
     myProfileImage: String,
     onClick: () -> Unit
 ) {

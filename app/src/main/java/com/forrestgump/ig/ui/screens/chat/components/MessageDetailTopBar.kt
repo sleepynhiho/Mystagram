@@ -1,4 +1,4 @@
-package com.forrestgump.ig.ui.screens.messages.components
+package com.forrestgump.ig.ui.screens.chat.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -6,36 +6,47 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.forrestgump.ig.R
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
+import com.forrestgump.ig.data.models.Chat
+import com.forrestgump.ig.data.models.Message
 
 @Composable
-fun MessagesTopBar(
-    myUsername: String,
-    navHostController: NavHostController
+fun MessageDetailTopBar(
+    navHostController: NavHostController,
+    chat: Chat,
+    myUsername: String
 ) {
+
+    val otherUsername = if (myUsername == chat.user1Username) chat.user2Username else chat.user1Username
+    val otherUserProfileImage = if (myUsername == chat.user1Username) chat.user2ProfileImage else chat.user1ProfileImage
+
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -65,35 +76,49 @@ fun MessagesTopBar(
 
             Spacer(modifier = Modifier.width(20.dp))
 
+            Surface(
+                modifier = Modifier
+                    .size(32.dp),
+                shape = CircleShape
+            ) {
+                AsyncImage(
+                    modifier = Modifier.fillMaxSize(),
+                    model = otherUserProfileImage,
+                    contentScale = ContentScale.Crop,
+                    contentDescription = otherUsername
+                )
+            }
+
+            Spacer(modifier = Modifier.width(10.dp))
+
             Text(
-                text = myUsername,
+                text = otherUsername,
                 style = TextStyle(
-                    fontSize = 20.sp,
+                    fontSize = 21.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
                 )
             )
         }
 
-        Icon(
-            modifier = Modifier
-                .size(37.dp)
-                .padding(5.dp),
-            painter = painterResource(id = R.drawable.new_message),
-            tint = MaterialTheme.colorScheme.onBackground,
-            contentDescription = stringResource(id = R.string.add_new_message)
-        )
-        Spacer(modifier = Modifier.width(15.dp))
-
     }
 }
 
-
 @Preview
 @Composable
-fun MessagesTopBarPreview() {
-    MessagesTopBar(
-        myUsername = "sleepy",
-        navHostController = rememberNavController()
+fun MessageDetailTopBarPreview() {
+    MessageDetailTopBar(
+        navHostController = rememberNavController(),
+        chat = Chat(
+            chatId = "chat_123",
+            user1Username = "_menf",
+            user2Username = "john_doe",
+            user1ProfileImage = R.drawable.default_profile_img.toString(),
+            user2ProfileImage = R.drawable.default_profile_img.toString(),
+            lastMessage = "Hey, what's up?",
+            lastMessageTime = 234234L,
+            lastMessageRead = true
+        ),
+        myUsername = "_menf"
     )
 }

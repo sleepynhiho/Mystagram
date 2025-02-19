@@ -1,4 +1,4 @@
-package com.forrestgump.ig.ui.screens.messages.components
+package com.forrestgump.ig.ui.screens.chat.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -38,14 +38,14 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.forrestgump.ig.R
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
-import com.forrestgump.ig.utils.models.Conversation
-import com.forrestgump.ig.utils.models.Message
+import com.forrestgump.ig.data.models.Chat
 
 @Composable
 fun MessagesList(
-    conversations: List<Conversation>,
+    chats: List<Chat>,
     innerPadding: PaddingValues,
-    navHostController: NavHostController
+    navHostController: NavHostController,
+    myUsername: String
 ) {
     LazyColumn(
         contentPadding = innerPadding,
@@ -54,8 +54,8 @@ fun MessagesList(
             .background(color = MainBackground),
         content = {
             item { MessagesHeader() }
-            items(conversations) { conversation ->
-                MessagesListItem(conversation = conversation, navHostController = navHostController)
+            items(chats) { chat ->
+                MessagesListItem(chat = chat, navHostController = navHostController, myUsername)
             }
         }
     )
@@ -86,16 +86,18 @@ fun MessagesHeader() {
 
 @Composable
 fun MessagesListItem(
-    conversation: Conversation,
-    navHostController: NavHostController
+    chat: Chat,
+    navHostController: NavHostController,
+    myUsername: String
 ) {
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(color = MainBackground)
             .height(72.dp)
             .clickable {
-                navHostController.navigate("message_detail/${conversation.username}")
+                navHostController.navigate("message_detail/${chat.chatId}")
             },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
@@ -108,7 +110,7 @@ fun MessagesListItem(
         ) {
             AsyncImage(
                 modifier = Modifier.fillMaxSize(),
-                model = conversation.userProfileImage,
+                model = if (myUsername == chat.user1Username) chat.user2ProfileImage else chat.user1ProfileImage,
                 contentScale = ContentScale.Crop,
                 contentDescription = stringResource(id = R.string.profile_image)
             )
@@ -124,7 +126,7 @@ fun MessagesListItem(
             horizontalAlignment = Alignment.Start
         ) {
             Text(
-                text = conversation.username,
+                text = if (myUsername == chat.user1Username) chat.user2Username else chat.user1Username,
                 style = TextStyle(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Normal,
@@ -135,16 +137,16 @@ fun MessagesListItem(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = conversation.messages.lastOrNull()?.content ?: "No messages",
+                text = chat.lastMessage,
                 style = TextStyle(
                     fontSize = 14.sp,
-                    fontWeight = if (conversation.isRead) FontWeight.Normal else FontWeight.Bold,
-                    color = if (conversation.isRead) Color(0xFF737373) else MaterialTheme.colorScheme.onBackground
+                    fontWeight = if (chat.lastMessageRead) FontWeight.Normal else FontWeight.Bold,
+                    color = if (chat.lastMessageRead) Color(0xFF737373) else MaterialTheme.colorScheme.onBackground
                 )
             )
         }
 
-        if (!conversation.isRead) {
+        if (!chat.lastMessageRead) {
             Box(
                 modifier = Modifier
                     .size(10.dp)
@@ -162,41 +164,30 @@ fun MessagesListItem(
 @Composable
 fun MessagesListPreview() {
     MessagesList(
-        conversations = listOf(
-            Conversation(
-                username = "sleepy",
-                userProfileImage = R.drawable.default_profile_img.toString(),
-                timestamp = 234234L,
-                isRead = false,
-                messages = listOf(
-                    Message(
-                        messageID = "1",
-                        senderUsername = "1",
-                        receiverUsername = "2",
-                        content = "Good morning!",
-                        timestamp = 234234L,
-                        isRead = false
-                    )
-                )
+        chats = listOf(
+            Chat(
+                chatId = "chat_1",
+                user1Username = "sleepy",
+                user2Username = "john_doe",
+                user1ProfileImage = R.drawable.default_profile_img.toString(),
+                user2ProfileImage = R.drawable.default_profile_img.toString(),
+                lastMessage = "Good morning!",
+                lastMessageTime = 234234L,
+                lastMessageRead = false
             ),
-            Conversation(
-                username = "John Doe",
-                userProfileImage = R.drawable.default_profile_img.toString(),
-                timestamp = 234234L,
-                isRead = true,
-                messages = listOf(
-                    Message(
-                        messageID = "2",
-                        senderUsername = "2",
-                        receiverUsername = "1",
-                        content = "Hey, what's up?",
-                        timestamp = 234235L,
-                        isRead = true
-                    )
-                )
+            Chat(
+                chatId = "chat_2",
+                user1Username = "john_doe",
+                user2Username = "sleepy",
+                user1ProfileImage = R.drawable.default_profile_img.toString(),
+                user2ProfileImage = R.drawable.default_profile_img.toString(),
+                lastMessage = "Hey, what's up?",
+                lastMessageTime = 234235L,
+                lastMessageRead = true
             )
         ),
         innerPadding = PaddingValues(0.dp),
-        navHostController = rememberNavController()
+        navHostController = rememberNavController(),
+        myUsername = "sleepy"  // Thêm myUsername để xác định ảnh đối phương
     )
 }

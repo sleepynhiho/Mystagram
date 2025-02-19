@@ -32,7 +32,6 @@ fun StoryProgressTrack(
     modifier: Modifier = Modifier,
     isStoryActive: Boolean,
     isPaused: Boolean,
-    isStopped: Boolean = false,
     onProgressComplete: () -> Unit
 ) {
     Row(
@@ -100,7 +99,6 @@ private fun StoryProgressTrackPreview() {
         modifier = Modifier,
         isStoryActive = true,
         isPaused = false,
-        isStopped = false,
         onProgressComplete = { }
     ) 
 }

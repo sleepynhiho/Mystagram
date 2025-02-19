@@ -1,4 +1,4 @@
-package com.forrestgump.ig.ui.screens.messages.components
+package com.forrestgump.ig.ui.screens.chat.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,15 +29,19 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.forrestgump.ig.R
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
-import com.forrestgump.ig.utils.models.Conversation
-import com.forrestgump.ig.utils.models.Message
+import com.forrestgump.ig.data.models.Chat
+import com.forrestgump.ig.data.models.Message
 
 @Composable
 fun MessageDetailContent(
     myUsername: String,
-    conversation: Conversation,
+    chat: Chat,
+    messages: List<Message>,
     innerPadding: PaddingValues
 ) {
+    val otherUsername = if (myUsername == chat.user1Username) chat.user2Username else chat.user1Username
+    val otherUserProfileImage = if (myUsername == chat.user1Username) chat.user2ProfileImage else chat.user1ProfileImage
+
     LazyColumn(
         contentPadding = innerPadding,
         modifier = Modifier
@@ -46,8 +49,9 @@ fun MessageDetailContent(
             .background(MainBackground),
         reverseLayout = true // Latest message
     ) {
-        items(conversation.messages) { message ->
+        items(messages) { message ->
             val isMine = myUsername == message.senderUsername
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -61,10 +65,10 @@ fun MessageDetailContent(
                         shape = CircleShape
                     ) {
                         AsyncImage(
-                            model = conversation.userProfileImage,
+                            model = otherUserProfileImage,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop,
-                            contentDescription = conversation.username
+                            contentDescription = otherUsername
                         )
                     }
 
@@ -95,40 +99,46 @@ fun MessageDetailContent(
 @Preview
 @Composable
 fun MessageDetailContentPreview() {
+    val chat = Chat(
+        chatId = "123",
+        user1Username = "sleepy",
+        user2Username = "John Doe",
+        user1ProfileImage = R.drawable.default_profile_img.toString(),
+        user2ProfileImage = R.drawable.default_profile_img.toString(),
+        lastMessage = "Hey, what's up?",
+        lastMessageTime = 234235L,
+        lastMessageRead = true
+    )
+
+    val messages = listOf(
+        Message(
+            messageID = "3",
+            senderUsername = "sleepy",
+            content = "I'm trying to wake up in the morning but it's so hard",
+            timestamp = 234235L,
+            isRead = true
+        ),
+        Message(
+            messageID = "2",
+            senderUsername = "John Doe",
+            content = "Long message content to check UI layout",
+            timestamp = 234235L,
+            isRead = true
+        ),
+        Message(
+            messageID = "1",
+            senderUsername = "John Doe",
+            content = "Hey, what's up?",
+            timestamp = 234235L,
+            isRead = true
+        )
+    )
+
     MessageDetailContent(
         myUsername = "sleepy",
-        Conversation(
-            username = "John Doe",
-            userProfileImage = R.drawable.default_profile_img.toString(),
-            timestamp = 234234L,
-            isRead = true,
-            messages = listOf( // Tin nhắn mới thêm vào đầu list
-                Message(
-                    messageID = "3",
-                    senderUsername = "sleepy",
-                    receiverUsername = "2",
-                    content = "I'm trying to wake up in the morning but it's so hard",
-                    timestamp = 234235L,
-                    isRead = true
-                ),
-                Message(
-                    messageID = "2",
-                    senderUsername = "2",
-                    receiverUsername = "sleepy",
-                    content = "dfsfdsfsdfsdfdsfdsf fsdfsdf dsfsdf fsdf sdfdsf sdf sdfsd fsd fsdf sdf sd fsd fsd fsd fsdf sdfsdfsdfsdf",
-                    timestamp = 234235L,
-                    isRead = true
-                ),
-                Message(
-                    messageID = "1",
-                    senderUsername = "2",
-                    receiverUsername = "sleepy",
-                    content = " Hey, what's up?",
-                    timestamp = 234235L,
-                    isRead = true
-                )
-            )
-        ),
+        chat = chat,
+        messages = messages,
         innerPadding = PaddingValues(0.dp)
     )
 }
+

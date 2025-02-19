@@ -27,9 +27,10 @@ import com.forrestgump.ig.ui.components.Loading
 import com.forrestgump.ig.ui.components.Posts
 import com.forrestgump.ig.ui.components.StoryList
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
-import com.forrestgump.ig.utils.models.Post
-import com.forrestgump.ig.utils.models.Story
-import com.forrestgump.ig.utils.models.UserStory
+import com.forrestgump.ig.data.models.Post
+import com.forrestgump.ig.data.models.Story
+import com.forrestgump.ig.data.models.UserStory
+import java.util.Date
 
 @UnstableApi
 @Composable
@@ -52,13 +53,17 @@ fun HomeScreen(
             username = "johndoe",
             profileImage = "https://randomuser.me/api/portraits/men/1.jpg",
             stories = listOf(
-                Story(username = "johndoe", image = "https://via.placeholder.com/300", timestamp = System.currentTimeMillis())
+                Story(
+                    username = "johndoe",
+                    media = "https://via.placeholder.com/300",
+                    timestamp = Date()
+                )
             )
         )
     )
 
     val finalUiState = if (uiState.userStories.isEmpty()) {
-        uiState.copy(userStories = mockUserStories, myStories = mockUserStories.take(1))
+        uiState.copy(userStories = mockUserStories)
     } else {
         uiState
     }
@@ -76,7 +81,6 @@ fun HomeScreen(
             ) {
                 Posts(
                     contentPadding = contentPadding,
-                    posts = uiState.posts
                 ) {
                     TopNavBar(onMessagesScreenClicked)
 
@@ -118,8 +122,8 @@ fun HomeScreen(
         currentUsername = currentUsername,
         onDismiss = { onStoryScreenClicked(false) }
     )
-    
-    
+
+
 }
 
 @UnstableApi
@@ -140,7 +144,11 @@ fun HomeScreenPreview() {
     val uiState = UiState(
         userStories = userStories,
         myStories = userStories,
-        posts = listOf(Post(mediaList = listOf("https://via.placeholder.com/150"), username = "cab")),
+        posts = listOf(
+            Post(
+                username = "cab"
+            )
+        ),
         isLoading = false,
         showStoryScreen = false
     )
