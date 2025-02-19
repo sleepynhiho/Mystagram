@@ -39,8 +39,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.forrestgump.ig.R
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
-import com.forrestgump.ig.utils.models.Story
-import com.forrestgump.ig.utils.models.UserStory
+import com.forrestgump.ig.data.models.Story
+import com.forrestgump.ig.data.models.UserStory
 
 @Composable
 fun UserStoryCard(

@@ -24,7 +24,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -37,8 +36,9 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.forrestgump.ig.R
 import com.forrestgump.ig.utils.constants.formatAsElapsedTime
-import com.forrestgump.ig.utils.models.Story
-import com.forrestgump.ig.utils.models.UserStory
+import com.forrestgump.ig.data.models.Story
+import com.forrestgump.ig.data.models.UserStory
+import java.util.Date
 
 
 @Composable
@@ -49,11 +49,9 @@ fun UserStoryDetail(
     modifier: Modifier = Modifier,
     isStoryActive: Boolean,
     isPaused: Boolean,
-    isStopped: Boolean,
     onProgressComplete: () -> Unit
 
 ) {
-    val isImageLoaded = false
     val alphaOnPress by animateFloatAsState(
         targetValue = if (isPaused) 0f else 1f,
         animationSpec = tween(durationMillis = 600),
@@ -81,28 +79,36 @@ fun UserStoryDetail(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    // fix: thêm nếu có ảnh thì...
+//                    // fix: thêm nếu có ảnh thì...
 //                    AsyncImage(
 //                        model = ImageRequest.Builder(LocalContext.current)
-//                            .data(userStory.stories[currentStoryIndex].image) // fix: thay đổi thành ảnh user tải lên
-//                            .crossfade(true) // Hieu ung mo dan khi tai anh
-//                            .allowHardware(false) // Khong su dung hardware bitmap de giam loi voi bitmap lon
+//                            .data(userStory.stories[currentStoryIndex].image)
+//                            .crossfade(true)
+//                            .allowHardware(false)
 //                            .listener(
-//                                onStart = {
-//                                    isImageLoaded = false
-//                                    val color = Color.Red // fix: dùng Palette lấy màu chủ đạo
-//                                },
-//                                onSuccess = {_, _ ->
-//                                    isImageLoaded = true
-//                                }
+//                                onStart = { isImageLoaded.value = false },
+//                                onSuccess = { _, _ -> isImageLoaded.value = true }
 //                            )
 //                            .build(),
 //                        contentScale = ContentScale.Fit,
-//                        contentDescription = stringResource(
-//                            id = R.string.user_story,
-//                            userStory.username
-//                        )
+//                        contentDescription = stringResource(id = R.string.user_story, userStory.username),
+//                        modifier = Modifier
+//                            .fillMaxSize()
+//                            .alpha(if (isImageLoaded.value) 1f else 0f) // Ẩn ảnh nếu chưa tải xong
 //                    )
+
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) {
+                        AsyncImage(
+                            modifier = Modifier.fillMaxSize(),
+                            model = "https://cdn.mos.cms.futurecdn.net/wtqqnkYDYi2ifsWZVW2MT4.jpg",
+                            contentScale = ContentScale.Crop,
+                            contentDescription = stringResource(id = R.string.profile_image)
+                        )
+                    }
+
 
                     // Top bar
                     Column(
@@ -128,7 +134,6 @@ fun UserStoryDetail(
                                         story
                                     ),
                                     isPaused = isPaused,
-                                    isStopped = isStopped,
                                     onProgressComplete = onProgressComplete
                                 )
                             }
@@ -200,14 +205,16 @@ fun StoryHeader(
             Spacer(modifier = Modifier.width(10.dp))
 
             // Story's timestamp
-            Text(
-                text = userStory.stories[currentStoryIndex].timestamp.formatAsElapsedTime(),
-                style = TextStyle(
-                    color = Color.White.copy(alpha = 0.6f),
-                    fontSize = 19.sp,
-                    fontWeight = FontWeight.Normal
-                ),
-            )
+            userStory.stories[currentStoryIndex].timestamp?.let {
+                Text(
+                    text = it.formatAsElapsedTime(),
+                    style = TextStyle(
+                        color = Color.White.copy(alpha = 0.6f),
+                        fontSize = 19.sp,
+                        fontWeight = FontWeight.Normal
+                    ),
+                )
+            }
         }
 
         // Close story button
@@ -227,16 +234,16 @@ fun StoryHeader(
 private fun UserStoryDetailPreview() {
     UserStoryDetail(
         userStory = UserStory(
-            username = "sleepy",
+            username = "johndoe",
             profileImage = R.drawable.default_profile_img.toString(),
             stories = listOf(
                 Story(
-                    timestamp = 1719840723950L,
-                    image = R.drawable.default_profile_img.toString(),
+                    timestamp = Date(),
+                    media = R.drawable.default_profile_img.toString(),
                     mimeType = "image/jpg",
                 ),
                 Story(
-                    timestamp = 12000L
+                    timestamp = Date()
                 )
             )
         ),
@@ -245,7 +252,6 @@ private fun UserStoryDetailPreview() {
         isPaused = false,
         modifier = Modifier,
         isStoryActive = true,
-        isStopped = false,
         onProgressComplete = { }
     )
 }

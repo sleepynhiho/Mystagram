@@ -12,8 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.tooling.preview.Preview
 import com.forrestgump.ig.ui.screens.story.components.UserStoryDetail
-import com.forrestgump.ig.utils.models.Story
-import com.forrestgump.ig.utils.models.UserStory
+import com.forrestgump.ig.data.models.Story
+import com.forrestgump.ig.data.models.UserStory
 
 enum class Stories {
     MY_STORY,
@@ -39,14 +39,13 @@ fun StoryScreen(
         ) + fadeOut(animationSpec = tween(durationMillis = 600))
     ) {
 
-        UserStoryDetail (
+        UserStoryDetail(
             currentUsername = currentUsername,
             currentStoryIndex = 0,
             userStory = userStories()[0],
             modifier = Modifier,
             isStoryActive = true,
             isPaused = false,
-            isStopped = false,
             onProgressComplete = {
                 onDismiss()
             }
@@ -71,7 +70,6 @@ private fun StoryScreenPreview() {
                     username = "lnm",
                     stories = listOf(
                         Story(
-                            timestamp = 1719840723950L
                         ),
                         Story()
                     )

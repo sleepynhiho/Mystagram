@@ -4,8 +4,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.forrestgump.ig.utils.models.Story
-import com.forrestgump.ig.utils.models.UserStory
+import com.forrestgump.ig.ui.screens.story.components.AddStoryCard
+import com.forrestgump.ig.data.models.Story
+import com.forrestgump.ig.data.models.UserStory
 
 @Composable
 fun StoryList(

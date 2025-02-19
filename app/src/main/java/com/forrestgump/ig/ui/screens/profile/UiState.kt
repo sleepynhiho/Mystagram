@@ -1,6 +1,6 @@
 package com.forrestgump.ig.ui.screens.profile
 
-import com.forrestgump.ig.utils.models.Post
+import com.forrestgump.ig.data.models.Post
 
 data class UiState(
     var profileImage: String = "",

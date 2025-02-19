@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "12307520939",
+    "project_id": "mystagram-875f7",
+    "storage_bucket": "mystagram-875f7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:12307520939:android:6139b94f7d9edd9e0046ee",
+        "android_client_info": {
+          "package_name": "com.forrestgump.ig"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjOQh6HmfsRHzZY5PAWTbX2EnWnS0ZMJg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
