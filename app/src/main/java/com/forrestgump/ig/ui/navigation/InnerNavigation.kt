@@ -22,12 +22,15 @@ import com.forrestgump.ig.ui.screens.profile.MyProfileScreen
 import com.forrestgump.ig.ui.screens.profile.ProfileViewModel
 import com.forrestgump.ig.ui.screens.add.AddContentScreen
 import com.forrestgump.ig.ui.screens.add.AddContentViewModel
-import com.forrestgump.ig.ui.screens.chat.MessageDetailScreen
-import com.forrestgump.ig.ui.screens.chat.MessagesScreen
+import com.forrestgump.ig.ui.screens.chat.ChatBoxScreen
+import com.forrestgump.ig.ui.screens.chat.ChatScreen
 import com.forrestgump.ig.ui.screens.notification.NotificationScreen
 import com.forrestgump.ig.ui.screens.search.SearchScreen
 import com.forrestgump.ig.data.models.Chat
 import com.forrestgump.ig.data.models.Message
+import com.forrestgump.ig.data.models.Notification
+import com.forrestgump.ig.data.models.NotificationType
+import java.util.Date
 
 
 @UnstableApi
@@ -88,6 +91,63 @@ fun InnerNavigation(
             )
         }
 
+        val dummyNotifications = listOf(
+            Notification(
+                notificationId = "1",
+                receiverId = "user_123",
+                senderId = "user_456",
+                senderUsername = "jane_doe",
+                senderProfileImage = "https://randomuser.me/api/portraits/women/1.jpg",
+                postId = "post_789",
+                isRead = false,
+                type = NotificationType.LIKE,
+                timestamp = Date()
+            ),
+            Notification(
+                notificationId = "2",
+                receiverId = "user_123",
+                senderId = "user_789",
+                senderUsername = "john_smith",
+                senderProfileImage = "https://randomuser.me/api/portraits/men/2.jpg",
+                postId = "post_321",
+                isRead = true,
+                type = NotificationType.COMMENT,
+                timestamp = Date()
+            ),
+            Notification(
+                notificationId = "3",
+                receiverId = "user_123",
+                senderId = "user_101",
+                senderUsername = "alice_wonder",
+                senderProfileImage = "https://randomuser.me/api/portraits/women/3.jpg",
+                isRead = false,
+                type = NotificationType.FOLLOW,
+                timestamp = Date()
+            ),
+            Notification(
+                notificationId = "4",
+                receiverId = "user_123",
+                senderId = "user_202",
+                senderUsername = "bob_marley",
+                senderProfileImage = "https://randomuser.me/api/portraits/men/4.jpg",
+                isRead = false,
+                type = NotificationType.FOLLOW_REQUEST,
+                timestamp = Date()
+            ),
+            Notification(
+                notificationId = "5",
+                receiverId = "user_123",
+                senderId = "user_303",
+                senderUsername = "charlie_brownyloveyu",
+                senderProfileImage = "https://randomuser.me/api/portraits/men/5.jpg",
+                isRead = true,
+                type = NotificationType.FOLLOW_ACCEPTED,
+                timestamp = Date()
+            )
+        )
+
+
+
         composable(
             route = Routes.NotificationScreen.route,
             enterTransition = {
@@ -97,10 +157,10 @@ fun InnerNavigation(
                 fadeOut(animationSpec = tween(350))
             }
         ) {
-            val uiState by viewModelProfile.uiState.collectAsState()
 
             NotificationScreen(
-                uiState = uiState,
+                notifications = dummyNotifications,
+                navHostController = navHostController
             )
         }
 
@@ -299,7 +359,7 @@ fun InnerNavigation(
                 )
             }
         ) {
-            MessagesScreen(
+            ChatScreen(
                 myUsername = "sleepy",
                 chats = dummyChats,
                 navHostController = navHostController
@@ -308,7 +368,7 @@ fun InnerNavigation(
 
 
         composable(
-            route = "${Routes.MessageDetailScreen.route}/{chatId}",
+            route = "${Routes.ChatBoxScreen.route}/{chatId}",
             arguments = listOf(navArgument("chatId") { type = NavType.StringType }),
             enterTransition = {
                 slideInHorizontally(
@@ -327,7 +387,7 @@ fun InnerNavigation(
 
             val chat = dummyChats.find { it.chatId == chatId } ?: return@composable
 
-            MessageDetailScreen(
+            ChatBoxScreen(
                 myUsername = "sleepy",
                 chat = chat,
                 messages = dummyMessages,

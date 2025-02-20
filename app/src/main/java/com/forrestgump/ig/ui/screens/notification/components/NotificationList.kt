@@ -1,14 +1,11 @@
-package com.forrestgump.ig.ui.screens.chat.components
+package com.forrestgump.ig.ui.screens.notification.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,12 +21,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,14 +38,15 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.forrestgump.ig.R
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
-import com.forrestgump.ig.data.models.Chat
+import com.forrestgump.ig.data.models.Notification
+import com.forrestgump.ig.data.models.NotificationType
+import com.forrestgump.ig.utils.constants.formatAsElapsedTime
 
 @Composable
-fun MessagesList(
-    chats: List<Chat>,
+fun NotificationList(
+    notifications: List<Notification>,
     innerPadding: PaddingValues,
-    navHostController: NavHostController,
-    myUsername: String
+    navHostController: NavHostController
 ) {
     LazyColumn(
         contentPadding = innerPadding,
@@ -53,16 +54,19 @@ fun MessagesList(
             .fillMaxSize()
             .background(color = MainBackground),
         content = {
-            item { MessagesHeader() }
-            items(chats) { chat ->
-                MessagesListItem(chat = chat, navHostController = navHostController, myUsername)
+            item { NotificationHeader() }
+            items(notifications) { notification ->
+                NotificationListItem(
+                    notification = notification,
+                    navHostController = navHostController
+                )
             }
         }
     )
 }
 
 @Composable
-fun MessagesHeader() {
+fun NotificationHeader() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -74,7 +78,7 @@ fun MessagesHeader() {
         Text(
             modifier = Modifier
                 .padding(horizontal = 10.dp),
-            text = stringResource(R.string.messages_header),
+            text = stringResource(R.string.notification_header),
             style = TextStyle(
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
@@ -85,19 +89,51 @@ fun MessagesHeader() {
 }
 
 @Composable
-fun MessagesListItem(
-    chat: Chat,
-    navHostController: NavHostController,
-    myUsername: String
-) {
+fun getNotificationMessage(notification: Notification): AnnotatedString {
+    return buildAnnotatedString {
+        withStyle(
+            style = SpanStyle(
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        ) {
+            append(notification.senderUsername)
+        }
+        append(
+            when (notification.type) {
+                NotificationType.LIKE -> " liked your post. "
+                NotificationType.COMMENT -> " mentioned you in a comment. "
+                NotificationType.FOLLOW -> " started following you. "
+                NotificationType.FOLLOW_REQUEST -> " requested to follow you. "
+                NotificationType.FOLLOW_ACCEPTED -> " accepted your follow request. "
+            }
+        )
 
+       withStyle(
+           style = SpanStyle(
+               fontSize = 14.sp,
+               fontWeight = FontWeight.Normal,
+               color = Color(0xFF737373)
+           )
+       ) {
+           notification.timestamp?.let { append(it.formatAsElapsedTime()) }
+       }
+    }
+}
+
+@Composable
+fun NotificationListItem(
+    notification: Notification,
+    navHostController: NavHostController,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(color = MainBackground)
             .height(72.dp)
             .clickable {
-                navHostController.navigate("message_detail/${chat.chatId}")
+//                navHostController.navigate("message_detail/${chat.chatId}")
             },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
@@ -110,7 +146,7 @@ fun MessagesListItem(
         ) {
             AsyncImage(
                 modifier = Modifier.fillMaxSize(),
-                model = if (myUsername == chat.user1Username) chat.user2ProfileImage else chat.user1ProfileImage,
+                model = notification.senderProfileImage,
                 contentScale = ContentScale.Crop,
                 contentDescription = stringResource(id = R.string.profile_image)
             )
@@ -118,76 +154,31 @@ fun MessagesListItem(
 
         Spacer(modifier = Modifier.width(10.dp))
 
-        Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .weight(1f),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.Start
-        ) {
-            Text(
-                text = if (myUsername == chat.user1Username) chat.user2Username else chat.user1Username,
-                style = TextStyle(
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = chat.lastMessage,
-                style = TextStyle(
-                    fontSize = 14.sp,
-                    fontWeight = if (chat.lastMessageRead) FontWeight.Normal else FontWeight.Bold,
-                    color = if (chat.lastMessageRead) Color(0xFF737373) else MaterialTheme.colorScheme.onBackground
-                )
-            )
-        }
-
-        if (!chat.lastMessageRead) {
-            Box(
-                modifier = Modifier
-                    .size(10.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFF0095F6))
-            )
-        }
-        Spacer(modifier = Modifier.width(20.dp))
-
+        Text(
+            text = getNotificationMessage(notification),
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onBackground
+        )
     }
 }
 
-
 @Preview
 @Composable
-fun MessagesListPreview() {
-    MessagesList(
-        chats = listOf(
-            Chat(
-                chatId = "chat_1",
-                user1Username = "sleepy",
-                user2Username = "john_doe",
-                user1ProfileImage = R.drawable.default_profile_img.toString(),
-                user2ProfileImage = R.drawable.default_profile_img.toString(),
-                lastMessage = "Good morning!",
-                lastMessageTime = 234234L,
-                lastMessageRead = false
+fun NotificationListPreview() {
+    NotificationList(
+        notifications = listOf(
+            Notification(
+                senderUsername = "jane_doe",
+                senderProfileImage = R.drawable.default_profile_img.toString(),
+                type = NotificationType.LIKE
             ),
-            Chat(
-                chatId = "chat_2",
-                user1Username = "john_doe",
-                user2Username = "sleepy",
-                user1ProfileImage = R.drawable.default_profile_img.toString(),
-                user2ProfileImage = R.drawable.default_profile_img.toString(),
-                lastMessage = "Hey, what's up?",
-                lastMessageTime = 234235L,
-                lastMessageRead = true
+            Notification(
+                senderUsername = "john_doe",
+                senderProfileImage = R.drawable.default_profile_img.toString(),
+                type = NotificationType.FOLLOW
             )
         ),
         innerPadding = PaddingValues(0.dp),
-        navHostController = rememberNavController(),
-        myUsername = "sleepy"  // Thêm myUsername để xác định ảnh đối phương
+        navHostController = rememberNavController()
     )
 }

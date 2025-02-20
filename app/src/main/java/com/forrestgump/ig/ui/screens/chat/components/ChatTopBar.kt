@@ -30,7 +30,7 @@ import com.forrestgump.ig.R
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 
 @Composable
-fun MessagesTopBar(
+fun ChatTopBar(
     myUsername: String,
     navHostController: NavHostController
 ) {
@@ -42,7 +42,7 @@ fun MessagesTopBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Spacer(modifier = Modifier.width(15.dp))
+        Spacer(modifier = Modifier.width(10.dp))
 
         Row(
             modifier = Modifier
@@ -89,8 +89,8 @@ fun MessagesTopBar(
 
 @Preview
 @Composable
-fun MessagesTopBarPreview() {
-    MessagesTopBar(
+fun ChatTopBarPreview() {
+    ChatTopBar(
         myUsername = "sleepy",
         navHostController = rememberNavController()
     )
