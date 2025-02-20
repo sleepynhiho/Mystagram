@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.forrestgump.ig" />
+                  <option name="mobileSdkAppId" value="1:12307520939:android:6139b94f7d9edd9e0046ee" />
+                  <option name="projectId" value="mystagram-875f7" />
+                  <option name="projectNumber" value="12307520939" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
