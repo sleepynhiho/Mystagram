@@ -36,9 +36,9 @@ fun SplashScreen() {
                 contentAlignment = Alignment.BottomCenter
             ) {
                 Image(
-                    modifier = Modifier.scale(1.4f),
-                    painter = painterResource(id = R.drawable.ig_logo),
-                    contentDescription = "Instagram Logo"
+                    modifier = Modifier.scale(0.6f),
+                    painter = painterResource(id = R.drawable.my_logo),
+                    contentDescription = "Mystagram Logo"
                 )
             }
 
