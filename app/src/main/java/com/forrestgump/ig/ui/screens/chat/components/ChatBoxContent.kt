@@ -33,7 +33,7 @@ import com.forrestgump.ig.data.models.Chat
 import com.forrestgump.ig.data.models.Message
 
 @Composable
-fun MessageDetailContent(
+fun ChatBoxContent(
     myUsername: String,
     chat: Chat,
     messages: List<Message>,
@@ -98,7 +98,7 @@ fun MessageDetailContent(
 
 @Preview
 @Composable
-fun MessageDetailContentPreview() {
+fun ChatBoxContentPreview() {
     val chat = Chat(
         chatId = "123",
         user1Username = "sleepy",
@@ -134,7 +134,7 @@ fun MessageDetailContentPreview() {
         )
     )
 
-    MessageDetailContent(
+    ChatBoxContent(
         myUsername = "sleepy",
         chat = chat,
         messages = messages,

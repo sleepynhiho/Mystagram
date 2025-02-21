@@ -13,16 +13,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.forrestgump.ig.R
-import com.forrestgump.ig.ui.screens.chat.components.MessageDetailContent
-import com.forrestgump.ig.ui.screens.chat.components.MessageDetailInputBar
-import com.forrestgump.ig.ui.screens.chat.components.MessageDetailTopBar
+import com.forrestgump.ig.ui.screens.chat.components.ChatBoxContent
+import com.forrestgump.ig.ui.screens.chat.components.ChatBoxInputBar
+import com.forrestgump.ig.ui.screens.chat.components.ChatBoxTopBar
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.forrestgump.ig.data.models.Chat
 import com.forrestgump.ig.data.models.Message
 import java.util.UUID
 
 @Composable
-fun MessageDetailScreen(
+fun ChatBoxScreen(
     myUsername: String,
     chat: Chat,
     messages: List<Message>,
@@ -39,14 +39,14 @@ fun MessageDetailScreen(
             .fillMaxSize()
             .background(MainBackground),
         topBar = {
-            MessageDetailTopBar(
+            ChatBoxTopBar(
                 navHostController = navHostController,
                 chat = updatedChat,
                 myUsername = myUsername
             )
         },
         bottomBar = {
-            MessageDetailInputBar(
+            ChatBoxInputBar(
                 onSendMessage = { messageContent ->
                     val newMessage = Message(
                         messageID = UUID.randomUUID().toString(),
@@ -67,7 +67,7 @@ fun MessageDetailScreen(
             )
         }
     ) { innerPadding ->
-        MessageDetailContent(
+        ChatBoxContent(
             myUsername, updatedChat, messages,
             innerPadding = innerPadding
         )
@@ -76,8 +76,8 @@ fun MessageDetailScreen(
 
 @Preview
 @Composable
-fun MessageDetailScreenPreview() {
-    MessageDetailScreen(
+fun ChatBoxScreenPreview() {
+    ChatBoxScreen(
         myUsername = "sleepy",
         chat = Chat(
             chatId = "chat_123",

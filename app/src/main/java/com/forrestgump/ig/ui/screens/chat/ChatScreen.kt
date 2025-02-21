@@ -9,12 +9,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
-import com.forrestgump.ig.ui.screens.chat.components.MessagesTopBar
-import com.forrestgump.ig.ui.screens.chat.components.MessagesList
+import com.forrestgump.ig.ui.screens.chat.components.ChatTopBar
+import com.forrestgump.ig.ui.screens.chat.components.ChatList
 import com.forrestgump.ig.data.models.Chat
 
 @Composable
-fun MessagesScreen(
+fun ChatScreen(
     myUsername: String,
     chats: List<Chat>,
     navHostController: NavHostController
@@ -24,10 +24,10 @@ fun MessagesScreen(
             .fillMaxSize()
             .background(MainBackground),
         topBar = {
-            MessagesTopBar(myUsername, navHostController)
+            ChatTopBar(myUsername, navHostController)
         }
     ) { innerPadding ->
-        MessagesList(
+        ChatList(
             chats = chats,
             innerPadding = innerPadding,
             navHostController = navHostController,
@@ -38,8 +38,8 @@ fun MessagesScreen(
 
 @Preview
 @Composable
-fun MessagesScreenPreview() {
-    MessagesScreen(
+fun ChatScreenPreview() {
+    ChatScreen(
         myUsername = "sleepy",
         chats = listOf(
             Chat(

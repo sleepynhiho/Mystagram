@@ -7,7 +7,7 @@ import coil.decode.VideoFrameDecoder
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class InstagramApplication : Application(), ImageLoaderFactory {
+class MystagramApplication : Application(), ImageLoaderFactory {
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(this)
             .components {
