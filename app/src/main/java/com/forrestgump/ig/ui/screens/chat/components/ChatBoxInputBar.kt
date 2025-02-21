@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.sp
 import com.forrestgump.ig.R
 
 @Composable
-fun MessageDetailInputBar(
+fun ChatBoxInputBar(
     onSendMessage: (String) -> Unit,
     onUploadImage: () -> Unit
 ) {
@@ -115,8 +115,8 @@ fun MessageDetailInputBar(
 
 @Preview
 @Composable
-fun MessageDetailInputBarPreview() {
-    MessageDetailInputBar(
+fun ChatBoxInputBarPreview() {
+    ChatBoxInputBar(
         onSendMessage = {},
         onUploadImage = {}
     )

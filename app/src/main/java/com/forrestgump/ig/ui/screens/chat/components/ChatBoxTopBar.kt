@@ -34,10 +34,9 @@ import coil.compose.AsyncImage
 import com.forrestgump.ig.R
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.forrestgump.ig.data.models.Chat
-import com.forrestgump.ig.data.models.Message
 
 @Composable
-fun MessageDetailTopBar(
+fun ChatBoxTopBar(
     navHostController: NavHostController,
     chat: Chat,
     myUsername: String
@@ -55,7 +54,7 @@ fun MessageDetailTopBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Spacer(modifier = Modifier.width(15.dp))
+        Spacer(modifier = Modifier.width(10.dp))
 
         Row(
             modifier = Modifier
@@ -106,8 +105,8 @@ fun MessageDetailTopBar(
 
 @Preview
 @Composable
-fun MessageDetailTopBarPreview() {
-    MessageDetailTopBar(
+fun ChatBoxTopBarPreview() {
+    ChatBoxTopBar(
         navHostController = rememberNavController(),
         chat = Chat(
             chatId = "chat_123",

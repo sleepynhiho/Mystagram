@@ -17,4 +17,5 @@
     <string name="close_story">Close story</string>
     <string name="upload_image">Upload image in message</string>
     <string name="send_message">Send message</string>
+    <string name="notification_header">Recent</string>
 </resources>
