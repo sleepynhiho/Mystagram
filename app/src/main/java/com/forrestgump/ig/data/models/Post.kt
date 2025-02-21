@@ -13,7 +13,7 @@ data class Post(
     var userId: String = "",               // ID người đăng
     var username: String = "",             // Username của người đăng
     var profileImageUrl: String = "",      // Ảnh đại diện của người đăng
-    var mediaUrl: String = "",             // Link ảnh/video trên Cloudinary
+    var mediaUrls: List<String> = emptyList(),             // Link ảnh/video trên Cloudinary
     var caption: String = "",              // Caption bài viết
     var likes: List<String> = emptyList(), // Danh sách user đã like
     var commentsCount: Int = 0,            // Số lượng bình luận
