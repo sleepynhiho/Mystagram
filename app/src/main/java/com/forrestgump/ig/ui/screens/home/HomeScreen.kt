@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -30,6 +31,7 @@ import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.data.models.Story
 import com.forrestgump.ig.data.models.UserStory
+import com.forrestgump.ig.ui.components.PostItem
 import java.util.Date
 
 @UnstableApi
@@ -67,6 +69,7 @@ fun HomeScreen(
     } else {
         uiState
     }
+
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -106,6 +109,28 @@ fun HomeScreen(
                         modifier = Modifier.padding(top = 8.dp),
                         thickness = 0.5.dp,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)
+                    )
+
+                    PostItem(
+                        post = Post(
+                            postId = "1",
+                            userId = "user_123",
+                            username = "tinh_ngu_chua",
+                            profileImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUyAfXfniYfSTZ7Z2HjW2COSyC8WTH3TgkGw&s",
+                            mediaUrls = listOf(
+                                "https://media.istockphoto.com/id/610041376/photo/beautiful-sunrise-over-the-sea.jpg?s=612x612&w=0&k=20&c=R3Tcc6HKc1ixPrBc7qXvXFCicm8jLMMlT99MfmchLNA=",
+                                "https://wallpapers.com/images/hd/beautiful-nature-pictures-2c29nke7owomq7la.jpg",
+                                "https://thumbs.dreamstime.com/b/beautiful-rain-forest-ang-ka-nature-trail-doi-inthanon-national-park-thailand-36703721.jpg"
+                            ),
+                            caption = "Hôm nay đi ăn kem nè!",
+                            likes = listOf("userA", "userB", "userC"),
+                            commentsCount = 5,
+                            mimeType = "image/png",
+                            timestamp = Date()
+                        ),
+                        onLikeClicked = {},
+                        onCommentClicked = {},
+                        onShareClicked = {}
                     )
                 }
             }
