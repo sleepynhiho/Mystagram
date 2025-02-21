@@ -89,4 +89,8 @@ dependencies {
     implementation(libs.okhttp) // Thư viện HTTP để gửi request
     implementation(libs.json) // Thư viện JSON để xử lý phản hồi
 
+    implementation (libs.accompanist.pager)
+    // Nếu cần chỉ số pager, bạn cũng có thể thêm:
+    implementation (libs.accompanist.pager.indicators)
+
 }
