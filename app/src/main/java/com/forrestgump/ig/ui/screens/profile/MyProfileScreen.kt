@@ -37,10 +37,13 @@ import coil.compose.AsyncImage
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavController
+import com.forrestgump.ig.ui.navigation.Routes
 
 @Composable
 fun MyProfileScreen(
     uiState: UiState,
+    navController: NavController
 ) {
     // Tạm thời set cứng để demo
     uiState.isLoading = false
@@ -55,7 +58,9 @@ fun MyProfileScreen(
                 ProfileTopBar(
                     title = "__td.tung",
                     onBackClicked = { /* TODO */ },
-                    onMoreClicked = { /* TODO */ }
+                    onMoreClicked = {
+                        navController.navigate(Routes.SettingsScreen.route)
+                    }
                 )
 
                 // Khu vực hiển thị thông tin chính: Avatar, Thống kê, Tên, Bio,...
@@ -365,5 +370,8 @@ fun PostFeed(posts: List<String>, onPostClick: (String) -> Unit) {
 @Preview(showBackground = true, backgroundColor = 0xFF000000)
 @Composable
 fun MyProfileScreenPreview() {
-    MyProfileScreen(uiState = UiState(isLoading = false))
+    MyProfileScreen(
+        uiState = UiState(isLoading = false),
+        navController = TODO()
+    )
 }

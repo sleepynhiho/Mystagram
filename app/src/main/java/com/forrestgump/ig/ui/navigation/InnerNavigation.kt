@@ -28,6 +28,7 @@ import com.forrestgump.ig.ui.screens.notification.NotificationScreen
 import com.forrestgump.ig.ui.screens.search.SearchScreen
 import com.forrestgump.ig.data.models.Chat
 import com.forrestgump.ig.data.models.Message
+import com.forrestgump.ig.ui.screens.settings.SettingsScreen
 import com.forrestgump.ig.data.models.Notification
 import com.forrestgump.ig.data.models.NotificationType
 import java.util.Date
@@ -177,6 +178,7 @@ fun InnerNavigation(
 
             MyProfileScreen(
                 uiState = uiState,
+                navController = navHostController
             )
         }
 
@@ -395,5 +397,16 @@ fun InnerNavigation(
             )
         }
 
+        composable(
+            route = Routes.SettingsScreen.route,
+            enterTransition = {
+                fadeIn(animationSpec = tween(350))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(350))
+            }
+        ) {
+            SettingsScreen(navController = navHostController)
+        }
     }
 }
