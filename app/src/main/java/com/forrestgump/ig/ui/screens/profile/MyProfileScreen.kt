@@ -183,14 +183,14 @@ fun ProfileInfoSection(
         // Tên
         Text(
             text = fullName,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
         )
 
         // Bio
         Text(
             text = bio,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.bodyMedium
         )
     }
@@ -204,13 +204,13 @@ fun ProfileStatItem(number: Int, label: String) {
     ) {
         Text(
             text = number.toString(),
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             textAlign = TextAlign.Center
         )
         Text(
             text = label,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center
         )
@@ -231,10 +231,10 @@ fun ProfileActionButtons() {
             onClick = { /* TODO */ },
             modifier = Modifier.weight(1f),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Black,    // Màu nền nút là đen
-                contentColor = Color.White       // Màu chữ là đen
+                containerColor = Color.White,    // Màu nền nút là đen
+                contentColor = Color.Black      // Màu chữ là đen
             ),
-            border = BorderStroke(1.dp, Color.White) // Viền trắng
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground) // Viền trắng
         ) {
             Text(text = "Chỉnh sửa trang cá nhân")
         }
@@ -298,7 +298,7 @@ fun ProfileTabRow() {
     ) {
         Image(
             painter = painterResource(id = R.drawable.grid),
-            colorFilter = ColorFilter.tint(Color.White),
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground),
             contentDescription = "Mô tả ảnh",
             modifier = Modifier.size(25.dp) // Tùy chỉnh kích thước hoặc các modifier khác nếu cần
         )
@@ -307,8 +307,8 @@ fun ProfileTabRow() {
         HorizontalDivider(
             modifier = Modifier
                 .fillMaxWidth(), // Hoặc bạn có thể sử dụng kích thước cố định phù hợp
-            thickness = 1.dp,
-            color = Color.White
+            thickness = 2.dp,
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }
