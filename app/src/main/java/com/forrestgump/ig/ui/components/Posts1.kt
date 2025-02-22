@@ -3,6 +3,7 @@ package com.forrestgump.ig.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -12,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -58,7 +60,7 @@ fun PostItem(
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = post.username,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
             )
             Spacer(modifier = Modifier.weight(1f))
@@ -66,7 +68,7 @@ fun PostItem(
                 Icon(
                     painter = painterResource(id = R.drawable.more2),
                     contentDescription = "More options",
-                    tint = Color.White
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
         }
@@ -78,17 +80,22 @@ fun PostItem(
         if (mediaUrls.size > 1) {
             // Sử dụng HorizontalPager để hiển thị danh sách ảnh
             val pagerState = rememberPagerState()
-            Box {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 250.dp, max = 400.dp) // Giới hạn chiều cao của Box
+            ) {
                 HorizontalPager(
                     count = mediaUrls.size,
                     state = pagerState,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 250.dp)
+                        .fillMaxHeight() // Chiếm toàn bộ chiều cao của Box đã giới hạn
                 ) { page ->
                     AsyncImage(
                         model = mediaUrls[page],
                         contentDescription = "Post Media",
+                        contentScale = ContentScale.Crop, // Cắt xén hoặc scale ảnh cho vừa khung
                         modifier = Modifier
                             .fillMaxSize()
                             .background(Color.LightGray)
@@ -100,6 +107,10 @@ fun PostItem(
                     color = Color.White,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
+                        .background(
+                            color = Color.Gray,
+                            shape = RoundedCornerShape(8.dp)
+                        )
                         .padding(8.dp)
                 )
             }
@@ -126,14 +137,14 @@ fun PostItem(
                 Icon(
                     painter = painterResource(id = R.drawable.heart_outlined),
                     contentDescription = "Like",
-                    tint = Color.White
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
             IconButton(onClick = onCommentClicked) {
                 Icon(
                     painter = painterResource(id = R.drawable.comment),
                     contentDescription = "Comment",
-                    tint = Color.White
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
             // Bạn có thể mở rộng thêm nút share, bookmark nếu cần
@@ -143,7 +154,7 @@ fun PostItem(
         Text(
             text = "${post.likes.size} lượt thích",
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(horizontal = 8.dp)
         )
 
@@ -157,7 +168,7 @@ fun PostItem(
                 append(post.caption)
             },
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
         )
 
