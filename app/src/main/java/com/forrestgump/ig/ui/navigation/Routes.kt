@@ -15,6 +15,7 @@ sealed class Routes(
     data object AddContentScreen: Routes(iconOutlined = R.drawable.add_outlined, name = "UploadContent", route = "AddContentScreen")
     data object NotificationScreen: Routes(iconOutlined = R.drawable.heart_outlined, iconFilled = R.drawable.heart_filled, name = "Notification", route = "NotificationScreen")
     data object MyProfileScreen: Routes(name = "MyProfile", route = "MyProfileScreen")
+    data object SettingsScreen: Routes(name = "Settings", route = "SettingsScreen")
     data object MessagesScreen: Routes(name = "Messages", route = "MessagesScreen")
     data object ChatBoxScreen: Routes(name = "ChatBox", route = "message_detail")
 
