@@ -63,7 +63,6 @@ dependencies {
     implementation(libs.androidx.palette.ktx)
     implementation(libs.androidx.storage)
     implementation(libs.firebase.firestore.ktx)
-    implementation(libs.annotations)
     implementation(libs.androidx.foundation.layout.android)
     implementation(libs.androidx.foundation.layout.android)
     implementation(libs.androidx.foundation.layout.android)
@@ -96,7 +95,6 @@ dependencies {
 
     implementation(libs.okhttp) // Thư viện HTTP để gửi request
     implementation(libs.json) // Thư viện JSON để xử lý phản hồi
-    implementation("androidx.compose.material:material-icons-extended:1.7.8") // Thư viện để dùng thêm các icon khác
 
     implementation (libs.accompanist.pager)
     // Nếu cần chỉ số pager, bạn cũng có thể thêm:
