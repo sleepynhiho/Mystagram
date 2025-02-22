@@ -97,7 +97,6 @@ dependencies {
     implementation(libs.json) // Thư viện JSON để xử lý phản hồi
 
     implementation (libs.accompanist.pager)
-    // Nếu cần chỉ số pager, bạn cũng có thể thêm:
     implementation (libs.accompanist.pager.indicators)
-
+    implementation(libs.androidx.material.icons.extended)
 }
