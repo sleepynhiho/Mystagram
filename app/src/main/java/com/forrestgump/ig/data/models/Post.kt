@@ -15,7 +15,7 @@ data class Post(
     var profileImageUrl: String = "",      // Ảnh đại diện của người đăng
     var mediaUrls: List<String> = emptyList(),             // Link ảnh/video trên Cloudinary
     var caption: String = "",              // Caption bài viết
-    var likes: List<String> = emptyList(), // Danh sách user đã like
+    var reactions: Map<String, Int> = emptyMap(), // Số lượng từng loại react
     var commentsCount: Int = 0,            // Số lượng bình luận
     var mimeType: String = "",             // Kiểu file (image/video)
 
