@@ -5,11 +5,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -123,14 +121,12 @@ fun HomeScreen(
                                 "https://thumbs.dreamstime.com/b/beautiful-rain-forest-ang-ka-nature-trail-doi-inthanon-national-park-thailand-36703721.jpg"
                             ),
                             caption = "Hôm nay đi ăn kem nè!",
-                            likes = listOf("userA", "userB", "userC"),
                             commentsCount = 5,
                             mimeType = "image/png",
                             timestamp = Date()
                         ),
                         onLikeClicked = {},
                         onCommentClicked = {},
-                        onShareClicked = {}
                     )
                 }
             }

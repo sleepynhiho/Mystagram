@@ -99,4 +99,5 @@ dependencies {
     implementation (libs.accompanist.pager)
     implementation (libs.accompanist.pager.indicators)
     implementation(libs.androidx.material.icons.extended)
+    implementation (libs.android.lottie.compose)
 }
