@@ -18,11 +18,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import com.forrestgump.ig.R
 
 @Composable
-fun AddStoryTopBar(onBackClicked: () -> Unit) {
+fun AddStoryTopBar(
+    onBackClicked: () -> Unit,
+    onAddTextClicked: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -51,7 +53,7 @@ fun AddStoryTopBar(onBackClicked: () -> Unit) {
         Spacer(modifier = Modifier.weight(1f))
 
         IconButton(
-            onClick = {},
+            onClick = { onAddTextClicked() },
             modifier = Modifier
                 .size(40.dp),
         ) {
@@ -71,6 +73,7 @@ fun AddStoryTopBar(onBackClicked: () -> Unit) {
 @Composable
 fun AddStoryTopBarPreview() {
     AddStoryTopBar(
-        onBackClicked = {}
+        onBackClicked = {},
+        onAddTextClicked = {}
     )
 }
