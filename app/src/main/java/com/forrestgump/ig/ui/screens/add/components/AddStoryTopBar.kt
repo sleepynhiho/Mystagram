@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.forrestgump.ig.R
 
 @Composable
@@ -35,6 +36,7 @@ fun AddStoryTopBar(onBackClicked: () -> Unit) {
             onClick = { onBackClicked() },
             modifier = Modifier
                 .size(40.dp)
+
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.back_story),
@@ -50,7 +52,8 @@ fun AddStoryTopBar(onBackClicked: () -> Unit) {
 
         IconButton(
             onClick = {},
-            modifier = Modifier.size(40.dp),
+            modifier = Modifier
+                .size(40.dp),
         ) {
             Icon(
                 painter = painterResource(R.drawable.text),

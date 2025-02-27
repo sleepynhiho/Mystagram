@@ -4,7 +4,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -184,22 +186,22 @@ fun InnerNavigation(
 
 
         composable(
-            route = "${Routes.AddContentScreen.route}/{text}",
+            route = "${Routes.AddContentScreen.route}/{story}",
             arguments = listOf(
-                navArgument("text") {
+                navArgument("story") {
                     type = NavType.StringType
                 }
             ),
             enterTransition = {
-                slideInHorizontally(
-                    animationSpec = tween(),
-                    initialOffsetX = { -it }
+                slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(durationMillis = 350)
                 )
             },
             exitTransition = {
-                slideOutHorizontally(
-                    animationSpec = tween(),
-                    targetOffsetX = { -it }
+                slideOutVertically(
+                    targetOffsetY = { -it },
+                    animationSpec = tween(durationMillis = 350)
                 )
             }
         ) {
