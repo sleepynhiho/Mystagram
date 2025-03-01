@@ -3,6 +3,7 @@ package com.forrestgump.ig.ui.navigation
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -16,7 +17,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.forrestgump.ig.ui.screens.splash.SplashScreen
 import com.forrestgump.ig.ui.screens.auth.AuthViewModel
+import com.forrestgump.ig.ui.screens.auth.LoginScreen
+import com.forrestgump.ig.ui.screens.auth.SignupScreen
 import kotlinx.coroutines.delay
+import com.google.firebase.auth.FirebaseAuth
 
 @UnstableApi
 @Composable
@@ -32,25 +36,27 @@ fun MainNavigation(viewModel: AuthViewModel = hiltViewModel()) {
         composable(
             route = Routes.SplashScreen.route,
             enterTransition = {
-                fadeIn(
-                    animationSpec = tween(350)
-                )
+                fadeIn(animationSpec = tween(350))
             },
             exitTransition = {
-                fadeOut(
-                    animationSpec = tween(350)
-                )
+                fadeOut(animationSpec = tween(350))
             }
         ) {
-
             LaunchedEffect(key1 = Unit) {
-                startDestination = Routes.InnerContainer.route
                 delay(1000L)
+                // Kiểm tra trạng thái đăng nhập
+                val currentUser = FirebaseAuth.getInstance().currentUser
+                startDestination = if (currentUser != null) {
+                    Routes.InnerContainer.route
+                } else {
+                    Routes.LoginScreen.route
+                }
                 navController.popBackStack()
-                navController.navigate(Routes.InnerContainer.route)
+                navController.navigate(startDestination)
             }
             SplashScreen()
         }
+
         composable(
             route = Routes.InnerContainer.route,
             enterTransition = {
@@ -69,6 +75,36 @@ fun MainNavigation(viewModel: AuthViewModel = hiltViewModel()) {
             }
 
             InnerContainer()
+        }
+
+        composable(
+            route = Routes.LoginScreen.route,
+            enterTransition = {
+                fadeIn(animationSpec = tween(350))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(350))
+            }
+        ) {
+            LoginScreen(
+                navController = navController,
+                authViewModel = hiltViewModel(),
+            )
+        }
+
+        composable(
+            route = Routes.SignupScreen.route,
+            enterTransition = {
+                fadeIn(animationSpec = tween(350))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(350))
+            }
+        ) {
+            SignupScreen(
+                navController = navController,
+                authViewModel = hiltViewModel(),
+            )
         }
     }
 }
