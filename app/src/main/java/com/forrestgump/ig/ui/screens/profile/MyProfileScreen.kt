@@ -39,6 +39,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.ui.platform.LocalContext
 import com.forrestgump.ig.ui.navigation.Routes
 import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseAuth
 
 
 @Composable
@@ -48,6 +49,11 @@ fun MyProfileScreen(
 ) {
     // Tạm thời set cứng để demo
     uiState.isLoading = false
+    var user = FirebaseAuth.getInstance().currentUser
+    if (user == null) return
+    var name = user.displayName
+    var email = user.email
+    var photoUrl = user.photoUrl
 
     if (!uiState.isLoading) {
         Surface(
@@ -66,7 +72,7 @@ fun MyProfileScreen(
 
                 // Khu vực hiển thị thông tin chính: Avatar, Thống kê, Tên, Bio,...
                 ProfileInfoSection(
-                    fullName = "Trần Đức Tùng",
+                    fullName = email.toString(),
                     bio = "Trò chơi quyền lực là sách hay, được viết bởi Ngô Di Lân, nhập môn tìm hiểu thế giới quan về địa chính trị",
                     posts = 0,
                     followers = 47,
