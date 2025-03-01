@@ -14,21 +14,27 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
+import com.forrestgump.ig.ui.navigation.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignupScreen() {
+fun SignupScreen(
+    navController: NavController,
+    authViewModel: AuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+) {
+    var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var message by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { },
                 navigationIcon = {
-                    IconButton(onClick = { /* Xử lý quay lại */ }) {
+                    IconButton(onClick = { navController.navigate(Routes.LoginScreen.route) }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back"
@@ -64,11 +70,29 @@ fun SignupScreen() {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Enter your email and password to create an account.",
+                    text = "Enter your username, email and password to create an account.",
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
             }
+
+            // Username input field
+            OutlinedTextField(
+                value = username,
+                onValueChange = { username = it },
+                label = { Text("Username") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = Color.LightGray,
+                    focusedBorderColor = Color.LightGray,
+                    unfocusedContainerColor = Color(0xFFF5F5F5),
+                    focusedContainerColor = Color(0xFFF5F5F5)
+                ),
+                singleLine = true
+            )
 
             // Email input field
             OutlinedTextField(
@@ -128,7 +152,16 @@ fun SignupScreen() {
 
             // Signup button
             Button(
-                onClick = { /* Xử lý đăng ký */ },
+                onClick = {
+                    if (password == confirmPassword) {
+                        authViewModel.signup(email, password, username) { success, errorMsg ->
+                            message = if (success) "Successful registration" else "Error: $errorMsg"
+                        }
+                    } else {
+                        message = "Password does not match"
+                    }
+                },
+                enabled = username.isNotBlank() && email.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp)
@@ -142,16 +175,20 @@ fun SignupScreen() {
                     text = "Register",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color.White
+                    color = Color.White,
                 )
             }
-
-            // Spacer đẩy liên kết "Tôi đã có tài khoản" xuống dưới
+            Spacer(modifier = Modifier.height(16.dp))
+            // Hiển thị thông báo lỗi/thành công
+            if (message.isNotEmpty()) {
+                Text(text = message, color = Color.Red, fontSize = 14.sp)
+            }
+            // Spacer đẩy liên kết "I already have an account" xuống dưới
             Spacer(modifier = Modifier.weight(1f))
 
             // Already have account link
             TextButton(
-                onClick = { /* Chuyển sang màn hình đăng nhập */ },
+                onClick = { navController.navigate(Routes.LoginScreen.route) },
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
                 Text(
