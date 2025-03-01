@@ -1,9 +1,11 @@
 buildscript {
     dependencies {
         classpath(libs.hilt.android.gradle.plugin)
+        classpath(libs.google.services)
     }
     repositories {
         mavenCentral()
+        google()
     }
 }
 
@@ -14,5 +16,5 @@ plugins {
     alias(libs.plugins.kotlin.ksp) apply false
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.compose.compiler) apply false
-    id("com.google.gms.google-services") version "4.3.15" apply false
+    id("com.google.gms.google-services") version "4.4.2" apply false
 }

@@ -12,7 +12,20 @@
           "package_name": "com.forrestgump.ig"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "12307520939-d1rl0en56kb3nakalpo5e0c1kpqebp73.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.forrestgump.ig",
+            "certificate_hash": "0a22665990c8257f47c45e44c4e3dc52bc6bc413"
+          }
+        },
+        {
+          "client_id": "12307520939-1kqdr4j2ppba6dmnno33a6k4sbb0hp49.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAjOQh6HmfsRHzZY5PAWTbX2EnWnS0ZMJg"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "12307520939-1kqdr4j2ppba6dmnno33a6k4sbb0hp49.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
