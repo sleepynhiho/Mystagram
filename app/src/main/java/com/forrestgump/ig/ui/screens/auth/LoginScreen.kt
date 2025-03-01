@@ -36,12 +36,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.forrestgump.ig.R
+import com.forrestgump.ig.ui.navigation.Routes
 
 @Composable
-fun LoginScreen() {
-    var username by remember { mutableStateOf("") }
+fun LoginScreen(
+    navController: NavController,
+    authViewModel: AuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+) {
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var message by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -75,7 +81,7 @@ fun LoginScreen() {
         }
 
         // Instagram logo
-        Spacer(modifier = Modifier.height(64.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         Image(
             painter = painterResource(id = R.drawable.my_logo),
             contentDescription = "Meta logo",
@@ -85,13 +91,13 @@ fun LoginScreen() {
             contentScale = ContentScale.Fit
         )
 
-        Spacer(modifier = Modifier.height(64.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         // Username field
         OutlinedTextField(
-            value = username,
-            onValueChange = { username = it },
-            placeholder = { Text("Username, email or mobile number") },
+            value = email,
+            onValueChange = { email = it },
+            placeholder = { Text("Email") },
             modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.background,
@@ -122,7 +128,18 @@ fun LoginScreen() {
 
         // Nút Log in
         Button(
-            onClick = { /* Login logic */ },
+            onClick = {
+                authViewModel.login(email, password) { success, errorMsg ->
+                    if (success) {
+                        navController.navigate(Routes.InnerContainer.route) {
+                            popUpTo(Routes.LoginScreen.route) { inclusive = true }
+                        }
+                    } else {
+                        message = "Error: $errorMsg"
+                    }
+                }
+            },
+            enabled = email.isNotBlank() && password.isNotBlank(),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
@@ -138,6 +155,12 @@ fun LoginScreen() {
                 color = Color.White
             )
         }
+        Spacer(modifier = Modifier.height(16.dp))
+        // Hiển thị thông báo lỗi/thành công
+        if (message.isNotEmpty()) {
+            Text(text = message, color = Color.Red, fontSize = 14.sp)
+        }
+
 
         // *** Thêm nút Login with Google ***
         Spacer(modifier = Modifier.height(8.dp))
@@ -198,14 +221,19 @@ fun LoginScreen() {
             text = "Forgot password?",
             fontSize = 14.sp,
             color = Color(0xFF00376B),
-            modifier = Modifier.clickable { /* Forgot password logic */ }
+            modifier = Modifier.clickable {
+//                authViewModel.forgotPassword(email) { success, errorMsg ->
+//                    message =
+//                        if (success) "Email reset password sent" else "Error: $errorMsg"
+//                }
+            }
         )
 
         Spacer(modifier = Modifier.weight(1f))
 
         // Create new account button
         OutlinedButton(
-            onClick = { /* Create account logic */ },
+            onClick = { navController.navigate(Routes.SignupScreen.route) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
