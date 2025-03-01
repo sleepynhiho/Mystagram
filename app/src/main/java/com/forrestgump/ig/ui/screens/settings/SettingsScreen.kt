@@ -51,6 +51,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.forrestgump.ig.utils.constants.Utils.MainBackground
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,11 +66,11 @@ fun SettingsScreen(navController: NavController) {
                 title = {
                     Text(
                         text = "Settings and activity",
-                        color = Color.White
+                        color = Color.Black
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Black
+                    containerColor = MainBackground
                 ),
                 navigationIcon = { // Thêm nút quay lại nếu cần
                     IconButton(onClick = { navController.popBackStack() }) {
@@ -83,7 +84,7 @@ fun SettingsScreen(navController: NavController) {
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(Color.Black)
+                .background(MainBackground)
         ) {
             // Section: How you use Instagram
             item {
@@ -211,7 +212,7 @@ fun SectionHeader(title: String) {
         fontWeight = FontWeight.SemiBold,
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.Black)
+            .background(MainBackground)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     )
 }
@@ -227,7 +228,7 @@ fun AccountsCenterRow() {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = "Accounts Center",
-                color = Color.White,
+                color = Color.Black,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp,
                 modifier = Modifier.weight(1f)
@@ -270,13 +271,13 @@ fun SettingsRow(itemData: SettingsItemData) {
         Icon(
             imageVector = itemData.icon,
             contentDescription = itemData.title,
-            tint = Color.White,
+            tint = Color.Black,
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = itemData.title,
-            color = Color.White,
+            color = Color.Black,
             fontSize = 15.sp,
             modifier = Modifier.weight(1f)
         )
@@ -313,13 +314,13 @@ fun SettingsRowWithSwitch(
         Icon(
             imageVector = icon,
             contentDescription = title,
-            tint = Color.White,
+            tint = Color.Black,
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = title,
-            color = Color.White,
+            color = Color.Black,
             fontSize = 15.sp,
             modifier = Modifier.weight(1f)
         )
