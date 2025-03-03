@@ -4,7 +4,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,8 +23,7 @@ import com.forrestgump.ig.ui.screens.home.HomeScreen
 import com.forrestgump.ig.ui.screens.home.HomeViewModel
 import com.forrestgump.ig.ui.screens.profile.MyProfileScreen
 import com.forrestgump.ig.ui.screens.profile.ProfileViewModel
-import com.forrestgump.ig.ui.screens.add.AddContentScreen
-import com.forrestgump.ig.ui.screens.add.AddContentViewModel
+import com.forrestgump.ig.ui.screens.addStory.AddStoryScreen
 import com.forrestgump.ig.ui.screens.chat.ChatBoxScreen
 import com.forrestgump.ig.ui.screens.chat.ChatScreen
 import com.forrestgump.ig.ui.screens.notification.NotificationScreen
@@ -33,6 +34,9 @@ import com.forrestgump.ig.data.models.Notification
 import com.forrestgump.ig.data.models.NotificationType
 import com.forrestgump.ig.ui.screens.auth.LoginScreen
 import com.forrestgump.ig.ui.screens.auth.SignupScreen
+import com.forrestgump.ig.ui.screens.addPost.AddPostScreen
+import com.forrestgump.ig.ui.screens.addPost.AddPostViewModel
+import com.forrestgump.ig.ui.screens.addStory.AddStoryViewModel
 import java.util.Date
 import com.forrestgump.ig.ui.screens.settings.SettingsScreen
 
@@ -43,7 +47,7 @@ fun InnerNavigation(
     contentPadding: PaddingValues,
     navHostController: NavHostController,
     viewModelHome: HomeViewModel = hiltViewModel(),
-    viewModelAdd: AddContentViewModel = hiltViewModel(),
+    viewModelAdd: AddPostViewModel = hiltViewModel(),
     viewModelProfile: ProfileViewModel,
 ) {
 
@@ -64,7 +68,7 @@ fun InnerNavigation(
                 userProfileImage = uiStateProfile.profileImage,
                 currentUsername = "",
                 onAddStoryClicked = {
-                    navHostController.navigate("${Routes.AddContentScreen.route}/story")
+                    navHostController.navigate(Routes.AddStoryScreen.route)
                 },
                 onStoryScreenClicked = viewModelHome::onStoryScreenClicked,
                 onMessagesScreenClicked = {
@@ -161,17 +165,42 @@ fun InnerNavigation(
         }
 
 
-        composable(route = "${Routes.AddContentScreen.route}/{text}",
-            arguments = listOf(navArgument("text") {
-                type = NavType.StringType
-            }),
+        composable(
+            route = Routes.AddStoryScreen.route,
             enterTransition = {
-                slideInHorizontally(animationSpec = tween(), initialOffsetX = { -it })
+                slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(durationMillis = 350)
+                )
             },
             exitTransition = {
-                slideOutHorizontally(animationSpec = tween(), targetOffsetX = { -it })
-            }) {
-            AddContentScreen(
+                slideOutVertically(
+                    targetOffsetY = { -it },
+                    animationSpec = tween(durationMillis = 350)
+                )
+            }
+        ) {
+            AddStoryScreen(
+                navHostController
+            )
+        }
+
+        composable(
+            route = Routes.AddPostScreen.route,
+            enterTransition = {
+                slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(durationMillis = 350)
+                )
+            },
+            exitTransition = {
+                slideOutVertically(
+                    targetOffsetY = { -it },
+                    animationSpec = tween(durationMillis = 350)
+                )
+            }
+        ) {
+            AddPostScreen(
                 navHostController
             )
         }
@@ -305,25 +334,45 @@ fun InnerNavigation(
 
 
 
-        composable(route = Routes.MessagesScreen.route, enterTransition = {
-            slideInHorizontally(animationSpec = tween(), initialOffsetX = { it })
-        }, exitTransition = {
-            slideOutHorizontally(animationSpec = tween(), targetOffsetX = { it })
-        }) {
+        composable(
+            route = Routes.MessagesScreen.route,
+            enterTransition = {
+                slideInHorizontally(
+                    animationSpec = tween(),
+                    initialOffsetX = { it }
+                )
+            },
+            exitTransition = {
+                slideOutHorizontally(
+                    animationSpec = tween(),
+                    targetOffsetX = { it }
+                )
+            }
+        ) {
             ChatScreen(
-                myUsername = "sleepy", chats = dummyChats, navHostController = navHostController
+                myUsername = "sleepy",
+                chats = dummyChats,
+                navHostController = navHostController
             )
         }
 
 
-        composable(route = "${Routes.ChatBoxScreen.route}/{chatId}",
+        composable(
+            route = "${Routes.ChatBoxScreen.route}/{chatId}",
             arguments = listOf(navArgument("chatId") { type = NavType.StringType }),
             enterTransition = {
-                slideInHorizontally(animationSpec = tween(), initialOffsetX = { it })
+                slideInHorizontally(
+                    animationSpec = tween(),
+                    initialOffsetX = { it }
+                )
             },
             exitTransition = {
-                slideOutHorizontally(animationSpec = tween(), targetOffsetX = { it })
-            }) { backStackEntry ->
+                slideOutHorizontally(
+                    animationSpec = tween(),
+                    targetOffsetX = { it }
+                )
+            }
+        ) { backStackEntry ->
             val chatId = backStackEntry.arguments?.getString("chatId") ?: return@composable
 
             val chat = dummyChats.find { it.chatId == chatId } ?: return@composable
