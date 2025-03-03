@@ -22,8 +22,7 @@ import com.forrestgump.ig.ui.screens.home.HomeScreen
 import com.forrestgump.ig.ui.screens.home.HomeViewModel
 import com.forrestgump.ig.ui.screens.profile.MyProfileScreen
 import com.forrestgump.ig.ui.screens.profile.ProfileViewModel
-import com.forrestgump.ig.ui.screens.add.AddContentScreen
-import com.forrestgump.ig.ui.screens.add.AddContentViewModel
+import com.forrestgump.ig.ui.screens.addStory.AddStoryScreen
 import com.forrestgump.ig.ui.screens.chat.ChatBoxScreen
 import com.forrestgump.ig.ui.screens.chat.ChatScreen
 import com.forrestgump.ig.ui.screens.notification.NotificationScreen
@@ -32,6 +31,9 @@ import com.forrestgump.ig.data.models.Chat
 import com.forrestgump.ig.data.models.Message
 import com.forrestgump.ig.data.models.Notification
 import com.forrestgump.ig.data.models.NotificationType
+import com.forrestgump.ig.ui.screens.addPost.AddPostScreen
+import com.forrestgump.ig.ui.screens.addPost.AddPostViewModel
+import com.forrestgump.ig.ui.screens.addStory.AddStoryViewModel
 import java.util.Date
 import com.forrestgump.ig.ui.screens.settings.SettingsScreen
 
@@ -42,7 +44,7 @@ fun InnerNavigation(
     contentPadding: PaddingValues,
     navHostController: NavHostController,
     viewModelHome: HomeViewModel = hiltViewModel(),
-    viewModelAdd: AddContentViewModel = hiltViewModel(),
+    viewModelAdd: AddPostViewModel = hiltViewModel(),
     viewModelProfile: ProfileViewModel,
 ) {
 
@@ -69,7 +71,7 @@ fun InnerNavigation(
                 userProfileImage = uiStateProfile.profileImage,
                 currentUsername = "",
                 onAddStoryClicked = {
-                    navHostController.navigate("${Routes.AddContentScreen.route}/story")
+                    navHostController.navigate(Routes.AddStoryScreen.route)
                 },
                 onStoryScreenClicked = viewModelHome::onStoryScreenClicked,
                 onMessagesScreenClicked = {
@@ -186,12 +188,7 @@ fun InnerNavigation(
 
 
         composable(
-            route = "${Routes.AddContentScreen.route}/{story}",
-            arguments = listOf(
-                navArgument("story") {
-                    type = NavType.StringType
-                }
-            ),
+            route = Routes.AddStoryScreen.route,
             enterTransition = {
                 slideInVertically(
                     initialOffsetY = { it },
@@ -205,7 +202,27 @@ fun InnerNavigation(
                 )
             }
         ) {
-            AddContentScreen(
+            AddStoryScreen(
+                navHostController
+            )
+        }
+
+        composable(
+            route = Routes.AddPostScreen.route,
+            enterTransition = {
+                slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(durationMillis = 350)
+                )
+            },
+            exitTransition = {
+                slideOutVertically(
+                    targetOffsetY = { -it },
+                    animationSpec = tween(durationMillis = 350)
+                )
+            }
+        ) {
+            AddPostScreen(
                 navHostController
             )
         }
