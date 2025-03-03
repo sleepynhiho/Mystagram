@@ -3,6 +3,7 @@ accompanistPager = "0.28.0"
 agp = "8.8.0"
 coilCompose = "2.6.0"
 firebaseBom = "33.9.0"
+googleServices = "4.4.2"
 hiltCompiler = "2.47"
 hiltNavigationCompose = "1.2.0"
 json = "20210307"
@@ -44,7 +45,9 @@ androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+google-services = { module = "com.google.gms:google-services", version.ref = "googleServices" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltNavigationCompose" }
 androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltNavigationCompose" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
