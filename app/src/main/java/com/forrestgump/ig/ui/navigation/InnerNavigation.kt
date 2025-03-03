@@ -7,6 +7,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -30,6 +31,8 @@ import com.forrestgump.ig.data.models.Chat
 import com.forrestgump.ig.data.models.Message
 import com.forrestgump.ig.data.models.Notification
 import com.forrestgump.ig.data.models.NotificationType
+import com.forrestgump.ig.ui.screens.auth.LoginScreen
+import com.forrestgump.ig.ui.screens.auth.SignupScreen
 import java.util.Date
 import com.forrestgump.ig.ui.screens.settings.SettingsScreen
 
@@ -45,24 +48,18 @@ fun InnerNavigation(
 ) {
 
     NavHost(
-        navController = navHostController,
-        startDestination = Routes.HomeScreen.route
+        navController = navHostController, startDestination = Routes.HomeScreen.route
     ) {
-        composable(
-            route = Routes.HomeScreen.route,
-            enterTransition = {
-                fadeIn(animationSpec = tween(350))
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(350))
-            }
-        ) {
+        composable(route = Routes.HomeScreen.route, enterTransition = {
+            fadeIn(animationSpec = tween(350))
+        }, exitTransition = {
+            fadeOut(animationSpec = tween(350))
+        }) {
             val uiState by viewModelHome.uiState.collectAsState()
             val uiStateProfile by viewModelProfile.uiState.collectAsState()
 
 
-            HomeScreen(
-                contentPadding = contentPadding,
+            HomeScreen(contentPadding = contentPadding,
                 uiState = uiState,
                 userProfileImage = uiStateProfile.profileImage,
                 currentUsername = "",
@@ -72,19 +69,14 @@ fun InnerNavigation(
                 onStoryScreenClicked = viewModelHome::onStoryScreenClicked,
                 onMessagesScreenClicked = {
                     navHostController.navigate(Routes.MessagesScreen.route)
-                }
-            )
+                })
         }
 
-        composable(
-            route = Routes.SearchScreen.route,
-            enterTransition = {
-                fadeIn(animationSpec = tween(350))
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(350))
-            }
-        ) {
+        composable(route = Routes.SearchScreen.route, enterTransition = {
+            fadeIn(animationSpec = tween(350))
+        }, exitTransition = {
+            fadeOut(animationSpec = tween(350))
+        }) {
             val uiState by viewModelProfile.uiState.collectAsState()
 
             SearchScreen(
@@ -103,8 +95,7 @@ fun InnerNavigation(
                 isRead = false,
                 type = NotificationType.LIKE,
                 timestamp = Date()
-            ),
-            Notification(
+            ), Notification(
                 notificationId = "2",
                 receiverId = "user_123",
                 senderId = "user_789",
@@ -114,8 +105,7 @@ fun InnerNavigation(
                 isRead = true,
                 type = NotificationType.COMMENT,
                 timestamp = Date()
-            ),
-            Notification(
+            ), Notification(
                 notificationId = "3",
                 receiverId = "user_123",
                 senderId = "user_101",
@@ -124,8 +114,7 @@ fun InnerNavigation(
                 isRead = false,
                 type = NotificationType.FOLLOW,
                 timestamp = Date()
-            ),
-            Notification(
+            ), Notification(
                 notificationId = "4",
                 receiverId = "user_123",
                 senderId = "user_202",
@@ -134,8 +123,7 @@ fun InnerNavigation(
                 isRead = false,
                 type = NotificationType.FOLLOW_REQUEST,
                 timestamp = Date()
-            ),
-            Notification(
+            ), Notification(
                 notificationId = "5",
                 receiverId = "user_123",
                 senderId = "user_303",
@@ -149,60 +137,40 @@ fun InnerNavigation(
 
 
 
-        composable(
-            route = Routes.NotificationScreen.route,
-            enterTransition = {
-                fadeIn(animationSpec = tween(350))
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(350))
-            }
-        ) {
+        composable(route = Routes.NotificationScreen.route, enterTransition = {
+            fadeIn(animationSpec = tween(350))
+        }, exitTransition = {
+            fadeOut(animationSpec = tween(350))
+        }) {
 
             NotificationScreen(
-                notifications = dummyNotifications,
-                navHostController = navHostController
+                notifications = dummyNotifications, navHostController = navHostController
             )
         }
 
-        composable(
-            route = Routes.MyProfileScreen.route,
-            enterTransition = {
-                fadeIn(animationSpec = tween(350))
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(350))
-            }
-        ) {
+        composable(route = Routes.MyProfileScreen.route, enterTransition = {
+            fadeIn(animationSpec = tween(350))
+        }, exitTransition = {
+            fadeOut(animationSpec = tween(350))
+        }) {
             val uiState by viewModelProfile.uiState.collectAsState()
 
             MyProfileScreen(
-                uiState = uiState,
-                navController = navHostController
+                uiState = uiState, navController = navHostController
             )
         }
 
 
-        composable(
-            route = "${Routes.AddContentScreen.route}/{text}",
-            arguments = listOf(
-                navArgument("text") {
-                    type = NavType.StringType
-                }
-            ),
+        composable(route = "${Routes.AddContentScreen.route}/{text}",
+            arguments = listOf(navArgument("text") {
+                type = NavType.StringType
+            }),
             enterTransition = {
-                slideInHorizontally(
-                    animationSpec = tween(),
-                    initialOffsetX = { -it }
-                )
+                slideInHorizontally(animationSpec = tween(), initialOffsetX = { -it })
             },
             exitTransition = {
-                slideOutHorizontally(
-                    animationSpec = tween(),
-                    targetOffsetX = { -it }
-                )
-            }
-        ) {
+                slideOutHorizontally(animationSpec = tween(), targetOffsetX = { -it })
+            }) {
             AddContentScreen(
                 navHostController
             )
@@ -218,8 +186,7 @@ fun InnerNavigation(
                 lastMessage = "See you tomorrow!",
                 lastMessageTime = 1708209200000L,
                 lastMessageRead = true
-            ),
-            Chat(
+            ), Chat(
                 chatId = "chat_2",
                 user1Username = "sleepy",
                 user2Username = "alice",
@@ -228,8 +195,7 @@ fun InnerNavigation(
                 lastMessage = "Let's meet at 5PM",
                 lastMessageTime = 1708213200000L,
                 lastMessageRead = false
-            ),
-            Chat(
+            ), Chat(
                 chatId = "chat_3",
                 user1Username = "sleepy",
                 user2Username = "bob",
@@ -238,8 +204,7 @@ fun InnerNavigation(
                 lastMessage = "I'll check and let you know",
                 lastMessageTime = 1708215000000L,
                 lastMessageRead = true
-            ),
-            Chat(
+            ), Chat(
                 chatId = "chat_4",
                 user1Username = "sleepy",
                 user2Username = "charlie",
@@ -248,8 +213,7 @@ fun InnerNavigation(
                 lastMessage = "Sure, I'll send it now",
                 lastMessageTime = 1708217000000L,
                 lastMessageRead = true
-            ),
-            Chat(
+            ), Chat(
                 chatId = "chat_5",
                 user1Username = "sleepy",
                 user2Username = "david",
@@ -258,8 +222,7 @@ fun InnerNavigation(
                 lastMessage = "Thanks for your help!",
                 lastMessageTime = 1708219000000L,
                 lastMessageRead = false
-            ),
-            Chat(
+            ), Chat(
                 chatId = "chat_6",
                 user1Username = "sleepy",
                 user2Username = "emma",
@@ -268,8 +231,7 @@ fun InnerNavigation(
                 lastMessage = "Let's catch up soon!",
                 lastMessageTime = 1708221000000L,
                 lastMessageRead = true
-            ),
-            Chat(
+            ), Chat(
                 chatId = "chat_7",
                 user1Username = "sleepy",
                 user2Username = "frank",
@@ -278,8 +240,7 @@ fun InnerNavigation(
                 lastMessage = "I'll be there in 10 minutes",
                 lastMessageTime = 1708223000000L,
                 lastMessageRead = false
-            ),
-            Chat(
+            ), Chat(
                 chatId = "chat_8",
                 user1Username = "sleepy",
                 user2Username = "grace",
@@ -288,8 +249,7 @@ fun InnerNavigation(
                 lastMessage = "Great job on the project!",
                 lastMessageTime = 1708225000000L,
                 lastMessageRead = true
-            ),
-            Chat(
+            ), Chat(
                 chatId = "chat_9",
                 user1Username = "sleepy",
                 user2Username = "henry",
@@ -298,8 +258,7 @@ fun InnerNavigation(
                 lastMessage = "Can you send me the details?",
                 lastMessageTime = 1708227000000L,
                 lastMessageRead = true
-            ),
-            Chat(
+            ), Chat(
                 chatId = "chat_10",
                 user1Username = "sleepy",
                 user2Username = "isabella",
@@ -346,45 +305,25 @@ fun InnerNavigation(
 
 
 
-        composable(
-            route = Routes.MessagesScreen.route,
-            enterTransition = {
-                slideInHorizontally(
-                    animationSpec = tween(),
-                    initialOffsetX = { it }
-                )
-            },
-            exitTransition = {
-                slideOutHorizontally(
-                    animationSpec = tween(),
-                    targetOffsetX = { it }
-                )
-            }
-        ) {
+        composable(route = Routes.MessagesScreen.route, enterTransition = {
+            slideInHorizontally(animationSpec = tween(), initialOffsetX = { it })
+        }, exitTransition = {
+            slideOutHorizontally(animationSpec = tween(), targetOffsetX = { it })
+        }) {
             ChatScreen(
-                myUsername = "sleepy",
-                chats = dummyChats,
-                navHostController = navHostController
+                myUsername = "sleepy", chats = dummyChats, navHostController = navHostController
             )
         }
 
 
-        composable(
-            route = "${Routes.ChatBoxScreen.route}/{chatId}",
+        composable(route = "${Routes.ChatBoxScreen.route}/{chatId}",
             arguments = listOf(navArgument("chatId") { type = NavType.StringType }),
             enterTransition = {
-                slideInHorizontally(
-                    animationSpec = tween(),
-                    initialOffsetX = { it }
-                )
+                slideInHorizontally(animationSpec = tween(), initialOffsetX = { it })
             },
             exitTransition = {
-                slideOutHorizontally(
-                    animationSpec = tween(),
-                    targetOffsetX = { it }
-                )
-            }
-        ) { backStackEntry ->
+                slideOutHorizontally(animationSpec = tween(), targetOffsetX = { it })
+            }) { backStackEntry ->
             val chatId = backStackEntry.arguments?.getString("chatId") ?: return@composable
 
             val chat = dummyChats.find { it.chatId == chatId } ?: return@composable
@@ -397,17 +336,46 @@ fun InnerNavigation(
             )
         }
 
-        composable(
-            route = Routes.SettingsScreen.route,
-            enterTransition = {
-                fadeIn(animationSpec = tween(350))
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(350))
-            }
-        ) {
+        composable(route = Routes.SettingsScreen.route, enterTransition = {
+            fadeIn(animationSpec = tween(350))
+        }, exitTransition = {
+            fadeOut(animationSpec = tween(350))
+        }) {
             SettingsScreen(navController = navHostController)
         }
 
+        composable(route = Routes.LoginScreen.route, enterTransition = {
+            fadeIn(animationSpec = tween(350))
+        }, exitTransition = {
+            fadeOut(animationSpec = tween(350))
+        }) {
+            LoginScreen(
+                navController = navHostController,
+                authViewModel = hiltViewModel(),
+            )
+        }
+
+        composable(route = Routes.InnerContainer.route, enterTransition = {
+            fadeIn(
+                animationSpec = tween(350)
+            )
+        }, exitTransition = {
+            fadeOut(
+                animationSpec = tween(350)
+            )
+        }) {
+            InnerContainer()
+        }
+
+        composable(route = Routes.SignupScreen.route, enterTransition = {
+            fadeIn(animationSpec = tween(350))
+        }, exitTransition = {
+            fadeOut(animationSpec = tween(350))
+        }) {
+            SignupScreen(
+                navController = navHostController,
+                authViewModel = hiltViewModel(),
+            )
+        }
     }
 }

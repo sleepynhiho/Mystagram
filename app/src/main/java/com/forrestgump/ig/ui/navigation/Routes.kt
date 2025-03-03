@@ -18,6 +18,8 @@ sealed class Routes(
     data object SettingsScreen: Routes(name = "Settings", route = "SettingsScreen")
     data object MessagesScreen: Routes(name = "Messages", route = "MessagesScreen")
     data object ChatBoxScreen: Routes(name = "ChatBox", route = "message_detail")
+    data object SignupScreen: Routes(name = "Signup", route = "SignupScreen")
+    data object LoginScreen: Routes(name = "Login", route = "LoginScreen")
 
     data object Items {
         val bottomNavItems = listOf(
