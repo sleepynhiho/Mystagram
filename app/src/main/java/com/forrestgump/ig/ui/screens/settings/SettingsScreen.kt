@@ -51,6 +51,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.forrestgump.ig.ui.navigation.Routes
+import com.forrestgump.ig.utils.constants.Utils.MainBackground
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,11 +68,11 @@ fun SettingsScreen(navController: NavController) {
                 title = {
                     Text(
                         text = "Settings and activity",
-                        color = Color.White
+                        color = Color.Black
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Black
+                    containerColor = MainBackground
                 ),
                 navigationIcon = { // Thêm nút quay lại nếu cần
                     IconButton(onClick = { navController.popBackStack() }) {
@@ -83,7 +86,7 @@ fun SettingsScreen(navController: NavController) {
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(Color.Black)
+                .background(MainBackground)
         ) {
             // Section: How you use Instagram
             item {
@@ -191,12 +194,25 @@ fun SettingsScreen(navController: NavController) {
             }
             items(
                 listOf(
-                    SettingsItemData(icon = Icons.Default.PersonAdd, title = "Add account"),
-                    SettingsItemData(icon = Icons.Default.ExitToApp, title = "Log out"),
-                    SettingsItemData(icon = Icons.Default.ExitToApp, title = "Log out all accounts")
+                    SettingsItemData(icon = Icons.Default.PersonAdd, title = "Add account")
+                    // Có thể giữ lại các mục khác nếu cần
                 )
             ) { itemData ->
                 SettingsRow(itemData = itemData)
+            }
+            // Mục đăng xuất riêng
+            item {
+                SettingsRow(
+                    itemData = SettingsItemData(icon = Icons.Default.ExitToApp, title = "Log out"),
+                    onClick = {
+                        // Gọi hàm đăng xuất
+                        FirebaseAuth.getInstance().signOut()
+                        // Sau đó chuyển hướng về màn hình đăng nhập
+                        navController.navigate(Routes.LoginScreen.route) {
+                            popUpTo(0)  // Xóa toàn bộ back stack (tuỳ chỉnh theo nhu cầu)
+                        }
+                    }
+                )
             }
         }
     }
@@ -211,7 +227,7 @@ fun SectionHeader(title: String) {
         fontWeight = FontWeight.SemiBold,
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.Black)
+            .background(MainBackground)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     )
 }
@@ -227,7 +243,7 @@ fun AccountsCenterRow() {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = "Accounts Center",
-                color = Color.White,
+                color = Color.Black,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp,
                 modifier = Modifier.weight(1f)
@@ -259,24 +275,24 @@ fun AccountsCenterRow() {
 }
 
 @Composable
-fun SettingsRow(itemData: SettingsItemData) {
+fun SettingsRow(itemData: SettingsItemData, onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* TODO: xử lý nhấn (nếu cần) */ }
+            .clickable { onClick() }
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = itemData.icon,
             contentDescription = itemData.title,
-            tint = Color.White,
+            tint = Color.Black,
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = itemData.title,
-            color = Color.White,
+            color = Color.Black,
             fontSize = 15.sp,
             modifier = Modifier.weight(1f)
         )
@@ -296,6 +312,7 @@ fun SettingsRow(itemData: SettingsItemData) {
     }
 }
 
+
 @Composable
 fun SettingsRowWithSwitch(
     icon: ImageVector,
@@ -313,13 +330,13 @@ fun SettingsRowWithSwitch(
         Icon(
             imageVector = icon,
             contentDescription = title,
-            tint = Color.White,
+            tint = Color.Black,
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = title,
-            color = Color.White,
+            color = Color.Black,
             fontSize = 15.sp,
             modifier = Modifier.weight(1f)
         )
