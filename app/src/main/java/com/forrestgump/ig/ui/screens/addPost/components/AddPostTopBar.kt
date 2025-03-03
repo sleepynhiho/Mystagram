@@ -1,4 +1,4 @@
-package com.forrestgump.ig.ui.screens.add.components
+package com.forrestgump.ig.ui.screens.addPost.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.forrestgump.ig.R
 
 @Composable
-fun AddStoryTopBar(
+fun AddPostTopBar(
     onBackClicked: () -> Unit,
     onAddTextClicked: () -> Unit
 ) {
@@ -60,7 +60,7 @@ fun AddStoryTopBar(
             Icon(
                 painter = painterResource(R.drawable.text),
                 tint = Color.White,
-                contentDescription = "Add Text to story",
+                contentDescription = "Add Text to post",
                 modifier = Modifier
                     .background(color = Color(0xFF404446).copy(alpha = 0.3f), shape = CircleShape)
                     .padding(5.dp)
@@ -71,8 +71,8 @@ fun AddStoryTopBar(
 
 @Preview
 @Composable
-fun AddStoryTopBarPreview() {
-    AddStoryTopBar(
+fun AddPostTopBarPreview() {
+    AddPostTopBar(
         onBackClicked = {},
         onAddTextClicked = {}
     )

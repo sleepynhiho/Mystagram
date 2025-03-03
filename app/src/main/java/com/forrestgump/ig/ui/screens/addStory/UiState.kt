@@ -1,4 +1,4 @@
-package com.forrestgump.ig.ui.screens.add
+package com.forrestgump.ig.ui.screens.addStory
 
 data class UiState(
     var caption: String = ""

@@ -1,4 +1,4 @@
-package com.forrestgump.ig.ui.screens.add
+package com.forrestgump.ig.ui.screens.addPost
 
 
 import android.Manifest
@@ -27,7 +27,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -43,7 +42,6 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,7 +51,7 @@ import androidx.palette.graphics.Palette
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.forrestgump.ig.R
-import com.forrestgump.ig.ui.screens.add.components.AddStoryTopBar
+import com.forrestgump.ig.ui.screens.addPost.components.AddPostTopBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -62,7 +60,7 @@ import java.io.FileOutputStream
 import java.io.OutputStream
 
 @Composable
-fun AddContentScreen(navHostController: NavHostController) {
+fun AddPostScreen(navHostController: NavHostController) {
     val imageUris = remember { mutableStateListOf<Uri>() }
     var permissionGranted by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -142,7 +140,7 @@ fun AddContentScreen(navHostController: NavHostController) {
                 onUserTextChange = { newText -> userInputText = newText }
             )
 
-            AddStoryTopBar(
+            AddPostTopBar(
                 onBackClicked = {
                     imageUris.clear()
                     userInputText = ""
@@ -457,6 +455,6 @@ fun saveBitmapToStorage(context: Context, bitmap: Bitmap) {
 
 @Preview
 @Composable
-private fun AddContentScreenPreview() {
-    AddContentScreen(navHostController = rememberNavController())
+private fun AddPostScreenPreview() {
+    AddPostScreen(navHostController = rememberNavController())
 }

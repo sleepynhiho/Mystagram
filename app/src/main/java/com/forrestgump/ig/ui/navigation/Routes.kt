@@ -12,8 +12,9 @@ sealed class Routes(
     data object InnerContainer: Routes(name = "InnerScreen", route = "InnerContainer")
     data object HomeScreen: Routes(iconOutlined = R.drawable.home_outlined, iconFilled = R.drawable.home_filled, name = "Home", route = "HomeScreen")
     data object SearchScreen: Routes(iconOutlined = R.drawable.search, iconFilled = R.drawable.search_selected, name = "Search", route = "SearchScreen")
-    data object AddContentScreen: Routes(iconOutlined = R.drawable.add_outlined, name = "UploadContent", route = "AddContentScreen")
+    data object AddPostScreen: Routes(iconOutlined = R.drawable.add_outlined, name = "AddPost", route = "AddPostScreen")
     data object NotificationScreen: Routes(iconOutlined = R.drawable.heart_outlined, iconFilled = R.drawable.heart_filled, name = "Notification", route = "NotificationScreen")
+    data object AddStoryScreen: Routes(name = "AddStory", route = "AddStoryScreen")
     data object MyProfileScreen: Routes(name = "MyProfile", route = "MyProfileScreen")
     data object SettingsScreen: Routes(name = "Settings", route = "SettingsScreen")
     data object MessagesScreen: Routes(name = "Messages", route = "MessagesScreen")
@@ -23,7 +24,7 @@ sealed class Routes(
         val bottomNavItems = listOf(
             HomeScreen,
             SearchScreen,
-            AddContentScreen,
+            AddPostScreen,
             NotificationScreen,
             MyProfileScreen
         )
