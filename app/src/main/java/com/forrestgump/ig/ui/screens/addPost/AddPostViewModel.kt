@@ -1,4 +1,4 @@
-package com.forrestgump.ig.ui.screens.add
+package com.forrestgump.ig.ui.screens.addPost
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @HiltViewModel
-class AddContentViewModel @Inject constructor(
+class AddPostViewModel @Inject constructor(
 ) : ViewModel() {
     var uiState = MutableStateFlow(UiState())
         private set

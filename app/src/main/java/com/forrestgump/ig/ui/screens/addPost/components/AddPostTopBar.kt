@@ -1,4 +1,4 @@
-package com.forrestgump.ig.ui.screens.add.components
+package com.forrestgump.ig.ui.screens.addPost.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -21,7 +21,10 @@ import androidx.compose.ui.unit.dp
 import com.forrestgump.ig.R
 
 @Composable
-fun AddStoryTopBar(onBackClicked: () -> Unit) {
+fun AddPostTopBar(
+    onBackClicked: () -> Unit,
+    onAddTextClicked: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -35,6 +38,7 @@ fun AddStoryTopBar(onBackClicked: () -> Unit) {
             onClick = { onBackClicked() },
             modifier = Modifier
                 .size(40.dp)
+
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.back_story),
@@ -49,13 +53,14 @@ fun AddStoryTopBar(onBackClicked: () -> Unit) {
         Spacer(modifier = Modifier.weight(1f))
 
         IconButton(
-            onClick = {},
-            modifier = Modifier.size(40.dp),
+            onClick = { onAddTextClicked() },
+            modifier = Modifier
+                .size(40.dp),
         ) {
             Icon(
                 painter = painterResource(R.drawable.text),
                 tint = Color.White,
-                contentDescription = "Add Text to story",
+                contentDescription = "Add Text to post",
                 modifier = Modifier
                     .background(color = Color(0xFF404446).copy(alpha = 0.3f), shape = CircleShape)
                     .padding(5.dp)
@@ -66,8 +71,9 @@ fun AddStoryTopBar(onBackClicked: () -> Unit) {
 
 @Preview
 @Composable
-fun AddStoryTopBarPreview() {
-    AddStoryTopBar(
-        onBackClicked = {}
+fun AddPostTopBarPreview() {
+    AddPostTopBar(
+        onBackClicked = {},
+        onAddTextClicked = {}
     )
 }
