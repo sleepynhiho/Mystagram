@@ -70,7 +70,6 @@ dependencies {
     implementation(libs.androidx.foundation.layout.android)
     implementation(libs.androidx.foundation.layout.android)
     implementation(libs.androidx.foundation.layout.android)
-    implementation(libs.androidx.foundation.layout.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -97,11 +96,13 @@ dependencies {
     implementation(libs.okhttp) // Thư viện HTTP để gửi request
     implementation(libs.json) // Thư viện JSON để xử lý phản hồi
 
-    implementation (libs.accompanist.pager)
-    implementation (libs.accompanist.pager.indicators)
+    implementation(libs.accompanist.pager)
+    implementation(libs.accompanist.pager.indicators)
     implementation(libs.androidx.material.icons.extended)
     implementation (libs.android.lottie.compose)
 
     // Firebase Authentication
     implementation(libs.firebase.auth)
+    implementation(libs.android.lottie.compose)
+
 }
