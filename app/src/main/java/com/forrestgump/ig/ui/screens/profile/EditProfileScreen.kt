@@ -5,8 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -16,7 +14,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,15 +32,41 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
+import android.graphics.Bitmap
+import android.net.Uri
+import android.provider.MediaStore
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
+import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStream
+import android.Manifest
+import android.app.Activity
+import android.content.pm.PackageManager
+import android.widget.Toast
+import androidx.compose.ui.text.style.TextAlign
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+
+
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,6 +85,49 @@ fun EditProfileScreen(
     val userName = remember { mutableStateOf(initialUserName) }
     val bio = remember { mutableStateOf(initialBio) }
     val focusManager = LocalFocusManager.current
+    val accountPrivacy = remember { mutableStateOf(false) }
+    val selectedImageUri = remember { mutableStateOf<String?>(null) }
+    val showChooseImageDialog = remember { mutableStateOf(false) }
+    val photoFile = remember { mutableStateOf<File?>(null) }
+
+    val pickImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        selectedImageUri.value = uri?.toString()
+    }
+    val context = LocalContext.current
+    // Chụp ảnh từ camera
+    val takePictureLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            photoFile.value?.let { file ->
+                selectedImageUri.value = file.toUri().toString()
+            }
+        }
+    }
+
+    // Đây là launcher xin quyền
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Được quyền - tiến hành chụp ảnh
+            val newFile = createImageFile(context)
+            photoFile.value = newFile
+            val uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                newFile
+            )
+            takePictureLauncher.launch(uri)
+        } else {
+            // User từ chối quyền
+            Toast.makeText(context, "Bạn cần cấp quyền Camera để chụp ảnh mới.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -99,16 +165,22 @@ fun EditProfileScreen(
                     modifier = Modifier
                         .size(120.dp)
                         .clip(CircleShape)
-                        .clickable { onAvatarClick() },
+                        .border(2.dp, Color.LightGray, CircleShape) // viền
+                        .shadow(4.dp, CircleShape)                   // đổ bóng nhẹ
+                        .clickable { showChooseImageDialog.value = true },
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
-                        painter = rememberAsyncImagePainter("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTaqpJxl9RlSTBk9colJ6YL_UQ8rmB1v87JKw&s"),
+                        painter = rememberAsyncImagePainter(
+                            model = selectedImageUri.value
+                                ?: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTaqpJxl9RlSTBk9colJ6YL_UQ8rmB1v87JKw&s"
+                        ),
                         contentDescription = "Avatar",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
+
 
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -148,26 +220,155 @@ fun EditProfileScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onChangePremiumStatus() }  // Áp dụng clickable cho cả Column
+                        .padding( vertical = 12.dp),
                 ) {
                     Divider(
-                        color = Color.Gray,
+                        color = Color.LightGray,
                         thickness = 1.dp,
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = if (isPremium) "Hủy gói premium" else "Chuyển thành tài khoản premium",
-                        color = Color(0xff0279f7),
+                        color = Color.Black,
                         fontSize = 16.sp
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Divider(
-                        color = Color.Gray,
+                        color = Color.LightGray,
                         thickness = 1.dp,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
-                Spacer(modifier = Modifier.height(24.dp))
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { /*TO DO*/ }  // Áp dụng clickable cho cả Column
+                        .padding( vertical = 12.dp),
+                ) {
+                    Divider(
+                        color = Color.LightGray,
+                        thickness = 1.dp,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Pin 3 Posts nổi bật nhất",
+                        color = Color.Black,
+                        fontSize = 16.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Divider(
+                        color = Color.LightGray,
+                        thickness = 1.dp,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding( vertical = 12.dp)
+                ) {
+                    Divider(
+                        color = Color.LightGray,
+                        thickness = 1.dp,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = "Account privacy",
+                                tint = Color.Black,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = "Account privacy",
+                                color = Color.Black,
+                                fontSize = 15.sp
+                            )
+                        }
+                        Switch(
+                            checked = accountPrivacy.value,
+                            onCheckedChange = { newValue -> accountPrivacy.value = newValue },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = Color.Gray,
+                                uncheckedThumbColor = Color.White,
+                                uncheckedTrackColor = Color.DarkGray
+                            )
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Divider(
+                        color = Color.LightGray,
+                        thickness = 1.dp,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (showChooseImageDialog.value) {
+                    AlertDialog(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        onDismissRequest = { showChooseImageDialog.value = false },
+                        title = {
+                            Text(
+                                text = "Chọn ảnh đại diện",
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+                        },
+                        text = {
+                            Column(
+                                modifier = Modifier
+                                        .fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally  // căn giữa nội dung
+                            ) {
+                                TextButton(onClick = {
+                                    showChooseImageDialog.value = false
+                                    pickImageLauncher.launch("image/*")
+                                }) {
+                                    Text("Chọn từ thư viện")
+                                }
+                                Spacer(modifier = Modifier.height(18.dp))
+                                TextButton(onClick = {
+                                    showChooseImageDialog.value = false
+                                    if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                                        val newFile = createImageFile(context)
+                                        photoFile.value = newFile
+                                        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", newFile)
+                                        takePictureLauncher.launch(uri)
+                                    } else {
+                                        cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                                    }
+                                }) {
+                                    Text("Chụp ảnh mới")
+                                }
+                            }
+                        },
+                        confirmButton = {}
+                    )
+                }
+
+
                 // Button "Lưu" màu xanh, hình chữ nhật bo tròn 4 góc
                 Button(
                     onClick = {
@@ -194,8 +395,6 @@ fun EditProfileScreen(
                     )
                 }
 
-
-                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
@@ -219,8 +418,19 @@ fun EditField(
         OutlinedTextField(
             value = text,
             onValueChange = onTextChange,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp)),
             shape = RoundedCornerShape(4.dp)
         )
     }
+}
+
+fun createImageFile(context: android.content.Context): File {
+    val storageDir = context.getExternalFilesDir(null)
+    return File.createTempFile(
+        "avatar_${System.currentTimeMillis()}",
+        ".jpg",
+        storageDir
+    )
 }
