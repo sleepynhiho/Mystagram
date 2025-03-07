@@ -18,7 +18,7 @@ import com.forrestgump.ig.data.models.UserStory
 fun StoryList(
     currentUser: User,
     onAddStoryClicked: () -> Unit,
-    onStoryClick: (storyIndex: Int, isMyStory: Boolean) -> Unit,
+    onViewStoryClicked: (storyIndex: Int, isMyStory: Boolean) -> Unit,
     userStories: List<UserStory>,
     myStories: List<UserStory>
 ) {
@@ -28,8 +28,9 @@ fun StoryList(
                 if (myStories.isNotEmpty() && myStories.first().stories.isNotEmpty()) {
                     UserStoryCard(
                         userStory = myStories.first(),
-                        currentUsername = currentUser.username,
-                        onClick = { onStoryClick(0, true) }
+                        currentUser = currentUser,
+                        onViewStoryClicked = { onViewStoryClicked(0, true) },
+                        onAddStoryClicked = onAddStoryClicked
                     )
                 } else {
                     AddStoryCard(
@@ -49,8 +50,9 @@ fun StoryList(
                 ) { story ->
                     UserStoryCard(
                         userStory = story,
-                        currentUsername = currentUser.username,
-                        onClick = { onStoryClick(userStories.indexOf(story), false) }
+                        currentUser = currentUser,
+                        onViewStoryClicked = { onViewStoryClicked(userStories.indexOf(story), false) },
+                        onAddStoryClicked = onAddStoryClicked
                     )
                     Log.d("NHII userstorycard", story.toString())
                     Log.d("NHII index clicked: ", userStories.indexOf(story).toString())
@@ -99,6 +101,6 @@ fun StoryListPreview() {
             )
         ),
         currentUser = TODO(),
-        onStoryClick = TODO()
+        onViewStoryClicked = TODO()
     )
 }

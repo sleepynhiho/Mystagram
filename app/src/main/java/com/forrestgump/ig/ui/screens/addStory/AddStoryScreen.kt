@@ -149,32 +149,6 @@ fun AddStoryScreen(
         }
     }
 
-
-//    Row(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(16.dp),
-//        horizontalArrangement = Arrangement.SpaceEvenly
-//    ) {
-//        Button(onClick = { pickMediaLauncher.launch("image/*") }) {
-//            Text("Chọn ảnh từ thư viện")
-//        }
-//        Button(onClick = {
-//            if (permissionGranted) { // Kiểm tra quyền
-//                cameraImageUri = createImageUri(context)
-//                cameraImageUri?.let { takePictureLauncher.launch(it) }
-//            } else {
-//                requestPermissions.launch(
-//                    arrayOf(Manifest.permission.CAMERA) // Nếu chưa có quyền, yêu cầu trước
-//                )
-//            }
-//        }) {
-//            Text("Chụp ảnh từ camera")
-//        }
-//
-//    }
-
-
     var scale by remember { mutableFloatStateOf(1f) }
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
     var rotationAngle by remember { mutableFloatStateOf(0f) }

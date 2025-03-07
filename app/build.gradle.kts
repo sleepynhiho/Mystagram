@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -7,6 +9,14 @@ plugins {
     id("com.google.gms.google-services")
     id("kotlin-parcelize")
 }
+
+val localProperties = Properties().apply {
+    load(rootProject.file("local.properties").inputStream())
+}
+
+val cloudinaryCloudName = localProperties.getProperty("cloudinary.cloud_name") ?: ""
+val cloudinaryApiKey = localProperties.getProperty("cloudinary.api_key") ?: ""
+val cloudinaryApiSecret = localProperties.getProperty("cloudinary.api_secret") ?: ""
 
 android {
     namespace = "com.forrestgump.ig"
@@ -20,13 +30,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        val cloudinaryCloudName: String = project.findProperty("CLOUDINARY_CLOUD_NAME") as String? ?: ""
-        val cloudinaryApiKey: String = project.findProperty("CLOUDINARY_API_KEY") as String? ?: ""
-        val cloudinaryApiSecret: String = project.findProperty("CLOUDINARY_API_SECRET") as String? ?: ""
-
         buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"$cloudinaryCloudName\"")
         buildConfigField("String", "CLOUDINARY_API_KEY", "\"$cloudinaryApiKey\"")
         buildConfigField("String", "CLOUDINARY_API_SECRET", "\"$cloudinaryApiSecret\"")
+
+
     }
 
     buildTypes {

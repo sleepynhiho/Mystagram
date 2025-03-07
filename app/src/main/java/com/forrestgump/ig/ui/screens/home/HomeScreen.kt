@@ -65,7 +65,7 @@ fun HomeScreen(
                     StoryList(
                         currentUser = currentUser,
                         onAddStoryClicked = onAddStoryClicked,
-                        onStoryClick = { index, myStory ->
+                        onViewStoryClicked = { index, myStory ->
                             userStoryIndex = index
                             onStoryScreenClicked(true, userStoryIndex)
                             isMyStory = myStory

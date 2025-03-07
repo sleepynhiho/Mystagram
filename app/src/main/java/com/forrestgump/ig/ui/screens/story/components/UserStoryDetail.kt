@@ -61,8 +61,11 @@ fun UserStoryDetail(
         animationSpec = tween(durationMillis = 600),
         label = "alphaOnPress"
     )
+    val sortedUserStory = userStory.copy(stories = userStory.stories.sortedBy { it.timestamp })
 
-    Log.d("NHII CURRENT STORY: ", userStory.toString())
+
+
+    Log.d("NHII CURRENT STORY: ", sortedUserStory.toString())
 
     Column(
         modifier = Modifier
@@ -89,10 +92,15 @@ fun UserStoryDetail(
                         modifier = Modifier
                             .fillMaxSize()
                     ) {
-                        Log.d("NHII current media", userStory.stories[currentStoryIndex].media)
+
+
+                        Log.d("NHII current media", sortedUserStory.stories[currentStoryIndex].media)
                         Log.d("NHII currentStoryIndex: ", currentStoryIndex.toString())
 
-                        val secureUrl = userStory.stories[currentStoryIndex].media.replace("http://", "https://")
+                        val secureUrl = sortedUserStory.stories[currentStoryIndex].media.replace(
+                            "http://",
+                            "https://"
+                        )
                         AsyncImage(
                             modifier = Modifier.fillMaxSize(),
                             model = secureUrl,
@@ -119,7 +127,7 @@ fun UserStoryDetail(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
-                            userStory.stories.forEachIndexed { index, _  ->
+                            sortedUserStory.stories.forEachIndexed { index, _ ->
                                 StoryProgressTrack(
                                     modifier = Modifier.weight(1f),
                                     isStoryActive = isStoryActive && currentStoryIndex == index,
@@ -131,7 +139,7 @@ fun UserStoryDetail(
 
                         StoryHeader(
                             currentUser = currentUser,
-                            userStory = userStory,
+                            userStory = sortedUserStory,
                             currentStoryIndex = currentStoryIndex,
                             onProgressComplete = onProgressComplete
                         )

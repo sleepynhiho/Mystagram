@@ -290,7 +290,7 @@ fun StoryHighlightsSection() {
                 )
             ),
             currentUser = User(),
-            onStoryClick = {_, _ -> }
+            onViewStoryClicked = {_, _ -> },
         )
     }
 }

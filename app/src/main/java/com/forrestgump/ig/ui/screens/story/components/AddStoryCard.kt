@@ -41,7 +41,6 @@ fun AddStoryCard(
     onClick: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val image = myProfileImage.ifEmpty { R.drawable.default_profile_img }
     Column(
         modifier = Modifier
             .padding(horizontal = 10.dp)
@@ -66,7 +65,7 @@ fun AddStoryCard(
             ) {
                 AsyncImage(
                     modifier = Modifier.fillMaxSize(),
-                    model = image,
+                    model = myProfileImage.ifEmpty { R.drawable.default_profile_img },
                     contentScale = ContentScale.Crop,
                     filterQuality = FilterQuality.None,
                     contentDescription = stringResource(id = R.string.profile_image)
