@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.cloudinary.Cloudinary
+import com.forrestgump.ig.BuildConfig
 import com.forrestgump.ig.data.repositories.StoryRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
@@ -11,6 +12,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import java.util.Properties
 import javax.inject.Singleton
 
 @Module
@@ -34,8 +36,17 @@ object AppModule {
     @Provides
     @Singleton
     fun provideCloudinary(): Cloudinary {
-        return Cloudinary("cloudinary://253743834726174:fhUOpO2-NXUavC7Kk7KoaN6CJKg@dmx7db2g6")
+        val cloudName = BuildConfig.CLOUDINARY_CLOUD_NAME
+        val apiKey = BuildConfig.CLOUDINARY_API_KEY
+        val apiSecret = BuildConfig.CLOUDINARY_API_SECRET
+
+        require(cloudName.isNotEmpty() && apiKey.isNotEmpty() && apiSecret.isNotEmpty()) {
+            "Cloudinary credentials are missing!"
+        }
+
+        return Cloudinary("cloudinary://$apiKey:$apiSecret@$cloudName")
     }
+
 
     @Provides
     @Singleton

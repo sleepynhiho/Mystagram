@@ -77,6 +77,7 @@ fun AddStoryScreen(
     val mediaUris = remember { mutableStateListOf<Uri>() }
     var cameraImageUri by remember { mutableStateOf<Uri?>(null) }
     var permissionGranted by remember { mutableStateOf(false) }
+    var imagePickedDismissed by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
 
@@ -84,8 +85,13 @@ fun AddStoryScreen(
     val pickMediaLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        mediaUris.clear()
-        uri?.let { mediaUris.add(it) }
+        if (uri != null ) {
+            mediaUris.clear()
+            uri.let { mediaUris.add(it) }
+        }
+        else {
+            imagePickedDismissed = true
+        }
     }
 
     val takePictureLauncher = rememberLauncherForActivityResult(
@@ -105,10 +111,6 @@ fun AddStoryScreen(
 
     LaunchedEffect(Unit) {
         when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
-                pickMediaLauncher.launch("image/*")
-            }
-
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
                 requestPermissions.launch(
                     arrayOf(
@@ -128,20 +130,14 @@ fun AddStoryScreen(
                 )
             }
         }
+        pickMediaLauncher.launch("image/*")
     }
 
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        Button(onClick = { pickMediaLauncher.launch("image/*") }) {
-            Text("Chọn ảnh từ thư viện")
-        }
-        Button(onClick = {
+    LaunchedEffect(imagePickedDismissed) {
+        if (imagePickedDismissed) {
             if (permissionGranted) { // Kiểm tra quyền
+                Log.d("NHII", "INNNNNNNNNN2")
+
                 cameraImageUri = createImageUri(context)
                 cameraImageUri?.let { takePictureLauncher.launch(it) }
             } else {
@@ -149,11 +145,34 @@ fun AddStoryScreen(
                     arrayOf(Manifest.permission.CAMERA) // Nếu chưa có quyền, yêu cầu trước
                 )
             }
-        }) {
-            Text("Chụp ảnh từ camera")
+            Log.d("NHII", "INNNNNNNNNN")
         }
-
     }
+
+
+//    Row(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(16.dp),
+//        horizontalArrangement = Arrangement.SpaceEvenly
+//    ) {
+//        Button(onClick = { pickMediaLauncher.launch("image/*") }) {
+//            Text("Chọn ảnh từ thư viện")
+//        }
+//        Button(onClick = {
+//            if (permissionGranted) { // Kiểm tra quyền
+//                cameraImageUri = createImageUri(context)
+//                cameraImageUri?.let { takePictureLauncher.launch(it) }
+//            } else {
+//                requestPermissions.launch(
+//                    arrayOf(Manifest.permission.CAMERA) // Nếu chưa có quyền, yêu cầu trước
+//                )
+//            }
+//        }) {
+//            Text("Chụp ảnh từ camera")
+//        }
+//
+//    }
 
 
     var scale by remember { mutableFloatStateOf(1f) }
