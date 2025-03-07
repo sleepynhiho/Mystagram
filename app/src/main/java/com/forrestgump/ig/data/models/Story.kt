@@ -17,4 +17,7 @@ data class Story(
 
     @ServerTimestamp
     var timestamp: Date? = null           // Thời gian tạo (Firestore tự động cập nhật)
-) : Parcelable
+) : Parcelable {
+    val expiry: Long
+        get() = (timestamp?.time ?: System.currentTimeMillis()) + 24 * 60 * 60 * 1000
+}

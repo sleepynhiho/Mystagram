@@ -39,6 +39,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.ui.platform.LocalContext
 import com.forrestgump.ig.ui.navigation.Routes
 import androidx.navigation.NavController
+import com.forrestgump.ig.data.models.User
 import com.google.firebase.auth.FirebaseAuth
 
 
@@ -266,13 +267,7 @@ fun StoryHighlightsSection() {
         horizontalArrangement = Arrangement.Start
     ) {
         StoryList(
-            profileImage = "https://example.com/myprofile.jpg", // Đường dẫn ảnh profile của bạn
-            currentUsername = "usernameCuaToi",
             onAddStoryClicked = { /* Xử lý sự kiện khi nhấn vào "Add Story" */ },
-            onViewMyStoryClick = { /* Xử lý sự kiện khi xem story của chính mình */ },
-            onStoryClick = { storyIndex ->
-                // Xử lý khi nhấn vào story tại vị trí storyIndex
-            },
             userStories = listOf(
                 UserStory(
                     // Giả sử mỗi UserStory có thêm thuộc tính username nếu cần dùng làm key
@@ -293,7 +288,9 @@ fun StoryHighlightsSection() {
                     )
                     // username = "usernameCuaToi"
                 )
-            )
+            ),
+            currentUser = User(),
+            onStoryClick = {_, _ -> }
         )
     }
 }

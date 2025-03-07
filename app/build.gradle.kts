@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.play.services.cast.framework)
     implementation(libs.androidx.animation.android)
     implementation(libs.androidx.animation.android)
+    implementation(libs.androidx.runtime.livedata)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -108,5 +109,7 @@ dependencies {
     // Firebase Authentication
     implementation(libs.firebase.auth)
     implementation(libs.android.lottie.compose)
+
+    implementation (libs.cloudinary.android)
 
 }

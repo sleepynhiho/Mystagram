@@ -12,7 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -35,10 +37,11 @@ import com.forrestgump.ig.data.models.NotificationType
 import com.forrestgump.ig.ui.screens.auth.LoginScreen
 import com.forrestgump.ig.ui.screens.auth.SignupScreen
 import com.forrestgump.ig.ui.screens.addPost.AddPostScreen
-import com.forrestgump.ig.ui.screens.addPost.AddPostViewModel
 import com.forrestgump.ig.ui.screens.addStory.AddStoryViewModel
 import java.util.Date
 import com.forrestgump.ig.ui.screens.settings.SettingsScreen
+import com.forrestgump.ig.ui.screens.story.StoryViewModel
+import com.forrestgump.ig.ui.viewmodels.UserViewModel
 
 
 @UnstableApi
@@ -47,9 +50,11 @@ fun InnerNavigation(
     contentPadding: PaddingValues,
     navHostController: NavHostController,
     viewModelHome: HomeViewModel = hiltViewModel(),
-    viewModelAdd: AddPostViewModel = hiltViewModel(),
     viewModelProfile: ProfileViewModel,
+    userViewModel: UserViewModel,
+    storyViewModel: StoryViewModel
 ) {
+    val currentUser by userViewModel.user.collectAsState()
 
     NavHost(
         navController = navHostController, startDestination = Routes.HomeScreen.route
@@ -60,20 +65,31 @@ fun InnerNavigation(
             fadeOut(animationSpec = tween(350))
         }) {
             val uiState by viewModelHome.uiState.collectAsState()
-            val uiStateProfile by viewModelProfile.uiState.collectAsState()
+            val userStories by storyViewModel.userStories.observeAsState(emptyList())
 
 
-            HomeScreen(contentPadding = contentPadding,
-                uiState = uiState,
-                userProfileImage = uiStateProfile.profileImage,
-                currentUsername = "",
-                onAddStoryClicked = {
-                    navHostController.navigate(Routes.AddStoryScreen.route)
-                },
-                onStoryScreenClicked = viewModelHome::onStoryScreenClicked,
-                onMessagesScreenClicked = {
-                    navHostController.navigate(Routes.MessagesScreen.route)
-                })
+            LaunchedEffect(Unit) {
+                storyViewModel.fetchUserStories()
+                Log.d("NHII", "Nhi is fetching story ")
+            }
+
+            LaunchedEffect(userStories) {
+                currentUser?.let { it1 -> viewModelHome.updateUserStories(userStories, it1) }
+            }
+
+
+            currentUser?.let { it1 ->
+                HomeScreen(contentPadding = contentPadding,
+                    uiState = uiState,
+                    currentUser = it1,
+                    onAddStoryClicked = {
+                        navHostController.navigate(Routes.AddStoryScreen.route)
+                    },
+                    onStoryScreenClicked = viewModelHome::onStoryScreenClicked,
+                    onMessagesScreenClicked = {
+                        navHostController.navigate(Routes.MessagesScreen.route)
+                    })
+            }
         }
 
         composable(route = Routes.SearchScreen.route, enterTransition = {
@@ -180,9 +196,12 @@ fun InnerNavigation(
                 )
             }
         ) {
-            AddStoryScreen(
-                navHostController
-            )
+            currentUser?.let { it1 ->
+                AddStoryScreen(
+                    currentUser = it1,
+                    navHostController = navHostController
+                )
+            }
         }
 
         composable(

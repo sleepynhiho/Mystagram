@@ -13,12 +13,16 @@ import com.forrestgump.ig.ui.components.BottomNavBar
 import com.forrestgump.ig.ui.screens.profile.ProfileViewModel
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.forrestgump.ig.ui.screens.home.HomeViewModel
+import com.forrestgump.ig.ui.screens.story.StoryViewModel
+import com.forrestgump.ig.ui.viewmodels.UserViewModel
 
 @UnstableApi
 @Composable
 fun InnerContainer(
     viewModelProfile: ProfileViewModel = hiltViewModel(),
-    viewModelHome: HomeViewModel = hiltViewModel() // Truyền vào để dễ test hơn
+    viewModelHome: HomeViewModel = hiltViewModel(),
+    viewModelUser: UserViewModel = hiltViewModel(),
+    viewModelStory: StoryViewModel = hiltViewModel()
 ) {
     val navHostController = rememberNavController()
     val navBackStackEntry by navHostController.currentBackStackEntryAsState()
@@ -51,6 +55,9 @@ fun InnerContainer(
                 contentPadding = contentPadding,
                 viewModelProfile = viewModelProfile,
                 navHostController = navHostController,
+                userViewModel = viewModelUser,
+                viewModelHome = viewModelHome,
+                storyViewModel = viewModelStory
             )
         }
     )
