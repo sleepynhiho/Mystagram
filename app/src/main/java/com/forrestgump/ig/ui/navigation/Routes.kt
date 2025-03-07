@@ -24,6 +24,7 @@ sealed class Routes(
     data object FollowerScreen: Routes(name = "Follower", route = "FollowerScreen")
     data object FollowingScreen: Routes(name = "Following", route = "FollowingScreen")
     data object EditProfileScreen: Routes(name = "EditProfile", route="EditProfileScreen")
+    data object AddPostDetailScreen : Routes(name = "AddPostDetail", route = "AddPostDetailScreen")
 
     data object Items {
         val bottomNavItems = listOf(

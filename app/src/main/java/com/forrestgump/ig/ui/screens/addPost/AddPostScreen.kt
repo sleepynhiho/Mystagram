@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Context
 import android.net.Uri
 import android.os.Build
-import android.os.Environment
 import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -37,6 +36,7 @@ import androidx.compose.foundation.shape.CircleShape
 import com.forrestgump.ig.R
 import java.io.File
 import android.widget.Toast
+import com.forrestgump.ig.ui.navigation.Routes
 
 
 @Composable
@@ -119,9 +119,16 @@ fun AddPostScreen(navHostController: NavHostController) {
                 )
             }
             Text(text = "Bài viết mới", style = MaterialTheme.typography.titleMedium)
-            TextButton(onClick = { navHostController.navigate("nextScreen") }) {
+            TextButton(onClick = {
+                if (selectedImages.isEmpty()) {
+                    Toast.makeText(context, "Vui lòng chọn hoặc chụp ảnh", Toast.LENGTH_SHORT).show()
+                    return@TextButton
+                }
+                navHostController.navigate(Routes.AddPostDetailScreen.route)
+            }) {
                 Text(text = "Tiếp")
             }
+
         }
 
         // Phần hiển thị ảnh (50% màn hình trên)

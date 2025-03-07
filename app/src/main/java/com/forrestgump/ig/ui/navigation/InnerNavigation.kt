@@ -35,6 +35,7 @@ import com.forrestgump.ig.data.models.Message
 import com.forrestgump.ig.data.models.Notification
 import com.forrestgump.ig.data.models.NotificationType
 import com.forrestgump.ig.data.models.User
+import com.forrestgump.ig.ui.screens.addPost.AddPostDetailScreen
 import com.forrestgump.ig.ui.screens.auth.LoginScreen
 import com.forrestgump.ig.ui.screens.auth.SignupScreen
 import com.forrestgump.ig.ui.screens.addPost.AddPostScreen
@@ -595,6 +596,22 @@ fun InnerNavigation(
             )
         }
 
+        composable(route = Routes.AddPostDetailScreen.route, enterTransition = {
+            fadeIn(animationSpec = tween(350))
+        }, exitTransition = {
+            fadeOut(animationSpec = tween(350))
+        }) {
+            // Giả lập danh sách ảnh bằng cách chuyển URL thành Uri
+            val dummyImages = listOf(
+                android.net.Uri.parse("https://statictuoitre.mediacdn.vn/thumb_w/640/2017/1-1512755474911.jpg"),
+                android.net.Uri.parse("https://uploads.nguoidothi.net.vn/content/f29d9806-6f25-41c0-bcf8-4095317e3497.jpg"),
+                android.net.Uri.parse("https://tophinhanhdep.com/wp-content/uploads/2021/10/720x1480-Wallpapers.jpg")
+            )
+            AddPostDetailScreen(
+                navHostController = navHostController,
+                selectedImages = dummyImages
+            )
+        }
 
     }
 }
