@@ -93,6 +93,4 @@ class StoryRepository @Inject constructor(
                 callback(emptyList())
             }
     }
-
-
 }

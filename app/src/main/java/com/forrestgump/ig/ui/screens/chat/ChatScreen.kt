@@ -12,26 +12,30 @@ import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.forrestgump.ig.ui.screens.chat.components.ChatTopBar
 import com.forrestgump.ig.ui.screens.chat.components.ChatList
 import com.forrestgump.ig.data.models.Chat
+import com.forrestgump.ig.data.models.MessageType
+import com.forrestgump.ig.data.models.User
+import java.util.Date
 
 @Composable
 fun ChatScreen(
-    myUsername: String,
+    currentUser: User,
     chats: List<Chat>,
-    navHostController: NavHostController
+    navHostController: NavHostController,
+    onNewChatClicked: () -> Unit
 ) {
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .background(MainBackground),
         topBar = {
-            ChatTopBar(myUsername, navHostController)
+            ChatTopBar(currentUser.username, navHostController, onNewChatClicked)
         }
     ) { innerPadding ->
         ChatList(
             chats = chats,
             innerPadding = innerPadding,
             navHostController = navHostController,
-            myUsername = myUsername
+            myUserId = currentUser.userId
         )
     }
 }
@@ -39,30 +43,23 @@ fun ChatScreen(
 @Preview
 @Composable
 fun ChatScreenPreview() {
+    val navController = rememberNavController()
+    val dummyChats = listOf(
+        Chat("chat1", "user1", "user2", "Alice", "Bob", "https://randomuser.me/api/portraits/women/1.jpg", "https://randomuser.me/api/portraits/men/1.jpg", "Hello!", MessageType.TEXT, true, false, Date()),
+        Chat("chat2", "user3", "user4", "Charlie", "David", "https://randomuser.me/api/portraits/men/2.jpg", "https://randomuser.me/api/portraits/men/3.jpg", "See you soon!", MessageType.TEXT, false, true, Date()),
+        Chat("chat3", "user5", "user6", "Eve", "Frank", "https://randomuser.me/api/portraits/women/3.jpg", "https://randomuser.me/api/portraits/men/4.jpg", "Great photo!", MessageType.IMAGE, true, true, Date())
+    )
+
+    val currentUser = User(
+        userId = "user1",
+        username = "Alice",
+        profileImage = "https://randomuser.me/api/portraits/women/1.jpg"
+    )
+
     ChatScreen(
-        myUsername = "sleepy",
-        chats = listOf(
-            Chat(
-                chatId = "sleepy_Alice",
-                user1Username = "sleepy",
-                user2Username = "Alice",
-                lastMessage = "Hello!",
-                lastMessageTime = System.currentTimeMillis(),
-                user1ProfileImage = "https://example.com/alice.jpg",
-                user2ProfileImage = "https://example.com/sleepy.jpg",
-                lastMessageRead = true
-            ),
-            Chat(
-                chatId = "sleepy_Bob",
-                user1Username = "sleepy",
-                user2Username = "Bob",
-                lastMessage = "How are you?",
-                lastMessageTime = System.currentTimeMillis(),
-                user1ProfileImage = "https://example.com/bob.jpg",
-                user2ProfileImage = "https://example.com/sleepy.jpg",
-                lastMessageRead = false
-            )
-        ),
-        navHostController = rememberNavController()
+        currentUser = currentUser,
+        chats = dummyChats,
+        navHostController = navController,
+        onNewChatClicked = TODO(),
     )
 }

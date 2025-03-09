@@ -21,7 +21,7 @@ import com.forrestgump.ig.R
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 
 @Composable
-fun TopNavBar(onMessagesScreenClicked: () -> Unit) {
+fun TopNavBar(onChatScreenClicked: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -54,7 +54,7 @@ fun TopNavBar(onMessagesScreenClicked: () -> Unit) {
             Icon(
                 modifier = Modifier
                     .size(28.dp)
-                    .clickable { onMessagesScreenClicked() },
+                    .clickable { onChatScreenClicked() },
                 painter = painterResource(id = R.drawable.messages),
                 tint = MaterialTheme.colorScheme.onBackground,
                 contentDescription = stringResource(R.string.messages)
@@ -66,5 +66,5 @@ fun TopNavBar(onMessagesScreenClicked: () -> Unit) {
 @Preview
 @Composable
 fun TopNavBarPreview() {
-    TopNavBar(onMessagesScreenClicked = {})
+    TopNavBar(onChatScreenClicked = {})
 }

@@ -17,8 +17,9 @@ sealed class Routes(
     data object AddStoryScreen: Routes(name = "AddStory", route = "AddStoryScreen")
     data object MyProfileScreen: Routes(name = "MyProfile", route = "MyProfileScreen")
     data object SettingsScreen: Routes(name = "Settings", route = "SettingsScreen")
-    data object MessagesScreen: Routes(name = "Messages", route = "MessagesScreen")
-    data object ChatBoxScreen: Routes(name = "ChatBox", route = "message_detail")
+    data object ChatScreen: Routes(name = "Chat", route = "ChatScreen")
+    data object ChatBoxScreen: Routes(name = "ChatBox", route = "ChatBoxScreen")
+    data object NewChatScreen: Routes(name = "NewChat", route = "NewChat")
     data object SignupScreen: Routes(name = "Signup", route = "SignupScreen")
     data object LoginScreen: Routes(name = "Login", route = "LoginScreen")
 
@@ -29,10 +30,6 @@ sealed class Routes(
             AddPostScreen,
             NotificationScreen,
             MyProfileScreen
-        )
-
-        val topNavItems = listOf(
-            MessagesScreen
         )
     }
 }

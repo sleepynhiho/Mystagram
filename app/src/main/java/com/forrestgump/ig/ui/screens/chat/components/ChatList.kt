@@ -39,13 +39,15 @@ import coil.compose.AsyncImage
 import com.forrestgump.ig.R
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.forrestgump.ig.data.models.Chat
+import com.forrestgump.ig.data.models.MessageType
+import java.util.Date
 
 @Composable
 fun ChatList(
     chats: List<Chat>,
     innerPadding: PaddingValues,
     navHostController: NavHostController,
-    myUsername: String
+    myUserId: String
 ) {
     LazyColumn(
         contentPadding = innerPadding,
@@ -56,7 +58,7 @@ fun ChatList(
         content = {
             item { ChatHeader() }
             items(chats) { chat ->
-                ChatListItem(chat = chat, navHostController = navHostController, myUsername)
+                ChatListItem(chat = chat, navHostController = navHostController, myUserId)
             }
         }
     )
@@ -89,8 +91,10 @@ fun ChatHeader() {
 fun ChatListItem(
     chat: Chat,
     navHostController: NavHostController,
-    myUsername: String
+    myUserId: String
 ) {
+    val isRead = if (chat.user1Id == myUserId) chat.user1Read else chat.user2Read
+
 
     Row(
         modifier = Modifier
@@ -98,7 +102,7 @@ fun ChatListItem(
             .background(color = MainBackground)
             .height(72.dp)
             .clickable {
-                navHostController.navigate("message_detail/${chat.chatId}")
+                navHostController.navigate("ChatBoxScreen/${chat.chatId}")
             },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
@@ -111,7 +115,7 @@ fun ChatListItem(
         ) {
             AsyncImage(
                 modifier = Modifier.fillMaxSize(),
-                model = if (myUsername == chat.user1Username) chat.user2ProfileImage else chat.user1ProfileImage,
+                model = if (myUserId == chat.user1Id) chat.user2ProfileImage else chat.user1ProfileImage,
                 contentScale = ContentScale.Crop,
                 contentDescription = stringResource(id = R.string.profile_image)
             )
@@ -127,7 +131,7 @@ fun ChatListItem(
             horizontalAlignment = Alignment.Start
         ) {
             Text(
-                text = if (myUsername == chat.user1Username) chat.user2Username else chat.user1Username,
+                text = if (myUserId == chat.user1Id) chat.user2Username else chat.user1Username,
                 style = TextStyle(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Normal,
@@ -137,17 +141,18 @@ fun ChatListItem(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+
             Text(
                 text = chat.lastMessage,
                 style = TextStyle(
                     fontSize = 14.sp,
-                    fontWeight = if (chat.lastMessageRead) FontWeight.Normal else FontWeight.Bold,
-                    color = if (chat.lastMessageRead) Color(0xFF737373) else MaterialTheme.colorScheme.onBackground
+                    fontWeight = if (isRead) FontWeight.Normal else FontWeight.Bold,
+                    color = if (isRead) Color(0xFF737373) else MaterialTheme.colorScheme.onBackground
                 )
             )
         }
 
-        if (!chat.lastMessageRead) {
+        if (!isRead) {
             Box(
                 modifier = Modifier
                     .size(10.dp)
@@ -160,35 +165,19 @@ fun ChatListItem(
     }
 }
 
-
 @Preview
 @Composable
 fun ChatListPreview() {
+    val navController = rememberNavController()
     ChatList(
         chats = listOf(
-            Chat(
-                chatId = "chat_1",
-                user1Username = "sleepy",
-                user2Username = "john_doe",
-                user1ProfileImage = R.drawable.default_profile_img.toString(),
-                user2ProfileImage = R.drawable.default_profile_img.toString(),
-                lastMessage = "Good morning!",
-                lastMessageTime = 234234L,
-                lastMessageRead = false
-            ),
-            Chat(
-                chatId = "chat_2",
-                user1Username = "john_doe",
-                user2Username = "sleepy",
-                user1ProfileImage = R.drawable.default_profile_img.toString(),
-                user2ProfileImage = R.drawable.default_profile_img.toString(),
-                lastMessage = "Hey, what's up?",
-                lastMessageTime = 234235L,
-                lastMessageRead = true
-            )
+            Chat("chat1", "user1", "user2", "Alice", "Bob", "https://randomuser.me/api/portraits/women/1.jpg", "https://randomuser.me/api/portraits/men/1.jpg", "Hello!", MessageType.TEXT, true, false, Date()),
+            Chat("chat2", "user3", "user4", "Charlie", "David", "https://randomuser.me/api/portraits/men/2.jpg", "https://randomuser.me/api/portraits/men/3.jpg", "See you soon!", MessageType.TEXT, false, true, Date()),
+            Chat("chat3", "user5", "user6", "Eve", "Frank", "https://randomuser.me/api/portraits/women/3.jpg", "https://randomuser.me/api/portraits/men/4.jpg", "Great photo!", MessageType.IMAGE, true, true, Date())
         ),
-        innerPadding = PaddingValues(0.dp),
-        navHostController = rememberNavController(),
-        myUsername = "sleepy" 
+        innerPadding = PaddingValues(),
+        navHostController = navController,
+        myUserId = "user1"
     )
 }
+

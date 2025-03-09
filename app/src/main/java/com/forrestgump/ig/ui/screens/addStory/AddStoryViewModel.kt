@@ -46,7 +46,7 @@ class AddStoryViewModel @Inject constructor(
 
                 val userId = user.userId
                 val username = user.username
-                val profileImage = "" // fix this
+                val profileImage = user.profileImage
 
                 val inputStream = context.contentResolver.openInputStream(imageUri)
                     ?: throw IllegalArgumentException("Không thể đọc ảnh")
@@ -55,7 +55,6 @@ class AddStoryViewModel @Inject constructor(
                     outputStream().use { inputStream.copyTo(it) }
                 }
 
-                // Upload file tạm thời lên Cloudinary
                 val uploadResult =
                     cloudinary.uploader().upload(tempFile, mapOf("folder" to "stories"))
                 val imageUrl = uploadResult["url"] as String

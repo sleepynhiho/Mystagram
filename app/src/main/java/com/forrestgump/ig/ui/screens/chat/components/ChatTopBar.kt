@@ -32,7 +32,8 @@ import com.forrestgump.ig.utils.constants.Utils.MainBackground
 @Composable
 fun ChatTopBar(
     myUsername: String,
-    navHostController: NavHostController
+    navHostController: NavHostController,
+    onNewChatClicked: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -76,7 +77,8 @@ fun ChatTopBar(
         Icon(
             modifier = Modifier
                 .size(37.dp)
-                .padding(5.dp),
+                .padding(5.dp)
+                .clickable { onNewChatClicked() },
             painter = painterResource(id = R.drawable.new_message),
             tint = MaterialTheme.colorScheme.onBackground,
             contentDescription = stringResource(id = R.string.add_new_message)
@@ -92,6 +94,7 @@ fun ChatTopBar(
 fun ChatTopBarPreview() {
     ChatTopBar(
         myUsername = "sleepy",
-        navHostController = rememberNavController()
+        navHostController = rememberNavController(),
+        onNewChatClicked = TODO()
     )
 }

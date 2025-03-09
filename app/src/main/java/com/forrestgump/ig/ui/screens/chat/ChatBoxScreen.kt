@@ -19,20 +19,19 @@ import com.forrestgump.ig.ui.screens.chat.components.ChatBoxTopBar
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.forrestgump.ig.data.models.Chat
 import com.forrestgump.ig.data.models.Message
+import com.forrestgump.ig.data.models.MessageType
+import com.forrestgump.ig.data.models.User
+import java.util.Date
 import java.util.UUID
 
 @Composable
 fun ChatBoxScreen(
-    myUsername: String,
+    currentUser: User,
     chat: Chat,
     messages: List<Message>,
     navHostController: NavHostController
 ) {
     var updatedChat by remember { mutableStateOf(chat) }
-
-    updatedChat = updatedChat.copy(
-        lastMessageRead = true
-    )
 
     Scaffold(
         modifier = Modifier
@@ -42,24 +41,27 @@ fun ChatBoxScreen(
             ChatBoxTopBar(
                 navHostController = navHostController,
                 chat = updatedChat,
-                myUsername = myUsername
+                myUserId = currentUser.userId
             )
         },
         bottomBar = {
             ChatBoxInputBar(
                 onSendMessage = { messageContent ->
                     val newMessage = Message(
-                        messageID = UUID.randomUUID().toString(),
-                        senderUsername = myUsername,
+                        senderId = currentUser.userId,
                         content = messageContent,
-                        timestamp = System.currentTimeMillis(),
-                        isRead = true
+                        isRead = true,
+                        messageType = MessageType.TEXT,
                     )
-                    updatedChat = updatedChat.copy(
-                        lastMessage = newMessage.content,
-                        lastMessageTime = newMessage.timestamp,
-                        lastMessageRead = newMessage.isRead
-                    )
+
+                    updatedChat = newMessage.content?.let {
+                        updatedChat.copy(
+                            lastMessage = it,
+                            lastMessageTime = newMessage.timestamp,
+                            user1Read = updatedChat.user1Id == currentUser.userId,
+                            user2Read = updatedChat.user2Id == currentUser.userId
+                        )
+                    }!!
                 },
                 onUploadImage = {
                     // Xử lý khi tải ảnh lên
@@ -68,7 +70,7 @@ fun ChatBoxScreen(
         }
     ) { innerPadding ->
         ChatBoxContent(
-            myUsername, updatedChat, messages,
+            currentUser.userId, updatedChat, messages,
             innerPadding = innerPadding
         )
     }
@@ -77,41 +79,46 @@ fun ChatBoxScreen(
 @Preview
 @Composable
 fun ChatBoxScreenPreview() {
+    val navController = rememberNavController()
+    val dummyChat = Chat(
+        chatId = "chat1",
+        user1Id = "user1",
+        user2Id = "user2",
+        user1Username = "Alice",
+        user2Username = "Bob",
+        user1ProfileImage = "https://randomuser.me/api/portraits/women/1.jpg",
+        user2ProfileImage = "https://randomuser.me/api/portraits/men/1.jpg",
+        lastMessage = "Hello!",
+        lastMessageType = MessageType.TEXT,
+        user1Read = true,
+        user2Read = false,
+        lastMessageTime = Date()
+    )
+
+    val dummyMessages = listOf(
+        Message("msg1", "user1", MessageType.TEXT, "Hello!", null, true, Date()),
+        Message("msg2", "user2", MessageType.TEXT, "Hi Alice!", null, false, Date()),
+        Message("msg3", "user1", MessageType.TEXT, "How are you?", null, true, Date()),
+        Message("msg4", "user2", MessageType.TEXT, "I'm good, you?", null, false, Date()),
+        Message("msg5", "user1", MessageType.IMAGE, null, "https://picsum.photos/200", true, Date()),
+        Message("msg6", "user2", MessageType.TEXT, "Nice photo!", null, false, Date()),
+        Message("msg7", "user1", MessageType.TEXT, "Thanks!", null, true, Date()),
+        Message("msg8", "user2", MessageType.IMAGE, null, "https://picsum.photos/201", false, Date()),
+        Message("msg9", "user1", MessageType.TEXT, "Where was that?", null, true, Date()),
+        Message("msg10", "user2", MessageType.TEXT, "At the beach!", null, false, Date())
+    )
+
+    val currentUser = User(
+        userId = "user1",
+        username = "Alice",
+        profileImage = "https://randomuser.me/api/portraits/women/1.jpg"
+    )
+
     ChatBoxScreen(
-        myUsername = "sleepy",
-        chat = Chat(
-            chatId = "chat_123",
-            user1Username = "sleepy",
-            user2Username = "John Doe",
-            user1ProfileImage = R.drawable.default_profile_img.toString(),
-            user2ProfileImage = R.drawable.default_profile_img.toString(),
-            lastMessage = "Hey, what's up?",
-            lastMessageTime = 234235L,
-            lastMessageRead = true
-        ),
-        messages = listOf(
-            Message(
-                messageID = "3",
-                senderUsername = "sleepy",
-                content = "I'm trying to wake up in the morning but it's so hard",
-                timestamp = 234235L,
-                isRead = true
-            ),
-            Message(
-                messageID = "2",
-                senderUsername = "John Doe",
-                content = "Did you try setting an alarm?",
-                timestamp = 234230L,
-                isRead = true
-            ),
-            Message(
-                messageID = "1",
-                senderUsername = "sleepy",
-                content = "Yeah, but I always snooze it.",
-                timestamp = 234225L,
-                isRead = true
-            )
-        ),
-        navHostController = rememberNavController()
+        currentUser = currentUser,
+        chat = dummyChat,
+        messages = dummyMessages,
+        navHostController = navController
     )
 }
+
