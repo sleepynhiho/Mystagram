@@ -31,16 +31,18 @@ import com.forrestgump.ig.R
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.forrestgump.ig.data.models.Chat
 import com.forrestgump.ig.data.models.Message
+import com.forrestgump.ig.data.models.MessageType
+import java.util.Date
 
 @Composable
 fun ChatBoxContent(
-    myUsername: String,
+    myUserId: String,
     chat: Chat,
     messages: List<Message>,
     innerPadding: PaddingValues
 ) {
-    val otherUsername = if (myUsername == chat.user1Username) chat.user2Username else chat.user1Username
-    val otherUserProfileImage = if (myUsername == chat.user1Username) chat.user2ProfileImage else chat.user1ProfileImage
+    val otherUsername = if (myUserId == chat.user1Id) chat.user2Username else chat.user1Username
+    val otherUserProfileImage = if (myUserId == chat.user1Id) chat.user2ProfileImage else chat.user1ProfileImage
 
     LazyColumn(
         contentPadding = innerPadding,
@@ -50,7 +52,7 @@ fun ChatBoxContent(
         reverseLayout = true // Latest message
     ) {
         items(messages) { message ->
-            val isMine = myUsername == message.senderUsername
+            val isMine = myUserId == message.senderId
 
             Row(
                 modifier = Modifier
@@ -85,11 +87,13 @@ fun ChatBoxContent(
                         .padding(horizontal = 10.dp, vertical = 8.dp)
                         .widthIn(min = 10.dp, max = 190.dp)
                 ) {
-                    Text(
-                        text = message.content,
-                        color = if (!isMine) Color.Black else Color.White,
-                        fontSize = 15.sp
-                    )
+                    message.content?.let {
+                        Text(
+                            text = it,
+                            color = if (!isMine) Color.Black else Color.White,
+                            fontSize = 15.sp
+                        )
+                    }
                 }
             }
         }
@@ -99,46 +103,38 @@ fun ChatBoxContent(
 @Preview
 @Composable
 fun ChatBoxContentPreview() {
-    val chat = Chat(
-        chatId = "123",
-        user1Username = "sleepy",
-        user2Username = "John Doe",
-        user1ProfileImage = R.drawable.default_profile_img.toString(),
-        user2ProfileImage = R.drawable.default_profile_img.toString(),
-        lastMessage = "Hey, what's up?",
-        lastMessageTime = 234235L,
-        lastMessageRead = true
+    val sampleChat = Chat(
+        chatId = "chat123",
+        user1Id = "user1",
+        user2Id = "user2",
+        user1Username = "Alice",
+        user2Username = "Bob",
+        user1ProfileImage = "https://randomuser.me/api/portraits/women/1.jpg",
+        user2ProfileImage = "https://randomuser.me/api/portraits/men/1.jpg",
+        lastMessage = "Hey, how are you?",
+        lastMessageType = MessageType.TEXT,
+        user1Read = true,
+        user2Read = false,
+        lastMessageTime = Date()
     )
 
-    val messages = listOf(
-        Message(
-            messageID = "3",
-            senderUsername = "sleepy",
-            content = "I'm trying to wake up in the morning but it's so hard",
-            timestamp = 234235L,
-            isRead = true
-        ),
-        Message(
-            messageID = "2",
-            senderUsername = "John Doe",
-            content = "Long message content to check UI layout",
-            timestamp = 234235L,
-            isRead = true
-        ),
-        Message(
-            messageID = "1",
-            senderUsername = "John Doe",
-            content = "Hey, what's up?",
-            timestamp = 234235L,
-            isRead = true
-        )
+    val sampleMessages = listOf(
+        Message("msg1", "user1", MessageType.TEXT, "Hello!", null, true, Date()),
+        Message("msg2", "user2", MessageType.IMAGE, null, "https://picsum.photos/200", false, Date()),
+        Message("msg3", "user1", MessageType.TEXT, "What's up?", null, true, Date()),
+        Message("msg4", "user2", MessageType.TEXT, "Not much, you?", null, false, Date()),
+        Message("msg5", "user1", MessageType.IMAGE, null, "https://picsum.photos/201", true, Date()),
+        Message("msg6", "user2", MessageType.TEXT, "Nice pic!", null, false, Date()),
+        Message("msg7", "user1", MessageType.TEXT, "Thanks!", null, true, Date()),
+        Message("msg8", "user2", MessageType.IMAGE, null, "https://picsum.photos/202", false, Date()),
+        Message("msg9", "user1", MessageType.TEXT, "Where was that?", null, true, Date()),
+        Message("msg10", "user2", MessageType.TEXT, "At the beach!", null, false, Date())
     )
 
     ChatBoxContent(
-        myUsername = "sleepy",
-        chat = chat,
-        messages = messages,
-        innerPadding = PaddingValues(0.dp)
+        myUserId = "user1",
+        chat = sampleChat,
+        messages = sampleMessages,
+        innerPadding = PaddingValues()
     )
 }
-

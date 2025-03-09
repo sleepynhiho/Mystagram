@@ -60,6 +60,7 @@ import coil.request.ImageRequest
 import com.forrestgump.ig.R
 import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.ui.screens.addStory.components.AddStoryTopBar
+import com.forrestgump.ig.ui.screens.addStory.components.TransformableImageBox
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -85,11 +86,10 @@ fun AddStoryScreen(
     val pickMediaLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        if (uri != null ) {
+        if (uri != null) {
             mediaUris.clear()
             uri.let { mediaUris.add(it) }
-        }
-        else {
+        } else {
             imagePickedDismissed = true
         }
     }
@@ -314,138 +314,6 @@ fun saveBitmapToCache(context: Context, bitmap: Bitmap): Uri {
     return FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
 }
 
-
-
-@Composable
-fun TransformableImageBox(
-    uri: String,
-    onBitmapReady: (Bitmap?) -> Unit,
-    onTransformChange: (Float, Offset, Float) -> Unit,
-    addTextClicked: Boolean,
-    onTextTransformChange: (Float, Offset, Float) -> Unit,
-    userInputText: String,
-    onUserTextChange: (String) -> Unit
-) {
-    var scale by remember { mutableFloatStateOf(1f) }
-    var offset by remember { mutableStateOf(Offset(0f, 0f)) }
-    var rotationAngle by remember { mutableFloatStateOf(0f) }
-    var dominantColor by remember { mutableStateOf(Color.Black) }
-
-    var textScale by remember { mutableFloatStateOf(1f) }
-    var textOffset by remember { mutableStateOf(Offset(0f, 0f)) }
-    var textRotationAngle by remember { mutableFloatStateOf(0f) }
-
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(dominantColor)
-                .pointerInput(Unit) {
-                    detectTransformGestures { _, pan, zoom, rotation ->
-                        scale *= zoom
-                        offset = Offset(offset.x + pan.x, offset.y + pan.y)
-                        rotationAngle += rotation
-                        onTransformChange(scale, offset, rotationAngle)
-                    }
-                },
-            contentAlignment = Alignment.Center
-        ) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(uri)
-                    .allowHardware(false)
-                    .build(),
-                contentDescription = "Transformable Image",
-                modifier = Modifier.graphicsLayer(
-                    scaleX = scale,
-                    scaleY = scale,
-                    translationX = offset.x,
-                    translationY = offset.y,
-                    rotationZ = rotationAngle
-                ),
-                onSuccess = { result ->
-                    val bitmap = (result.result.drawable as BitmapDrawable).bitmap
-                    onBitmapReady(bitmap)
-
-                    // Extract dominant color of the image
-                    Palette.from(bitmap).generate { palette ->
-                        palette?.let {
-                            dominantColor = Color(it.getDominantColor(Color.Black.toArgb()))
-                        }
-                    }
-                }
-            )
-        }
-
-        val density = LocalDensity.current
-        val textMeasurer = rememberTextMeasurer()
-
-        val measuredTextSize = if (userInputText.isNotEmpty()) {
-            textMeasurer.measure(
-                text = userInputText,
-                style = TextStyle(
-                    fontSize = (20f * textScale).sp,
-                    textAlign = TextAlign.Center
-                )
-            ).size
-        } else {
-            IntSize(15, 60) // ✅ Set aa reasonable default size when text is empty
-        }
-
-        if (addTextClicked) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pointerInput(Unit) {
-                        detectTransformGestures { _, pan, zoom, rotation ->
-                            textScale *= zoom
-                            textOffset = Offset(textOffset.x + pan.x, textOffset.y + pan.y)
-                            textRotationAngle += rotation
-                            onTextTransformChange(textScale, textOffset, textRotationAngle)
-                        }
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                BasicTextField(
-                    value = userInputText,
-                    onValueChange = onUserTextChange,
-                    textStyle = TextStyle(
-                        fontSize = (20f * textScale).sp,
-                        color = Color.Black,
-                        textAlign = TextAlign.Center
-                    ),
-                    modifier = Modifier
-                        .graphicsLayer(
-                            translationX = textOffset.x,
-                            translationY = textOffset.y,
-                            scaleX = textScale,
-                            scaleY = textScale,
-                            rotationZ = textRotationAngle
-                        )
-                        .background(
-                            Color.White.copy(alpha = 0.7f),
-                            shape = RoundedCornerShape(8.dp * textScale)
-                        )
-                        .padding(horizontal = 8.dp * textScale, vertical = 4.dp * textScale)
-                        .size(
-                            width = with(density) { measuredTextSize.width.toDp() } + 8.dp,
-                            height = with(density) { measuredTextSize.height.toDp() } + 4.dp
-                        )
-                )
-            }
-
-            LaunchedEffect(textScale) {
-                Log.d("NHII", "TextScale: $textScale")
-                val resolvedTextSizePx = with(density) { (20f * textScale).sp.toPx() }
-                Log.d("NHII", "density11: $density ")
-                Log.d("NHII", "fontsize: $resolvedTextSizePx ")
-            }
-
-        }
-    }
-}
 
 fun createTransformedBitmap(
     originalBitmap: Bitmap,

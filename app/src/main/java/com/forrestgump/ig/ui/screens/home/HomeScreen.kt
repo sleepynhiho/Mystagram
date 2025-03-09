@@ -41,7 +41,7 @@ fun HomeScreen(
     currentUser: User,
     onAddStoryClicked: () -> Unit,
     onStoryScreenClicked: (Boolean, Int) -> Unit,
-    onMessagesScreenClicked: () -> Unit,
+    onChatScreenClicked: () -> Unit,
 ) {
     var userStoryIndex by remember { mutableIntStateOf(0) }
     var isMyStory by remember { mutableStateOf(true) }
@@ -60,7 +60,7 @@ fun HomeScreen(
                 Posts(
                     contentPadding = contentPadding,
                 ) {
-                    TopNavBar(onMessagesScreenClicked)
+                    TopNavBar(onChatScreenClicked)
 
                     StoryList(
                         currentUser = currentUser,
@@ -147,7 +147,7 @@ fun HomeScreenPreview() {
         contentPadding = PaddingValues(),
         uiState = uiState,
         onAddStoryClicked = {},
-        onMessagesScreenClicked = {},
+        onChatScreenClicked = {},
         currentUser = TODO(),
         onStoryScreenClicked = TODO(),
     )
