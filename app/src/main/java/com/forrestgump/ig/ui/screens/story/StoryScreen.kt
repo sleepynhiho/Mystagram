@@ -12,9 +12,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.tooling.preview.Preview
+import com.forrestgump.ig.data.models.Story
 import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.data.models.UserStory
 import com.forrestgump.ig.ui.screens.story.components.UserStoryDetail
+import java.util.Date
 
 @Composable
 fun StoryScreen(
@@ -25,8 +27,6 @@ fun StoryScreen(
     userStoryIndex: Int,
     onUserStoryIndexChanged: (Int) -> Unit
 ) {
-    Log.d("NHII UserStories:", " ${userStories()}")
-
 
     AnimatedVisibility(
         visible = visible,
@@ -44,7 +44,6 @@ fun StoryScreen(
         val currentUserStory = userStories().getOrNull(userStoryIndex) ?: return@AnimatedVisibility
         val stories = currentUserStory.stories
 
-        Log.d("NHII currentUserStory", currentUserStory.toString())
 
         UserStoryDetail(
             currentUser = currentUser,
@@ -71,4 +70,77 @@ fun StoryScreen(
 
         BackHandler(onBack = onDismiss)
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun StoryScreenPreview() {
+    val sampleUser = User(
+        userId = "123",
+        username = "john_doe",
+        fullName = "John Doe",
+        email = "john@example.com",
+        profileImage = "https://randomuser.me/api/portraits/men/1.jpg",
+        bio = "Love coding ❤️",
+        followers = listOf("user1", "user2"),
+        following = listOf("user3", "user4")
+    )
+
+    val sampleStories = listOf(
+        UserStory(
+            userId = "123",
+            username = "john_doe",
+            profileImage = "https://randomuser.me/api/portraits/men/1.jpg",
+            stories = listOf(
+                Story(
+                    storyId = "1",
+                    username = "john_doe",
+                    media = "https://source.unsplash.com/random/1080x1920?nature",
+                    views = listOf("user1", "user2"),
+                    mimeType = "image/jpeg",
+                    timestamp = Date(System.currentTimeMillis() - 5 * 60 * 1000) // 5 mins ago
+                ),
+                Story(
+                    storyId = "2",
+                    username = "john_doe",
+                    media = "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4",
+                    views = listOf("user3", "user4"),
+                    mimeType = "video/mp4",
+                    timestamp = Date(System.currentTimeMillis() - 30 * 60 * 1000) // 30 mins ago
+                )
+            )
+        ),
+        UserStory(
+            userId = "456",
+            username = "jane_smith",
+            profileImage = "https://randomuser.me/api/portraits/women/2.jpg",
+            stories = listOf(
+                Story(
+                    storyId = "3",
+                    username = "jane_smith",
+                    media = "https://source.unsplash.com/random/1080x1920?city",
+                    views = listOf("user5"),
+                    mimeType = "image/jpeg",
+                    timestamp = Date(System.currentTimeMillis() - 2 * 60 * 60 * 1000) // 2 hours ago
+                ),
+                Story(
+                    storyId = "4",
+                    username = "jane_smith",
+                    media = "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_5mb.mp4",
+                    views = listOf(),
+                    mimeType = "video/mp4",
+                    timestamp = Date(System.currentTimeMillis() - 6 * 60 * 60 * 1000) // 6 hours ago
+                )
+            )
+        )
+    )
+
+    StoryScreen(
+        visible = true,
+        currentUser = sampleUser,
+        onDismiss = {},
+        userStories = { sampleStories },
+        userStoryIndex = 0,
+        onUserStoryIndexChanged = {}
+    )
 }
