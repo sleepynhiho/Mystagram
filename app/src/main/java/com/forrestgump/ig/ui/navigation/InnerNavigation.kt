@@ -38,7 +38,6 @@ import com.forrestgump.ig.data.models.MessageType
 import com.forrestgump.ig.data.models.Notification
 import com.forrestgump.ig.data.models.NotificationType
 import com.forrestgump.ig.data.models.User
-import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.ui.screens.addPost.AddPostDetailScreen
 import com.forrestgump.ig.ui.screens.auth.LoginScreen
 import com.forrestgump.ig.ui.screens.auth.SignupScreen
