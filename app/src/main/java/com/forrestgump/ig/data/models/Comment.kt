@@ -9,13 +9,13 @@ import java.util.Date
 @Keep
 @Parcelize
 data class Comment(
-    var commentId: String = "",         // ID bình luận
-    var postId: String = "",            // ID bài viết liên quan
-    var userId: String = "",            // ID người bình luận
-    var username: String = "",          // Username của người bình luận
-    var profileImageUrl: String = "",   // Ảnh đại diện của người bình luận
-    var content: String = "",           // Nội dung bình luận
+    var commentId: String = "",      // ID của bình luận
+    var postId: String = "",         // ID bài viết mà bình luận thuộc về
+    var userId: String = "",         // ID người bình luận
+    var username: String = "",       // Username người bình luận
+    var profileImage: String = "", // Ảnh đại diện người bình luận
+    var text: String = "",           // Nội dung bình luận
 
     @ServerTimestamp
-    var timestamp: Date? = null         // Thời gian bình luận
+    var timestamp: Date? = null      // Thời gian bình luận
 ) : Parcelable

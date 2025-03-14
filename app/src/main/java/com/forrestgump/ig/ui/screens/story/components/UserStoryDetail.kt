@@ -1,5 +1,6 @@
 package com.forrestgump.ig.ui.screens.story.components
 
+import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
@@ -26,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -34,29 +36,36 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.forrestgump.ig.R
 import com.forrestgump.ig.utils.constants.formatAsElapsedTime
 import com.forrestgump.ig.data.models.Story
+import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.data.models.UserStory
 import java.util.Date
 
 
 @Composable
 fun UserStoryDetail(
-    currentUsername: String,
+    currentUser: User,
     currentStoryIndex: Int,
     userStory: UserStory,
     modifier: Modifier = Modifier,
     isStoryActive: Boolean,
     isPaused: Boolean,
     onProgressComplete: () -> Unit
-
 ) {
     val alphaOnPress by animateFloatAsState(
         targetValue = if (isPaused) 0f else 1f,
         animationSpec = tween(durationMillis = 600),
         label = "alphaOnPress"
     )
+    val sortedUserStory = userStory.copy(stories = userStory.stories.sortedBy { it.timestamp })
+
+
+
+    Log.d("NHII CURRENT STORY: ", sortedUserStory.toString())
 
     Column(
         modifier = Modifier
@@ -79,33 +88,24 @@ fun UserStoryDetail(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-//                    // fix: thêm nếu có ảnh thì...
-//                    AsyncImage(
-//                        model = ImageRequest.Builder(LocalContext.current)
-//                            .data(userStory.stories[currentStoryIndex].image)
-//                            .crossfade(true)
-//                            .allowHardware(false)
-//                            .listener(
-//                                onStart = { isImageLoaded.value = false },
-//                                onSuccess = { _, _ -> isImageLoaded.value = true }
-//                            )
-//                            .build(),
-//                        contentScale = ContentScale.Fit,
-//                        contentDescription = stringResource(id = R.string.user_story, userStory.username),
-//                        modifier = Modifier
-//                            .fillMaxSize()
-//                            .alpha(if (isImageLoaded.value) 1f else 0f) // Ẩn ảnh nếu chưa tải xong
-//                    )
-
                     Surface(
                         modifier = Modifier
                             .fillMaxSize()
                     ) {
+
+
+                        Log.d("NHII current media", sortedUserStory.stories[currentStoryIndex].media)
+                        Log.d("NHII currentStoryIndex: ", currentStoryIndex.toString())
+
+                        val secureUrl = sortedUserStory.stories[currentStoryIndex].media.replace(
+                            "http://",
+                            "https://"
+                        )
                         AsyncImage(
                             modifier = Modifier.fillMaxSize(),
-                            model = "https://cdn.mos.cms.futurecdn.net/wtqqnkYDYi2ifsWZVW2MT4.jpg",
+                            model = secureUrl,
                             contentScale = ContentScale.Crop,
-                            contentDescription = stringResource(id = R.string.profile_image)
+                            contentDescription = "User Story"
                         )
                     }
 
@@ -127,12 +127,10 @@ fun UserStoryDetail(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
-                            userStory.stories.forEach { story ->
+                            sortedUserStory.stories.forEachIndexed { index, _ ->
                                 StoryProgressTrack(
                                     modifier = Modifier.weight(1f),
-                                    isStoryActive = isStoryActive && currentStoryIndex == userStory.stories.indexOf(
-                                        story
-                                    ),
+                                    isStoryActive = isStoryActive && currentStoryIndex == index,
                                     isPaused = isPaused,
                                     onProgressComplete = onProgressComplete
                                 )
@@ -140,8 +138,8 @@ fun UserStoryDetail(
                         }
 
                         StoryHeader(
-                            currentUsername = currentUsername,
-                            userStory = userStory,
+                            currentUser = currentUser,
+                            userStory = sortedUserStory,
                             currentStoryIndex = currentStoryIndex,
                             onProgressComplete = onProgressComplete
                         )
@@ -154,7 +152,7 @@ fun UserStoryDetail(
 
 @Composable
 fun StoryHeader(
-    currentUsername: String,
+    currentUser: User,
     userStory: UserStory,
     currentStoryIndex: Int,
     modifier: Modifier = Modifier,
@@ -194,7 +192,7 @@ fun StoryHeader(
 
             // Author's username
             Text(
-                text = if (userStory.username == currentUsername) stringResource(id = R.string.your_story) else userStory.username,
+                text = if (userStory.userId == currentUser.userId) stringResource(id = R.string.your_story) else userStory.username,
                 style = TextStyle(
                     color = Color.White,
                     fontSize = 19.sp,
@@ -247,11 +245,11 @@ private fun UserStoryDetailPreview() {
                 )
             )
         ),
-        currentUsername = "1",
         currentStoryIndex = 0,
         isPaused = false,
         modifier = Modifier,
         isStoryActive = true,
-        onProgressComplete = { }
+        onProgressComplete = { },
+        currentUser = TODO()
     )
 }

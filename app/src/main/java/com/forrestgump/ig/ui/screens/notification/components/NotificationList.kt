@@ -133,7 +133,7 @@ fun NotificationListItem(
             .background(color = MainBackground)
             .height(72.dp)
             .clickable {
-//                navHostController.navigate("message_detail/${chat.chatId}")
+//                navHostController.navigate("ChatBoxScreen/${chat.chatId}")
             },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start

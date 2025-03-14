@@ -9,6 +9,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -21,13 +22,13 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import com.forrestgump.ig.ui.screens.home.components.TopNavBar
 import com.forrestgump.ig.ui.screens.story.StoryScreen
-import com.forrestgump.ig.ui.screens.story.Stories
 import com.forrestgump.ig.ui.components.Loading
 import com.forrestgump.ig.ui.components.Posts
 import com.forrestgump.ig.ui.components.StoryList
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.data.models.Story
+import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.data.models.UserStory
 import com.forrestgump.ig.ui.components.PostItem
 import java.util.Date
@@ -37,37 +38,13 @@ import java.util.Date
 fun HomeScreen(
     contentPadding: PaddingValues,
     uiState: UiState,
-    userProfileImage: String,
-    currentUsername: String,
+    currentUser: User,
     onAddStoryClicked: () -> Unit,
-    onStoryScreenClicked: (Boolean) -> Unit,
-    onMessagesScreenClicked: () -> Unit
+    onStoryScreenClicked: (Boolean, Int) -> Unit,
+    onChatScreenClicked: () -> Unit,
 ) {
-
     var userStoryIndex by remember { mutableIntStateOf(0) }
-    var selectedStoryType by remember { mutableStateOf(Stories.USER_STORY) }
-
-    // Thêm mock data nếu userStories rỗng
-    val mockUserStories = listOf(
-        UserStory(
-            username = "johndoe",
-            profileImage = "https://randomuser.me/api/portraits/men/1.jpg",
-            stories = listOf(
-                Story(
-                    username = "johndoe",
-                    media = "https://via.placeholder.com/300",
-                    timestamp = Date()
-                )
-            )
-        )
-    )
-
-    val finalUiState = if (uiState.userStories.isEmpty()) {
-        uiState.copy(userStories = mockUserStories)
-    } else {
-        uiState
-    }
-
+    var isMyStory by remember { mutableStateOf(true) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -83,24 +60,18 @@ fun HomeScreen(
                 Posts(
                     contentPadding = contentPadding,
                 ) {
-                    TopNavBar(onMessagesScreenClicked)
+                    TopNavBar(onChatScreenClicked)
 
                     StoryList(
-                        profileImage = userProfileImage,
-                        currentUsername = currentUsername,
+                        currentUser = currentUser,
                         onAddStoryClicked = onAddStoryClicked,
-                        onViewMyStoryClick = {
-                            userStoryIndex = 0
-                            selectedStoryType = Stories.MY_STORY
-                            onStoryScreenClicked(true)
+                        onViewStoryClicked = { index, myStory ->
+                            userStoryIndex = index
+                            onStoryScreenClicked(true, userStoryIndex)
+                            isMyStory = myStory
                         },
-                        onStoryClick = { storyIndex ->
-                            userStoryIndex = storyIndex
-                            selectedStoryType = Stories.USER_STORY
-                            onStoryScreenClicked(true)
-                        },
-                        userStories = finalUiState.userStories,
-                        myStories = finalUiState.myStories
+                        userStories = uiState.userStories,
+                        myStories = uiState.myStories
                     )
 
                     HorizontalDivider(
@@ -136,15 +107,13 @@ fun HomeScreen(
     }
 
     StoryScreen(
-        visible = finalUiState.showStoryScreen,
-        userStories = {
-            if (selectedStoryType == Stories.MY_STORY) finalUiState.myStories else finalUiState.userStories
-        },
-        currentUsername = currentUsername,
-        onDismiss = { onStoryScreenClicked(false) }
+        visible = uiState.showStoryScreen,
+        currentUser = currentUser,
+        onDismiss = { onStoryScreenClicked(false, 0) },
+        userStories = { if(isMyStory) uiState.myStories else uiState.userStories },
+        onUserStoryIndexChanged = { newIndex -> userStoryIndex = newIndex },
+        userStoryIndex = userStoryIndex
     )
-
-
 }
 
 @UnstableApi
@@ -177,10 +146,9 @@ fun HomeScreenPreview() {
     HomeScreen(
         contentPadding = PaddingValues(),
         uiState = uiState,
-        userProfileImage = "https://static.vecteezy.com/system/resources/previews/004/899/680/non_2x/beautiful-blonde-woman-with-makeup-avatar-for-a-beauty-salon-illustration-in-the-cartoon-style-vector.jpg",
-        currentUsername = "123",
         onAddStoryClicked = {},
-        onStoryScreenClicked = {},
-        onMessagesScreenClicked = {},
+        onChatScreenClicked = {},
+        currentUser = TODO(),
+        onStoryScreenClicked = TODO(),
     )
 }

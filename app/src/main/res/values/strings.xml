@@ -18,4 +18,8 @@
     <string name="upload_image">Upload image in message</string>
     <string name="send_message">Send message</string>
     <string name="notification_header">Recent</string>
+    <string name="new_chat">New message</string>
+    <string name="new_chat_header">Suggested</string>
+    <string name="search_new_chat">To:</string>
+    <string name="search_placeholder">Search</string>
 </resources>

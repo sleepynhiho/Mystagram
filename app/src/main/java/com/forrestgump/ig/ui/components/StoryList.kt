@@ -1,20 +1,24 @@
 package com.forrestgump.ig.ui.components
 
+import androidx.annotation.OptIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.media3.common.util.Log
+import androidx.media3.common.util.UnstableApi
+import com.forrestgump.ig.R
 import com.forrestgump.ig.ui.screens.story.components.AddStoryCard
 import com.forrestgump.ig.data.models.Story
+import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.data.models.UserStory
 
+@OptIn(UnstableApi::class)
 @Composable
 fun StoryList(
-    profileImage: String,
-    currentUsername: String,
+    currentUser: User,
     onAddStoryClicked: () -> Unit,
-    onViewMyStoryClick: () -> Unit,
-    onStoryClick: (storyIndex: Int) -> Unit,
+    onViewStoryClicked: (storyIndex: Int, isMyStory: Boolean) -> Unit,
     userStories: List<UserStory>,
     myStories: List<UserStory>
 ) {
@@ -24,27 +28,34 @@ fun StoryList(
                 if (myStories.isNotEmpty() && myStories.first().stories.isNotEmpty()) {
                     UserStoryCard(
                         userStory = myStories.first(),
-                        currentUsername = currentUsername,
-                        onClick = onViewMyStoryClick
+                        currentUser = currentUser,
+                        onViewStoryClicked = { onViewStoryClicked(0, true) },
+                        onAddStoryClicked = onAddStoryClicked
                     )
                 } else {
                     AddStoryCard(
-                        myProfileImage = profileImage,
+                        myProfileImage = (currentUser.profileImage.ifEmpty { R.drawable.default_profile_img }).toString(),
                         onClick = onAddStoryClicked
                     )
                 }
             }
+            Log.d("NHII", "HEREEEE")
+            Log.d("NHII user stories: ", userStories.toString())
 
             if (userStories.isNotEmpty()) {
+
                 items(
                     items = userStories,
                     key = { userStory -> userStory.username }
                 ) { story ->
                     UserStoryCard(
                         userStory = story,
-                        currentUsername = currentUsername,
-                        onClick = { onStoryClick(userStories.indexOf(story)) }
+                        currentUser = currentUser,
+                        onViewStoryClicked = { onViewStoryClicked(userStories.indexOf(story), false) },
+                        onAddStoryClicked = onAddStoryClicked
                     )
+                    Log.d("NHII userstorycard", story.toString())
+                    Log.d("NHII index clicked: ", userStories.indexOf(story).toString())
                 }
             }
         }
@@ -55,11 +66,7 @@ fun StoryList(
 @Composable
 fun StoryListPreview() {
     StoryList(
-        profileImage = "",
-        currentUsername = "",
         onAddStoryClicked = { },
-        onViewMyStoryClick = { },
-        onStoryClick = { },
         userStories = listOf(
             UserStory(
                 stories = listOf(
@@ -92,6 +99,8 @@ fun StoryListPreview() {
                     )
                 )
             )
-        )
+        ),
+        currentUser = TODO(),
+        onViewStoryClicked = TODO()
     )
 }

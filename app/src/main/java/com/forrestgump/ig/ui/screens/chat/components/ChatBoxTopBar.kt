@@ -39,11 +39,11 @@ import com.forrestgump.ig.data.models.Chat
 fun ChatBoxTopBar(
     navHostController: NavHostController,
     chat: Chat,
-    myUsername: String
+    myUserId: String
 ) {
 
-    val otherUsername = if (myUsername == chat.user1Username) chat.user2Username else chat.user1Username
-    val otherUserProfileImage = if (myUsername == chat.user1Username) chat.user2ProfileImage else chat.user1ProfileImage
+    val otherUsername = if (myUserId == chat.user1Id) chat.user2Username else chat.user1Username
+    val otherUserProfileImage = if (myUserId == chat.user1Id) chat.user2ProfileImage else chat.user1ProfileImage
 
 
     Row(
@@ -115,9 +115,7 @@ fun ChatBoxTopBarPreview() {
             user1ProfileImage = R.drawable.default_profile_img.toString(),
             user2ProfileImage = R.drawable.default_profile_img.toString(),
             lastMessage = "Hey, what's up?",
-            lastMessageTime = 234234L,
-            lastMessageRead = true
         ),
-        myUsername = "_menf"
+        myUserId = "_menf"
     )
 }

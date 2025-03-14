@@ -1,6 +1,5 @@
 package com.forrestgump.ig.ui.screens.story.components
 
-import android.util.Log
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
