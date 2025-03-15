@@ -124,6 +124,10 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.android.lottie.compose)
 
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.activity.compose.v180)
     implementation (libs.cloudinary.android)
 
 }

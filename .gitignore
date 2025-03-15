@@ -34,3 +34,7 @@ replay_pid*
 /.idea/caches
 /.idea/deviceStreaming.xml
 /.idea/workspace.xml
+.gradle/
+.idea/
+*.iml
+local.properties

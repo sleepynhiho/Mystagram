@@ -77,14 +77,15 @@ fun MyProfileScreen(
                     bio = "Trò chơi quyền lực là sách hay, được viết bởi Ngô Di Lân, nhập môn tìm hiểu thế giới quan về địa chính trị",
                     posts = 0,
                     followers = 47,
-                    following = 110
+                    following = 110,
+                    navController = navController
                 )
 
                 // (Tuỳ chọn) Khu vực Story Highlights, v.v. (Ở Instagram thường có một hàng story highlight)
                 StoryHighlightsSection()
 
                 // Khu vực nút "Chỉnh sửa" và "Chia sẻ"
-                ProfileActionButtons()
+                ProfileActionButtons(navController = navController)
                 Spacer(modifier = Modifier.height(16.dp))
                 // Khu vực Tab (Bài viết, Reels, Thẻ gắn, v.v.)
                 ProfileTabRow()
@@ -161,7 +162,8 @@ fun ProfileInfoSection(
     bio: String,
     posts: Int,
     followers: Int,
-    following: Int
+    following: Int,
+    navController: NavController // Dùng để chuyển màn hình
 ) {
     Column(
         modifier = Modifier
@@ -186,9 +188,21 @@ fun ProfileInfoSection(
             // Thống kê (bài viết, follower, following)
             ProfileStatItem(number = posts, label = "Bài viết")
             Spacer(modifier = Modifier.width(16.dp))
-            ProfileStatItem(number = followers, label = "Người theo dõi")
+
+            Box(
+                modifier = Modifier.clickable {
+                    navController.navigate(Routes.FollowerScreen.route)
+                }) {
+                ProfileStatItem(number = followers, label = "Người theo dõi")
+            }
             Spacer(modifier = Modifier.width(16.dp))
-            ProfileStatItem(number = following, label = "Đang theo dõi")
+
+            Box(
+                modifier = Modifier.clickable {
+                    navController.navigate(Routes.FollowingScreen.route)
+                }) {
+                ProfileStatItem(number = following, label = "Đang theo dõi")
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -234,14 +248,16 @@ fun ProfileStatItem(number: Int, label: String) {
  * Khu vực các nút: "Chỉnh sửa trang cá nhân", "Chia sẻ trang cá nhân"
  */
 @Composable
-fun ProfileActionButtons() {
+fun ProfileActionButtons(
+    navController: NavController
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
     ) {
         Button(
-            onClick = { /* TODO */ },
+            onClick = { navController.navigate(Routes.EditProfileScreen.route) },
             modifier = Modifier.weight(1f),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.White,    // Màu nền nút là đen
