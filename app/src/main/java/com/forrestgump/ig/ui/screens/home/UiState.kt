@@ -8,5 +8,6 @@ data class UiState(
     var myStories: List<UserStory> = emptyList(),
     var userStories: List<UserStory> = emptyList(),
     var isLoading: Boolean = true,
-    var showStoryScreen: Boolean = false
+    var showStoryScreen: Boolean = false,
+    var userStoryIndex: Int = 0
 )

@@ -14,6 +14,7 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -47,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.FileProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
@@ -56,7 +58,9 @@ import androidx.palette.graphics.Palette
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.forrestgump.ig.R
+import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.ui.screens.addStory.components.AddStoryTopBar
+import com.forrestgump.ig.ui.screens.addStory.components.TransformableImageBox
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -66,10 +70,15 @@ import java.io.OutputStream
 
 
 @Composable
-fun AddStoryScreen(navHostController: NavHostController) {
+fun AddStoryScreen(
+    currentUser: User,
+    navHostController: NavHostController,
+    viewModel: AddStoryViewModel = hiltViewModel()
+) {
     val mediaUris = remember { mutableStateListOf<Uri>() }
     var cameraImageUri by remember { mutableStateOf<Uri?>(null) }
     var permissionGranted by remember { mutableStateOf(false) }
+    var imagePickedDismissed by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
 
@@ -77,17 +86,21 @@ fun AddStoryScreen(navHostController: NavHostController) {
     val pickMediaLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        mediaUris.clear()
-        uri?.let { mediaUris.add(it) }
+        if (uri != null) {
+            mediaUris.clear()
+            uri.let { mediaUris.add(it) }
+        } else {
+            imagePickedDismissed = true
+        }
     }
 
-//    val takePictureLauncher = rememberLauncherForActivityResult(
-//        contract = ActivityResultContracts.TakePicture()
-//    ) { success: Boolean ->
-//        if (success) {
-//            cameraImageUri?.let { mediaUris.add(it) }
-//        }
-//    }
+    val takePictureLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success: Boolean ->
+        if (success) {
+            cameraImageUri?.let { mediaUris.add(it) }
+        }
+    }
 
     // Yêu cầu quyền
     val requestPermissions = rememberLauncherForActivityResult(
@@ -96,18 +109,14 @@ fun AddStoryScreen(navHostController: NavHostController) {
         permissionGranted = results.values.all { it }
     }
 
-    // Kiểm tra quyền khi mở màn hình
     LaunchedEffect(Unit) {
         when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
-                pickMediaLauncher.launch("image/*")
-            }
-
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
                 requestPermissions.launch(
                     arrayOf(
                         Manifest.permission.READ_MEDIA_IMAGES,
-                        Manifest.permission.READ_MEDIA_VIDEO
+                        Manifest.permission.READ_MEDIA_VIDEO,
+                        Manifest.permission.CAMERA
                     )
                 )
             }
@@ -116,43 +125,29 @@ fun AddStoryScreen(navHostController: NavHostController) {
                 requestPermissions.launch(
                     arrayOf(
                         Manifest.permission.READ_EXTERNAL_STORAGE,
-//                        Manifest.permission.CAMERA
+                        Manifest.permission.CAMERA
                     )
                 )
             }
         }
+        pickMediaLauncher.launch("image/*")
     }
 
-    // Khi có quyền thì mở chọn ảnh
-    LaunchedEffect(permissionGranted) {
-        if (permissionGranted) {
-            pickMediaLauncher.launch("image/*")
+    LaunchedEffect(imagePickedDismissed) {
+        if (imagePickedDismissed) {
+            if (permissionGranted) { // Kiểm tra quyền
+                Log.d("NHII", "INNNNNNNNNN2")
+
+                cameraImageUri = createImageUri(context)
+                cameraImageUri?.let { takePictureLauncher.launch(it) }
+            } else {
+                requestPermissions.launch(
+                    arrayOf(Manifest.permission.CAMERA) // Nếu chưa có quyền, yêu cầu trước
+                )
+            }
+            Log.d("NHII", "INNNNNNNNNN")
         }
     }
-
-//    Row(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(16.dp),
-//        horizontalArrangement = Arrangement.SpaceEvenly
-//    ) {
-//        Button(onClick = { pickMediaLauncher.launch("image/*") }) {
-//            Text("Chọn ảnh")
-//        }
-//
-//        Button(onClick = { pickMediaLauncher.launch("video/*") }) {
-//            Text("Chọn video")
-//        }
-//
-//        Button(onClick = {
-//            val uri = createImageUri(context)
-//            cameraImageUri = uri
-//            takePictureLauncher.launch(uri)
-//        }) {
-//            Text("Chụp ảnh")
-//        }
-//    }
-
 
     var scale by remember { mutableFloatStateOf(1f) }
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
@@ -171,47 +166,32 @@ fun AddStoryScreen(navHostController: NavHostController) {
     if (mediaUris.isNotEmpty()) {
         val uri = mediaUris[0]
         Box(modifier = Modifier.fillMaxSize()) {
-//            if (isImageUri(uri)) {
-                TransformableImageBox(
-                    uri = uri.toString(),
-                    onBitmapReady = { loadedBitmap ->
-                        bitmap = loadedBitmap
-                    },
-                    onTransformChange = { newScale, newOffset, newRotation ->
-                        scale = newScale
-                        offset = newOffset
-                        rotationAngle = newRotation
-                    },
-                    addTextClicked = addTextClicked,
-                    onTextTransformChange = { newScale, newOffset, newRotation ->
-                        textScale = newScale
-                        textOffset = newOffset
-                        textRotationAngle = newRotation
-                    },
-                    userInputText = userInputText,
-                    onUserTextChange = { newText -> userInputText = newText }
-                )
-//            } else {
-//                AndroidView(
-//                    factory = { context ->
-//                        PlayerView(context).apply {
-//                            player = ExoPlayer.Builder(context).build().apply {
-//                                setMediaItem(MediaItem.fromUri(uri))
-//                                prepare()
-//                                play()
-//                            }
-//                        }
-//                    },
-//                    modifier = Modifier.fillMaxSize()
-//                )
-//            }
+            TransformableImageBox(
+                uri = uri.toString(),
+                onBitmapReady = { loadedBitmap ->
+                    bitmap = loadedBitmap
+                },
+                onTransformChange = { newScale, newOffset, newRotation ->
+                    scale = newScale
+                    offset = newOffset
+                    rotationAngle = newRotation
+                },
+                addTextClicked = addTextClicked,
+                onTextTransformChange = { newScale, newOffset, newRotation ->
+                    textScale = newScale
+                    textOffset = newOffset
+                    textRotationAngle = newRotation
+                },
+                userInputText = userInputText,
+                onUserTextChange = { newText -> userInputText = newText }
+            )
 
             AddStoryTopBar(
                 onBackClicked = {
                     mediaUris.clear()
                     userInputText = ""
                     addTextClicked = false
-                   pickMediaLauncher.launch("image/*")
+                    pickMediaLauncher.launch("image/*")
                 },
                 onAddTextClicked = { addTextClicked = true }
             )
@@ -254,24 +234,56 @@ fun AddStoryScreen(navHostController: NavHostController) {
                             textRotationAngle = textRotationAngle,
                             density = density
                         )
-
                         val scope = rememberCoroutineScope()
-                        scope.launch(Dispatchers.IO) {
-                            saveBitmapToStorage(context, transformedBitmap)
+                        scope.launch(Dispatchers.IO) { // Đảm bảo đang chạy trong coroutine
+                            try {
+                                // Chuyển bitmap thành URI tạm thời
+                                val tempUri = saveBitmapToCache(context, transformedBitmap)
 
-                            withContext(Dispatchers.Main) {
-                                if (mediaUris.isNotEmpty()) {
-                                    mediaUris.clear()
+                                // Gọi suspend function trong coroutine
+                                withContext(Dispatchers.IO) {
+                                    viewModel.uploadStoryImage(
+                                        imageUri = tempUri,
+                                        onSuccess = {
+                                            scope.launch(Dispatchers.Main) { // Quay về Main Thread để update UI
+                                                if (mediaUris.isNotEmpty()) {
+                                                    mediaUris.clear()
+                                                }
+                                                navHostController.navigate("HomeScreen") {
+                                                    popUpTo(navHostController.graph.startDestinationId) {
+                                                        inclusive = true
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        onError = { error ->
+                                            scope.launch(Dispatchers.Main) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Lỗi1: $error",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                Log.d("NHII", error)
+                                            }
+                                        },
+                                        context = context,
+                                        user = currentUser
+                                    )
                                 }
-                                navHostController.navigate("HomeScreen") {
-                                    popUpTo(navHostController.graph.startDestinationId) {
-                                        inclusive = true
-                                    }
+                            } catch (e: Exception) {
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(
+                                        context,
+                                        "Lỗi2: ${e.localizedMessage}",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             }
                         }
                     }
                 }
+
+
             }
 
         }
@@ -289,150 +301,19 @@ fun AddStoryScreen(navHostController: NavHostController) {
     }
 }
 
-fun isImageUri(uri: Uri): Boolean {
-    return uri.toString().contains("image")
+fun saveBitmapToCache(context: Context, bitmap: Bitmap): Uri {
+    val cachePath = File(context.cacheDir, "images") // Tạo thư mục cache
+    cachePath.mkdirs()
+
+    val file = File(cachePath, "story_image.png") // Lưu ảnh vào file
+    val stream = FileOutputStream(file)
+    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+    stream.flush()
+    stream.close()
+
+    return FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
 }
 
-fun createImageUri(context: Context): Uri {
-    val file = File(context.filesDir, "photo_${System.currentTimeMillis()}.jpg")
-    return FileProvider.getUriForFile(
-        context,
-        "${context.packageName}.provider",
-        file
-    )
-}
-
-
-@Composable
-fun TransformableImageBox(
-    uri: String,
-    onBitmapReady: (Bitmap?) -> Unit,
-    onTransformChange: (Float, Offset, Float) -> Unit,
-    addTextClicked: Boolean,
-    onTextTransformChange: (Float, Offset, Float) -> Unit,
-    userInputText: String,
-    onUserTextChange: (String) -> Unit
-) {
-    var scale by remember { mutableFloatStateOf(1f) }
-    var offset by remember { mutableStateOf(Offset(0f, 0f)) }
-    var rotationAngle by remember { mutableFloatStateOf(0f) }
-    var dominantColor by remember { mutableStateOf(Color.Black) }
-
-    var textScale by remember { mutableFloatStateOf(1f) }
-    var textOffset by remember { mutableStateOf(Offset(0f, 0f)) }
-    var textRotationAngle by remember { mutableFloatStateOf(0f) }
-
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(dominantColor)
-                .pointerInput(Unit) {
-                    detectTransformGestures { _, pan, zoom, rotation ->
-                        scale *= zoom
-                        offset = Offset(offset.x + pan.x, offset.y + pan.y)
-                        rotationAngle += rotation
-                        onTransformChange(scale, offset, rotationAngle)
-                    }
-                },
-            contentAlignment = Alignment.Center
-        ) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(uri)
-                    .allowHardware(false)
-                    .build(),
-                contentDescription = "Transformable Image",
-                modifier = Modifier.graphicsLayer(
-                    scaleX = scale,
-                    scaleY = scale,
-                    translationX = offset.x,
-                    translationY = offset.y,
-                    rotationZ = rotationAngle
-                ),
-                onSuccess = { result ->
-                    val bitmap = (result.result.drawable as BitmapDrawable).bitmap
-                    onBitmapReady(bitmap)
-
-                    // Extract dominant color of the image
-                    Palette.from(bitmap).generate { palette ->
-                        palette?.let {
-                            dominantColor = Color(it.getDominantColor(Color.Black.toArgb()))
-                        }
-                    }
-                }
-            )
-        }
-
-        val density = LocalDensity.current
-        val textMeasurer = rememberTextMeasurer()
-
-        val measuredTextSize = if (userInputText.isNotEmpty()) {
-            textMeasurer.measure(
-                text = userInputText,
-                style = TextStyle(
-                    fontSize = (20f * textScale).sp,
-                    textAlign = TextAlign.Center
-                )
-            ).size
-        } else {
-            IntSize(15, 60) // ✅ Set aa reasonable default size when text is empty
-        }
-
-        if (addTextClicked) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pointerInput(Unit) {
-                        detectTransformGestures { _, pan, zoom, rotation ->
-                            textScale *= zoom
-                            textOffset = Offset(textOffset.x + pan.x, textOffset.y + pan.y)
-                            textRotationAngle += rotation
-                            onTextTransformChange(textScale, textOffset, textRotationAngle)
-                        }
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                BasicTextField(
-                    value = userInputText,
-                    onValueChange = onUserTextChange,
-                    textStyle = TextStyle(
-                        fontSize = (20f * textScale).sp,
-                        color = Color.Black,
-                        textAlign = TextAlign.Center
-                    ),
-                    modifier = Modifier
-                        .graphicsLayer(
-                            translationX = textOffset.x,
-                            translationY = textOffset.y,
-                            scaleX = textScale,
-                            scaleY = textScale,
-                            rotationZ = textRotationAngle
-                        )
-                        .background(
-                            Color.White.copy(alpha = 0.7f),
-                            shape = RoundedCornerShape(8.dp * textScale)
-                        )
-                        .padding(horizontal = 8.dp * textScale, vertical = 4.dp * textScale)
-                        .size(
-                            width = with(density) { measuredTextSize.width.toDp() } + 8.dp,
-                            height = with(density) { measuredTextSize.height.toDp() } + 4.dp
-                        )
-                )
-            }
-
-            LaunchedEffect(textScale) {
-                Log.d("NHII", "TextScale: $textScale")
-                val resolvedTextSizePx = with(density) { (20f * textScale).sp.toPx() }
-                Log.d("NHII", "density11: $density ")
-                Log.d("NHII", "fontsize: $resolvedTextSizePx ")
-            }
-
-        }
-    }
-}
 
 fun createTransformedBitmap(
     originalBitmap: Bitmap,
@@ -531,15 +412,24 @@ fun saveBitmapToStorage(context: Context, bitmap: Bitmap) {
     }
 }
 
-fun saveBitmapToUri(context: Context, bitmap: Bitmap): Uri {
-    val file = File(context.cacheDir, "captured_image.jpg")
-    file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it) }
-    return Uri.fromFile(file)
+fun createImageUri(context: Context): Uri? {
+    val contentValues = ContentValues().apply {
+        put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+        put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+    }
+    return context.contentResolver.insert(
+        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+        contentValues
+    )
 }
 
 
 @Preview
 @Composable
 private fun AddStoryScreenPreview() {
-    AddStoryScreen(navHostController = rememberNavController())
+    AddStoryScreen(
+        navHostController = rememberNavController(),
+        currentUser = TODO(),
+        viewModel = TODO()
+    )
 }

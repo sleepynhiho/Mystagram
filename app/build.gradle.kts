@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -7,6 +9,14 @@ plugins {
     id("com.google.gms.google-services")
     id("kotlin-parcelize")
 }
+
+val localProperties = Properties().apply {
+    load(rootProject.file("local.properties").inputStream())
+}
+
+val cloudinaryCloudName = localProperties.getProperty("cloudinary.cloud_name") ?: ""
+val cloudinaryApiKey = localProperties.getProperty("cloudinary.api_key") ?: ""
+val cloudinaryApiSecret = localProperties.getProperty("cloudinary.api_secret") ?: ""
 
 android {
     namespace = "com.forrestgump.ig"
@@ -20,6 +30,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"$cloudinaryCloudName\"")
+        buildConfigField("String", "CLOUDINARY_API_KEY", "\"$cloudinaryApiKey\"")
+        buildConfigField("String", "CLOUDINARY_API_SECRET", "\"$cloudinaryApiSecret\"")
+
+
     }
 
     buildTypes {
@@ -70,6 +85,10 @@ dependencies {
     implementation(libs.androidx.foundation.layout.android)
     implementation(libs.androidx.foundation.layout.android)
     implementation(libs.androidx.foundation.layout.android)
+    implementation(libs.androidx.foundation.layout.android)
+    implementation(libs.play.services.cast.framework)
+    implementation(libs.androidx.animation.android)
+    implementation(libs.androidx.animation.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -104,5 +123,7 @@ dependencies {
     // Firebase Authentication
     implementation(libs.firebase.auth)
     implementation(libs.android.lottie.compose)
+
+    implementation (libs.cloudinary.android)
 
 }
