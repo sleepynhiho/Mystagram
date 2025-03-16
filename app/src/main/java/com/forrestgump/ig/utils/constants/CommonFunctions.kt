@@ -25,7 +25,17 @@ fun Date.formatAsElapsedTime(): String {
     }
 }
 
-fun changeAppLanguage(context: Context, languageCode: String) {
+fun changeAppLanguage(context: Context, languageCode: String, shouldRecreate: Boolean = true) {
+    val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+    val currentLang = prefs.getString("language_code", "en") ?: "en"
+
+    // Nếu ngôn ngữ không thay đổi, không làm gì cả
+    if (currentLang == languageCode) return
+
+    // Lưu ngôn ngữ mới
+    prefs.edit().putString("language_code", languageCode).apply()
+
+    // Cập nhật locale
     val locale = Locale(languageCode)
     Locale.setDefault(locale)
 
@@ -35,8 +45,16 @@ fun changeAppLanguage(context: Context, languageCode: String) {
 
     context.resources.updateConfiguration(config, resources.displayMetrics)
 
-    if (context is Activity) {
+    // Chỉ gọi recreate nếu cần (tránh vòng lặp khi khởi động app)
+    if (context is Activity && shouldRecreate) {
         context.recreate()
     }
 }
 
+
+
+
+fun saveLanguagePreference(context: Context, languageCode: String) {
+    val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+    prefs.edit().putString("language_code", languageCode).apply()
+}
