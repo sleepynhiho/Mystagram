@@ -36,6 +36,7 @@ import androidx.compose.foundation.shape.CircleShape
 import com.forrestgump.ig.R
 import java.io.File
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import com.forrestgump.ig.ui.navigation.Routes
 
 
@@ -252,6 +253,7 @@ fun AddPostScreen(navHostController: NavHostController) {
 }
 
 // Hàm load danh sách ảnh từ thư viện sử dụng MediaStore
+@RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
 fun loadGalleryImages(context: Context): List<Uri> {
     val imageList = mutableListOf<Uri>()
     val projection = arrayOf(MediaStore.Images.Media._ID)
