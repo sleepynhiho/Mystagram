@@ -2,6 +2,7 @@ package com.forrestgump.ig.ui.screens.auth
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,6 +44,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.forrestgump.ig.R
 import com.forrestgump.ig.ui.navigation.Routes
+import com.forrestgump.ig.utils.constants.Utils.MainBackground
+import com.forrestgump.ig.utils.constants.Utils.onSurface
 import com.forrestgump.ig.utils.constants.changeAppLanguage
 
 @Composable
@@ -64,7 +67,8 @@ fun LoginScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .background(MainBackground),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Status bar space
@@ -82,12 +86,12 @@ fun LoginScreen(
                 Text(
                     text = selectedLanguage,
                     fontSize = 16.sp,
-                    color = Color.Gray
+                    color = onSurface
                 )
                 Icon(
                     painter = painterResource(id = R.drawable.next),
                     contentDescription = stringResource(id = R.string.language_dropdown),
-                    tint = Color.Gray,
+                    tint = onSurface,
                     modifier = Modifier
                         .padding(start = 4.dp)
                         .rotate(90F)
@@ -214,7 +218,7 @@ fun LoginScreen(
                 text = stringResource(id = R.string.login_with_google),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black
+                color = onSurface
             )
         }
 
@@ -239,7 +243,7 @@ fun LoginScreen(
                 text = stringResource(id = R.string.login_with_facebook),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black
+                color = onSurface
             )
         }
 
@@ -249,7 +253,7 @@ fun LoginScreen(
         Text(
             text = stringResource(id = R.string.forgot_password),
             fontSize = 14.sp,
-            color = Color(0xFF00376B),
+            color = Color(0xFF29649B),
             modifier = Modifier.clickable {
                 // Xử lý logic forgot password nếu cần
             }

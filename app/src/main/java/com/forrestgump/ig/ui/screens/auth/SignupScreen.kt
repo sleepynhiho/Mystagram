@@ -1,5 +1,6 @@
 package com.forrestgump.ig.ui.screens.auth
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -17,6 +18,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
 import com.forrestgump.ig.R
 import com.forrestgump.ig.ui.navigation.Routes
+import com.forrestgump.ig.utils.constants.Utils.MainBackground
+import com.forrestgump.ig.utils.constants.Utils.onSurface
+import com.forrestgump.ig.utils.constants.Utils.surfaceColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,31 +51,33 @@ fun SignupScreen(
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MainBackground
                 )
             )
         },
-        containerColor = Color.White
+        containerColor = MainBackground
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .background(MainBackground),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Header section
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp),
+                    .padding(vertical = 16.dp)
+                    .background(MainBackground),
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
                     text = stringResource(id = R.string.signup_title),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = onSurface
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(

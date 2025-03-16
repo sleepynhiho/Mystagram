@@ -59,6 +59,7 @@ import com.forrestgump.ig.ui.navigation.Routes
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.google.firebase.auth.FirebaseAuth
 import com.forrestgump.ig.R
+import com.forrestgump.ig.utils.constants.Utils.onSurface
 import com.forrestgump.ig.utils.constants.changeAppLanguage
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,7 +67,6 @@ import com.forrestgump.ig.utils.constants.changeAppLanguage
 fun SettingsScreen(navController: NavController) {
     var isDarkMode by remember { mutableStateOf(false) }
     val isPremium by remember { mutableStateOf(false) }
-    // Lấy tất cả các chuỗi từ stringResource trước khi sử dụng
     val savedText = stringResource(id = R.string.saved)
     val notificationsText = stringResource(id = R.string.notifications)
     val accountPrivacyText = stringResource(id = R.string.account_privacy)
@@ -87,7 +87,7 @@ fun SettingsScreen(navController: NavController) {
                 title = {
                     Text(
                         text = stringResource(id = R.string.settings_title),
-                        color = Color.Black
+                        color = onSurface
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -97,7 +97,8 @@ fun SettingsScreen(navController: NavController) {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = stringResource(id = R.string.back)
+                            contentDescription = stringResource(id = R.string.back),
+                            tint = onSurface
                         )
                     }
                 }
@@ -323,13 +324,13 @@ fun SettingsRow(itemData: SettingsItemData, onClick: () -> Unit = {}) {
         Icon(
             imageVector = itemData.icon,
             contentDescription = itemData.title,
-            tint = Color.Black,
+            tint = onSurface,
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = itemData.title,
-            color = Color.Black,
+            color = onSurface,
             fontSize = 15.sp,
             modifier = Modifier.weight(1f)
         )
@@ -343,7 +344,7 @@ fun SettingsRow(itemData: SettingsItemData, onClick: () -> Unit = {}) {
         Icon(
             imageVector = Icons.Default.ChevronRight,
             contentDescription = null,
-            tint = Color.Gray,
+            tint = onSurface,
             modifier = Modifier.padding(start = 8.dp)
         )
     }
@@ -367,13 +368,13 @@ fun SettingsRowWithSwitch(
         Icon(
             imageVector = icon,
             contentDescription = title,
-            tint = Color.Black,
+            tint = onSurface,
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = title,
-            color = Color.Black,
+            color = onSurface,
             fontSize = 15.sp,
             modifier = Modifier.weight(1f)
         )

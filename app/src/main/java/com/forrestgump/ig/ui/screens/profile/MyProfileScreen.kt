@@ -41,13 +41,15 @@ import androidx.compose.ui.res.stringResource
 import com.forrestgump.ig.ui.navigation.Routes
 import androidx.navigation.NavController
 import com.forrestgump.ig.data.models.User
+import com.forrestgump.ig.utils.constants.Utils.onSurface
+import com.forrestgump.ig.utils.constants.Utils.surfaceColor
 import com.google.firebase.auth.FirebaseAuth
 
 
 @Composable
 fun MyProfileScreen(
     uiState: UiState,
-    navController: NavController
+    navController: NavController,
 ) {
     // Tạm thời set cứng để demo
     uiState.isLoading = false
@@ -124,18 +126,18 @@ fun MyProfileScreen(
 fun ProfileTopBar(
     title: String,
     onBackClicked: () -> Unit,
-    onMoreClicked: () -> Unit
+    onMoreClicked: () -> Unit,
 ) {
     TopAppBar(
         title = {
-            Text(text = title, color = Color.White)
+            Text(text = title, color = onSurface)
         },
         navigationIcon = {
             IconButton(onClick = onBackClicked) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Back",
-                    tint = Color.White
+                    tint = onSurface
                 )
             }
         },
@@ -144,13 +146,13 @@ fun ProfileTopBar(
                 Icon(
                     imageVector = Icons.Default.MoreVert,
                     contentDescription = "More",
-                    tint = Color.White
+                    tint = onSurface
                 )
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Black
-        )
+            containerColor = MainBackground
+        ),
     )
 }
 
@@ -164,7 +166,7 @@ fun ProfileInfoSection(
     posts: Int,
     followers: Int,
     following: Int,
-    navController: NavController // Dùng để chuyển màn hình
+    navController: NavController, // Dùng để chuyển màn hình
 ) {
     Column(
         modifier = Modifier
@@ -250,7 +252,7 @@ fun ProfileStatItem(number: Int, label: String) {
  */
 @Composable
 fun ProfileActionButtons(
-    navController: NavController
+    navController: NavController,
 ) {
     Row(
         modifier = Modifier
@@ -261,8 +263,8 @@ fun ProfileActionButtons(
             onClick = { navController.navigate(Routes.EditProfileScreen.route) },
             modifier = Modifier.weight(1f),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.White,    // Màu nền nút là đen
-                contentColor = Color.Black      // Màu chữ là đen
+                containerColor = surfaceColor,    // Màu nền nút là đen
+                contentColor = onSurface      // Màu chữ là đen
             ),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground) // Viền trắng
         ) {
@@ -307,7 +309,7 @@ fun StoryHighlightsSection() {
                 )
             ),
             currentUser = User(),
-            onViewStoryClicked = {_, _ -> },
+            onViewStoryClicked = { _, _ -> },
         )
     }
 }

@@ -38,6 +38,8 @@ import java.io.File
 import android.widget.Toast
 import androidx.compose.ui.res.stringResource
 import com.forrestgump.ig.ui.navigation.Routes
+import com.forrestgump.ig.utils.constants.Utils.MainBackground
+import com.forrestgump.ig.utils.constants.Utils.onSurface
 
 
 @Composable
@@ -109,17 +111,23 @@ fun AddPostScreen(navHostController: NavHostController) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(16.dp)
+                .background(MainBackground),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             IconButton(onClick = { navHostController.popBackStack() }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_close), // icon dấu X
-                    contentDescription = "Back"
+                    contentDescription = "Back",
+                    tint = onSurface
                 )
             }
-            Text(text = stringResource(id = R.string.new_post), style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = stringResource(id = R.string.new_post),
+                style = MaterialTheme.typography.titleMedium,
+                color = onSurface
+            )
             TextButton(onClick = {
                 if (selectedImages.isEmpty()) {
                     Toast.makeText(context, "Vui lòng chọn hoặc chụp ảnh", Toast.LENGTH_SHORT)
@@ -142,7 +150,10 @@ fun AddPostScreen(navHostController: NavHostController) {
         ) {
             if (selectedImages.isEmpty()) {
                 // Hiển thị placeholder nếu chưa có ảnh được chọn
-                Text(stringResource(id = R.string.no_select_photo), modifier = Modifier.align(Alignment.Center))
+                Text(
+                    stringResource(id = R.string.no_select_photo),
+                    modifier = Modifier.align(Alignment.Center)
+                )
             } else {
                 // Dùng HorizontalPager cho trải nghiệm lướt mượt
                 val pagerState = rememberPagerState(initialPage = 0) { selectedImages.size }
@@ -221,7 +232,7 @@ fun AddPostScreen(navHostController: NavHostController) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_camera), // icon camera
                         contentDescription = "Chụp ảnh",
-                        tint = Color.Black,
+                        tint = onSurface,
                         modifier = Modifier.size(24.dp)
                     )
                 }
