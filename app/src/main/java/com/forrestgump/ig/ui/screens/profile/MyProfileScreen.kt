@@ -37,6 +37,7 @@ import coil.compose.AsyncImage
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import com.forrestgump.ig.ui.navigation.Routes
 import androidx.navigation.NavController
 import com.forrestgump.ig.data.models.User
@@ -186,14 +187,14 @@ fun ProfileInfoSection(
             Spacer(modifier = Modifier.width(16.dp))
 
             // Thống kê (bài viết, follower, following)
-            ProfileStatItem(number = posts, label = "Bài viết")
+            ProfileStatItem(number = posts, label = stringResource(id = R.string.posts))
             Spacer(modifier = Modifier.width(16.dp))
 
             Box(
                 modifier = Modifier.clickable {
                     navController.navigate(Routes.FollowerScreen.route)
                 }) {
-                ProfileStatItem(number = followers, label = "Người theo dõi")
+                ProfileStatItem(number = followers, label = stringResource(id = R.string.followers))
             }
             Spacer(modifier = Modifier.width(16.dp))
 
@@ -201,7 +202,7 @@ fun ProfileInfoSection(
                 modifier = Modifier.clickable {
                     navController.navigate(Routes.FollowingScreen.route)
                 }) {
-                ProfileStatItem(number = following, label = "Đang theo dõi")
+                ProfileStatItem(number = following, label = stringResource(id = R.string.following))
             }
         }
 
@@ -265,7 +266,7 @@ fun ProfileActionButtons(
             ),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground) // Viền trắng
         ) {
-            Text(text = "Chỉnh sửa trang cá nhân")
+            Text(text = stringResource(id = R.string.edit_profile))
         }
     }
 }

@@ -1,6 +1,10 @@
 package com.forrestgump.ig.utils.constants
 
+import android.app.Activity
+import android.content.Context
 import java.util.Date
+import android.content.res.Configuration
+import java.util.Locale
 
 fun Date.formatAsElapsedTime(): String {
     val elapsedTime = System.currentTimeMillis() - this.time
@@ -20,3 +24,19 @@ fun Date.formatAsElapsedTime(): String {
         else -> "${elapsedTime / yearMillis}y"
     }
 }
+
+fun changeAppLanguage(context: Context, languageCode: String) {
+    val locale = Locale(languageCode)
+    Locale.setDefault(locale)
+
+    val resources = context.resources
+    val config = Configuration(resources.configuration)
+    config.setLocale(locale)
+
+    context.resources.updateConfiguration(config, resources.displayMetrics)
+
+    if (context is Activity) {
+        context.recreate()
+    }
+}
+

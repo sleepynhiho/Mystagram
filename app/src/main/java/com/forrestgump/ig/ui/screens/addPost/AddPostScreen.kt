@@ -36,6 +36,7 @@ import androidx.compose.foundation.shape.CircleShape
 import com.forrestgump.ig.R
 import java.io.File
 import android.widget.Toast
+import androidx.compose.ui.res.stringResource
 import com.forrestgump.ig.ui.navigation.Routes
 
 
@@ -118,15 +119,16 @@ fun AddPostScreen(navHostController: NavHostController) {
                     contentDescription = "Back"
                 )
             }
-            Text(text = "Bài viết mới", style = MaterialTheme.typography.titleMedium)
+            Text(text = stringResource(id = R.string.new_post), style = MaterialTheme.typography.titleMedium)
             TextButton(onClick = {
                 if (selectedImages.isEmpty()) {
-                    Toast.makeText(context, "Vui lòng chọn hoặc chụp ảnh", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Vui lòng chọn hoặc chụp ảnh", Toast.LENGTH_SHORT)
+                        .show()
                     return@TextButton
                 }
                 navHostController.navigate(Routes.AddPostDetailScreen.route)
             }) {
-                Text(text = "Tiếp")
+                Text(text = stringResource(id = R.string.next))
             }
 
         }
@@ -140,7 +142,7 @@ fun AddPostScreen(navHostController: NavHostController) {
         ) {
             if (selectedImages.isEmpty()) {
                 // Hiển thị placeholder nếu chưa có ảnh được chọn
-                Text("Chưa chọn ảnh", modifier = Modifier.align(Alignment.Center))
+                Text(stringResource(id = R.string.no_select_photo), modifier = Modifier.align(Alignment.Center))
             } else {
                 // Dùng HorizontalPager cho trải nghiệm lướt mượt
                 val pagerState = rememberPagerState(initialPage = 0) { selectedImages.size }
@@ -202,7 +204,7 @@ fun AddPostScreen(navHostController: NavHostController) {
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Chọn nhiều")
+                    Text(stringResource(id = R.string.choose_multiple_photos))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 IconButton(onClick = {
@@ -266,7 +268,8 @@ fun loadGalleryImages(context: Context): List<Uri> {
         val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
         while (cursor.moveToNext()) {
             val id = cursor.getLong(idColumn)
-            val contentUri = Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id.toString())
+            val contentUri =
+                Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id.toString())
             imageList.add(contentUri)
         }
     }

@@ -9,7 +9,6 @@
     <string name="messages">Direct messages</string>
     <string name="user_story">%1$s\'s story</string>
     <string name="views">views</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="back_home">Back home</string>
     <string name="add_new_message">Add new message</string>
@@ -22,4 +21,78 @@
     <string name="new_chat_header">Suggested</string>
     <string name="search_new_chat">To:</string>
     <string name="search_placeholder">Search</string>
+    <string name="login">Log in</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="create_account">Create new account</string>
+    <string name="language_default">English (US)</string>
+    <string name="language_dropdown">Language dropdown</string>
+    <string name="english_language">English (US)</string>
+    <string name="vietnamese_language">Tiếng Việt</string>
+    <string name="error_message">Error: %1$s</string>
+    <string name="login_with_google">Login with Google</string>
+    <string name="login_with_facebook">Login with Facebook</string>
+    <string name="create_new_account">Create new account</string>
+    <string name="meta_logo">Meta logo</string>
+    <string name="google_logo_desc">Google Logo</string>
+    <string name="facebook_logo_desc">Facebook Logo</string>
+    <string name="signup_title">Account registration</string>
+    <string name="signup_description">Enter your username, email and password to create an account.</string>
+    <string name="username">Username</string>
+    <string name="confirm_password">Confirm the password</string>
+    <string name="successful_registration">Successful registration</string>
+    <string name="password_mismatch">Password does not match</string>
+    <string name="register">Register</string>
+    <string name="already_have_account">I already have an account</string>
+    <string name="back">Back</string>
+
+    <string name="settings_title">Settings and activity</string>
+
+    <!-- Sections -->
+    <string name="section_how_you_use">How you use Instagram</string>
+    <string name="section_who_can_see">Who can see your content</string>
+    <string name="section_what_you_see">What you see</string>
+    <string name="section_your_app_media">Your app and media</string>
+    <string name="section_orders_fundraisers">Your orders and fundraisers</string>
+    <string name="section_login">Login</string>
+
+    <!-- Settings items -->
+    <string name="saved">Saved</string>
+    <string name="notifications">Notifications</string>
+    <string name="account_privacy">Account privacy</string>
+    <string name="privates">Private</string>
+    <string name="close_friends">Close Friends</string>
+    <string name="blocked">Blocked</string>
+    <string name="favorites">Favorites</string>
+    <string name="muted_accounts">Muted accounts</string>
+    <string name="multi_language">Multi-language</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="account_status">Account Status</string>
+    <string name="premium">Premium</string>
+    <string name="basic">Basic</string>
+    <string name="orders_payments">Orders and payments</string>
+    <string name="add_account">Add account</string>
+    <string name="log_out">Log out</string>
+    <!-- Language Dialog -->
+    <string name="choose_language">Choose a language</string>
+    <string name="new_post">New Post</string>
+    <string name="no_select_photo">No photos have been selected</string>
+    <string name="choose_multiple_photos">Choose multiple photos</string>
+    <string name="next">Next</string>
+
+    <string name="notification_like">liked your post.</string>
+    <string name="notification_comment">mentioned you in a comment.</string>
+    <string name="notification_follow">started following you.</string>
+    <string name="notification_follow_request">requested to follow you.</string>
+    <string name="notification_follow_accepted">accepted your follow request.</string>
+
+    <string name="reactions">reactions</string>
+    <string name="view_all">View all</string>
+    <string name="comments">comments</string>
+
+    <string name="edit_profile">Edit Profile</string>
+    <string name="posts">Posts</string>
+    <string name="followers">Followers</string>
+    <string name="following">Followings</string>
 </resources>

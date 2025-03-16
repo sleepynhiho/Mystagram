@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Payment
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.VolumeOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,6 +37,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -47,6 +49,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,29 +58,47 @@ import androidx.navigation.NavController
 import com.forrestgump.ig.ui.navigation.Routes
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.google.firebase.auth.FirebaseAuth
+import com.forrestgump.ig.R
+import com.forrestgump.ig.utils.constants.changeAppLanguage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(navController: NavController) {
-    // State for Dark Mode and Account Status
     var isDarkMode by remember { mutableStateOf(false) }
     val isPremium by remember { mutableStateOf(false) }
-
+    // Lấy tất cả các chuỗi từ stringResource trước khi sử dụng
+    val savedText = stringResource(id = R.string.saved)
+    val notificationsText = stringResource(id = R.string.notifications)
+    val accountPrivacyText = stringResource(id = R.string.account_privacy)
+    val privateText = stringResource(id = R.string.privates) // Đảm bảo đúng key
+    val closeFriendsText = stringResource(id = R.string.close_friends)
+    val blockedText = stringResource(id = R.string.blocked)
+    val favoritesText = stringResource(id = R.string.favorites)
+    val mutedAccountsText = stringResource(id = R.string.muted_accounts)
+    val multiLanguageText = stringResource(id = R.string.multi_language)
+    val englishText = stringResource(id = R.string.english_language)
+    val vietnamText = stringResource(id = R.string.vietnamese_language)
+    val chooseLanguageText = stringResource(id = R.string.choose_language)
+    val context = LocalContext.current
+    var showLanguageDialog by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Settings and activity",
+                        text = stringResource(id = R.string.settings_title),
                         color = Color.Black
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MainBackground
                 ),
-                navigationIcon = { // Thêm nút quay lại nếu cần
+                navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = stringResource(id = R.string.back)
+                        )
                     }
                 }
             )
@@ -88,133 +110,148 @@ fun SettingsScreen(navController: NavController) {
                 .fillMaxSize()
                 .background(MainBackground)
         ) {
-            // Section: How you use Instagram
-            item {
-                SectionHeader(title = "How you use Instagram")
-            }
+            item { SectionHeader(title = stringResource(id = R.string.section_how_you_use)) }
             items(
                 listOf(
-                    SettingsItemData(icon = Icons.Default.Bookmark, title = "Saved"),
-                    SettingsItemData(icon = Icons.Default.Notifications, title = "Notifications")
+                    SettingsItemData(
+                        icon = Icons.Default.Bookmark,
+                        title = savedText
+                    ),
+                    SettingsItemData(
+                        icon = Icons.Default.Notifications,
+                        title = notificationsText
+                    )
                 )
-            ) { itemData ->
-                SettingsRow(itemData = itemData)
-            }
+            ) { itemData -> SettingsRow(itemData = itemData) }
 
-            // Section: Who can see your content
-            item {
-                SectionHeader(title = "Who can see your content")
-            }
+            item { SectionHeader(title = stringResource(id = R.string.section_who_can_see)) }
             items(
                 listOf(
                     SettingsItemData(
                         icon = Icons.Default.Lock,
-                        title = "Account privacy",
-                        subtitle = "Private"
+                        title = accountPrivacyText,
+                        subtitle = privateText
                     ),
                     SettingsItemData(
                         icon = Icons.Default.Group,
-                        title = "Close Friends",
+                        title = closeFriendsText,
                         subtitle = "0"
                     ),
-                    SettingsItemData(icon = Icons.Default.Block, title = "Blocked", subtitle = "0")
+                    SettingsItemData(
+                        icon = Icons.Default.Block,
+                        title = blockedText,
+                        subtitle = "0"
+                    )
                 )
-            ) { itemData ->
-                SettingsRow(itemData = itemData)
-            }
+            ) { itemData -> SettingsRow(itemData = itemData) }
 
-            // Section: What you see
-            item {
-                SectionHeader(title = "What you see")
-            }
+            item { SectionHeader(title = stringResource(id = R.string.section_what_you_see)) }
             items(
                 listOf(
                     SettingsItemData(
                         icon = Icons.Default.Favorite,
-                        title = "Favorites",
+                        title = favoritesText,
                         subtitle = "0"
                     ),
                     SettingsItemData(
                         icon = Icons.Default.VolumeOff,
-                        title = "Muted accounts",
+                        title = mutedAccountsText,
                         subtitle = "0"
                     )
                 )
-            ) { itemData ->
-                SettingsRow(itemData = itemData)
-            }
+            ) { itemData -> SettingsRow(itemData = itemData) }
 
-            // Section: Your app and media
-            item {
-                SectionHeader(title = "Your app and media")
-            }
+            item { SectionHeader(title = stringResource(id = R.string.section_your_app_media)) }
             items(
                 listOf(
-                    SettingsItemData(icon = Icons.Default.Language, title = "Multi-language")
+                    SettingsItemData(
+                        icon = Icons.Default.Language,
+                        title = multiLanguageText
+                    )
                 )
             ) { itemData ->
-                SettingsRow(itemData = itemData)
+                SettingsRow(
+                    itemData = itemData,
+                    onClick = { showLanguageDialog = true })
             }
 
             item {
                 SettingsRowWithSwitch(
                     icon = Icons.Default.Brightness6,
-                    title = "Dark Mode",
+                    title = stringResource(id = R.string.dark_mode),
                     checked = isDarkMode,
-                    onCheckedChange = { isDarkMode = it }
-                )
+                    onCheckedChange = { isDarkMode = it })
             }
 
             item {
                 SettingsRow(
                     itemData = SettingsItemData(
                         icon = Icons.Default.Star,
-                        title = "Account Status",
-                        subtitle = if (isPremium) "Premium" else "Basic"
+                        title = stringResource(id = R.string.account_status),
+                        subtitle = if (isPremium) stringResource(id = R.string.premium) else stringResource(
+                            id = R.string.basic
+                        )
                     )
                 )
             }
 
-            // Section: Your orders and fundraisers
-            item {
-                SectionHeader(title = "Your orders and fundraisers")
-            }
+            item { SectionHeader(title = stringResource(id = R.string.section_orders_fundraisers)) }
             item {
                 SettingsRow(
                     itemData = SettingsItemData(
                         icon = Icons.Default.Payment,
-                        title = "Orders and payments"
+                        title = stringResource(id = R.string.orders_payments)
                     )
                 )
             }
 
-            // Section: Login
-            item {
-                SectionHeader(title = "Login")
-            }
-            items(
-                listOf(
-                    SettingsItemData(icon = Icons.Default.PersonAdd, title = "Add account")
-                    // Có thể giữ lại các mục khác nếu cần
-                )
-            ) { itemData ->
-                SettingsRow(itemData = itemData)
-            }
-            // Mục đăng xuất riêng
+            item { SectionHeader(title = stringResource(id = R.string.section_login)) }
             item {
                 SettingsRow(
-                    itemData = SettingsItemData(icon = Icons.Default.ExitToApp, title = "Log out"),
+                    itemData = SettingsItemData(
+                        icon = Icons.Default.PersonAdd,
+                        title = stringResource(id = R.string.add_account)
+                    )
+                )
+            }
+
+            item {
+                SettingsRow(
+                    itemData = SettingsItemData(
+                        icon = Icons.Default.ExitToApp,
+                        title = stringResource(id = R.string.log_out)
+                    ),
                     onClick = {
-                        // Gọi hàm đăng xuất
                         FirebaseAuth.getInstance().signOut()
-                        // Sau đó chuyển hướng về màn hình đăng nhập
-                        navController.navigate(Routes.LoginScreen.route) {
-                            popUpTo(0)  // Xóa toàn bộ back stack (tuỳ chỉnh theo nhu cầu)
-                        }
+                        navController.navigate(Routes.LoginScreen.route) { popUpTo(0) }
                     }
                 )
             }
         }
+    }
+    // Hộp thoại chọn ngôn ngữ
+    if (showLanguageDialog) {
+        AlertDialog(
+            onDismissRequest = { showLanguageDialog = false },
+            title = { Text(text = multiLanguageText) },
+            text = { Text(text = chooseLanguageText) },
+            confirmButton = {
+                TextButton(onClick = {
+                    changeAppLanguage(context, "vi")
+                    showLanguageDialog = false
+                }) {
+                    Text(text = vietnamText)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    changeAppLanguage(context, "en")
+                    showLanguageDialog = false
+                }) {
+                    Text(text = englishText)
+                }
+            }
+        )
     }
 }
 
@@ -318,7 +355,7 @@ fun SettingsRowWithSwitch(
     icon: ImageVector,
     title: String,
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -356,5 +393,5 @@ fun SettingsRowWithSwitch(
 data class SettingsItemData(
     val icon: ImageVector,
     val title: String,
-    val subtitle: String? = null
+    val subtitle: String? = null,
 )

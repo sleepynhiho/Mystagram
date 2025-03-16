@@ -27,12 +27,13 @@ import com.forrestgump.ig.R
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun AddPostDetailScreen(
     navHostController: NavHostController,
     // Giả sử danh sách ảnh được truyền từ AddPostScreen (có thể dùng ViewModel hay NavArgs)
-    selectedImages: List<android.net.Uri>
+    selectedImages: List<android.net.Uri>,
 ) {
     val context = LocalContext.current
 
@@ -44,9 +45,10 @@ fun AddPostDetailScreen(
     val pagerState = rememberPagerState(initialPage = 0) { selectedImages.size }
     val focusManager = LocalFocusManager.current
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .clickable { focusManager.clearFocus() }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable { focusManager.clearFocus() }
     ) {
         // Top Bar
         Row(
@@ -63,7 +65,7 @@ fun AddPostDetailScreen(
                 )
             }
             Text(
-                text = "Bài viết mới",
+                text = stringResource(id = R.string.new_post),
                 style = MaterialTheme.typography.titleMedium
             )
             // Để cân bằng layout, nếu không có nút bên phải có thể dùng Spacer
@@ -78,7 +80,7 @@ fun AddPostDetailScreen(
                 .background(Color.LightGray)
         ) {
             if (selectedImages.isEmpty()) {
-                Text("Chưa chọn ảnh", modifier = Modifier.align(Alignment.Center))
+                Text(stringResource(id = R.string.no_select_photo), modifier = Modifier.align(Alignment.Center))
             } else {
                 HorizontalPager(
                     state = pagerState,

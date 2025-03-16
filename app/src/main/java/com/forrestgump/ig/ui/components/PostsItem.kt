@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -327,7 +328,7 @@ fun PostDetails(post: Post) {
 
         // Hiển thị tổng số reactions
         Text(
-            text = "${post.reactions.values.sum()} reactions",
+            text = "${post.reactions.values.sum()} " + stringResource(id = R.string.reactions),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -351,7 +352,7 @@ fun PostDetails(post: Post) {
     // Số bình luận
     if (post.commentsCount > 0) {
         Text(
-            text = "Xem tất cả ${post.commentsCount} bình luận",
+            text = stringResource(id = R.string.view_all) + " ${post.commentsCount} " + stringResource(id = R.string.comments),
             style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray),
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
         )

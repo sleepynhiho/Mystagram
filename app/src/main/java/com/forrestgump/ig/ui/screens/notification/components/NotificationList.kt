@@ -46,7 +46,7 @@ import com.forrestgump.ig.utils.constants.formatAsElapsedTime
 fun NotificationList(
     notifications: List<Notification>,
     innerPadding: PaddingValues,
-    navHostController: NavHostController
+    navHostController: NavHostController,
 ) {
     LazyColumn(
         contentPadding = innerPadding,
@@ -102,23 +102,23 @@ fun getNotificationMessage(notification: Notification): AnnotatedString {
         }
         append(
             when (notification.type) {
-                NotificationType.LIKE -> " liked your post. "
-                NotificationType.COMMENT -> " mentioned you in a comment. "
-                NotificationType.FOLLOW -> " started following you. "
-                NotificationType.FOLLOW_REQUEST -> " requested to follow you. "
-                NotificationType.FOLLOW_ACCEPTED -> " accepted your follow request. "
+                NotificationType.LIKE -> " " + stringResource(id = R.string.notification_like)
+                NotificationType.COMMENT -> " " + stringResource(id = R.string.notification_comment)
+                NotificationType.FOLLOW -> " " + stringResource(id = R.string.notification_follow)
+                NotificationType.FOLLOW_REQUEST -> " " + stringResource(id = R.string.notification_follow_request)
+                NotificationType.FOLLOW_ACCEPTED -> " " + stringResource(id = R.string.notification_follow_accepted)
             }
         )
 
-       withStyle(
-           style = SpanStyle(
-               fontSize = 14.sp,
-               fontWeight = FontWeight.Normal,
-               color = Color(0xFF737373)
-           )
-       ) {
-           notification.timestamp?.let { append(it.formatAsElapsedTime()) }
-       }
+        withStyle(
+            style = SpanStyle(
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal,
+                color = Color(0xFF737373)
+            )
+        ) {
+            notification.timestamp?.let { append(it.formatAsElapsedTime()) }
+        }
     }
 }
 

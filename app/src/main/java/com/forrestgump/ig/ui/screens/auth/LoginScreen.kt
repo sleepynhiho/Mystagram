@@ -3,7 +3,7 @@ package com.forrestgump.ig.ui.screens.auth
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -31,7 +33,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -39,15 +43,23 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.forrestgump.ig.R
 import com.forrestgump.ig.ui.navigation.Routes
+import com.forrestgump.ig.utils.constants.changeAppLanguage
 
 @Composable
 fun LoginScreen(
     navController: NavController,
-    authViewModel: AuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    authViewModel: AuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
 ) {
+    val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
+    var expanded by remember { mutableStateOf(false) }
+    val englishText = stringResource(id = R.string.english_language)
+    val vietnamText = stringResource(id = R.string.vietnamese_language)
+    val errorMessageTemplate = stringResource(id = R.string.error_message)
+    var selectedLanguage by remember { mutableStateOf("") }
+    selectedLanguage = stringResource(id = R.string.language_default)
 
     Column(
         modifier = Modifier
@@ -59,32 +71,56 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(48.dp))
 
         // Language selector
-        Row(
+        Box(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "English (US)",
-                fontSize = 16.sp,
-                color = Color.Gray
-            )
-            Icon(
-                painter = painterResource(id = R.drawable.next),
-                contentDescription = "Language dropdown",
-                tint = Color.Gray,
-                modifier = Modifier
-                    .padding(start = 4.dp)
-                    .rotate(90F)
-                    .height(12.dp)
-            )
+            Row(
+                modifier = Modifier.clickable { expanded = true },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = selectedLanguage,
+                    fontSize = 16.sp,
+                    color = Color.Gray
+                )
+                Icon(
+                    painter = painterResource(id = R.drawable.next),
+                    contentDescription = stringResource(id = R.string.language_dropdown),
+                    tint = Color.Gray,
+                    modifier = Modifier
+                        .padding(start = 4.dp)
+                        .rotate(90F)
+                        .height(12.dp)
+                )
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text(text = englishText) },
+                    onClick = {
+                        selectedLanguage = englishText
+                        changeAppLanguage(context, "en")
+                        expanded = false
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text(text = vietnamText) },
+                    onClick = {
+                        selectedLanguage = vietnamText
+                        changeAppLanguage(context, "vi")
+                        expanded = false
+                    }
+                )
+            }
         }
 
-        // Instagram logo
         Spacer(modifier = Modifier.height(4.dp))
         Image(
             painter = painterResource(id = R.drawable.my_logo),
-            contentDescription = "Meta logo",
+            contentDescription = stringResource(id = R.string.app_logo),
             modifier = Modifier
                 .height(96.dp)
                 .padding(vertical = 8.dp),
@@ -93,11 +129,10 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Username field
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            placeholder = { Text("Email") },
+            placeholder = { Text(text = stringResource(id = R.string.email)) },
             modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.background,
@@ -109,11 +144,10 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Password field
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            placeholder = { Text("Password") },
+            placeholder = { Text(text = stringResource(id = R.string.password)) },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.colors(
@@ -126,7 +160,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Nút Log in
         Button(
             onClick = {
                 authViewModel.login(email, password) { success, errorMsg ->
@@ -135,7 +168,7 @@ fun LoginScreen(
                             popUpTo(Routes.LoginScreen.route) { inclusive = true }
                         }
                     } else {
-                        message = "Error: $errorMsg"
+                        message = errorMessageTemplate.format(errorMsg)
                     }
                 }
             },
@@ -149,18 +182,16 @@ fun LoginScreen(
             shape = RoundedCornerShape(8.dp)
         ) {
             Text(
-                text = "Log in",
+                text = stringResource(id = R.string.login),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
-        // Hiển thị thông báo lỗi/thành công
         if (message.isNotEmpty()) {
             Text(text = message, color = Color.Red, fontSize = 14.sp)
         }
-
 
         // *** Thêm nút Login with Google ***
         Spacer(modifier = Modifier.height(8.dp))
@@ -169,19 +200,18 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
-
             shape = RoundedCornerShape(8.dp)
         ) {
             // Icon Google
             Icon(
                 painter = painterResource(id = R.drawable.google_logo),
-                contentDescription = "Google Logo",
-                tint = Color.Unspecified, // để giữ nguyên màu gốc icon
+                contentDescription = stringResource(id = R.string.google_logo_desc),
+                tint = Color.Unspecified,
                 modifier = Modifier.height(24.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Login with Google",
+                text = stringResource(id = R.string.login_with_google),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
@@ -195,19 +225,18 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
-
             shape = RoundedCornerShape(8.dp)
         ) {
             // Icon Facebook
             Icon(
                 painter = painterResource(id = R.drawable.facebook_logo),
-                contentDescription = "Facebook Logo",
+                contentDescription = stringResource(id = R.string.facebook_logo_desc),
                 tint = Color.Unspecified,
                 modifier = Modifier.height(24.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Login with Facebook",
+                text = stringResource(id = R.string.login_with_facebook),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
@@ -218,14 +247,11 @@ fun LoginScreen(
 
         // Forgot password
         Text(
-            text = "Forgot password?",
+            text = stringResource(id = R.string.forgot_password),
             fontSize = 14.sp,
             color = Color(0xFF00376B),
             modifier = Modifier.clickable {
-//                authViewModel.forgotPassword(email) { success, errorMsg ->
-//                    message =
-//                        if (success) "Email reset password sent" else "Error: $errorMsg"
-//                }
+                // Xử lý logic forgot password nếu cần
             }
         )
 
@@ -244,7 +270,7 @@ fun LoginScreen(
             )
         ) {
             Text(
-                text = "Create new account",
+                text = stringResource(id = R.string.create_new_account),
                 fontSize = 14.sp,
                 color = Color(0xFF0095F6)
             )
@@ -255,9 +281,8 @@ fun LoginScreen(
         // Meta logo
         Image(
             painter = painterResource(id = R.drawable.meta_colored),
-            contentDescription = "Meta logo",
-            modifier = Modifier
-                .padding(vertical = 8.dp),
+            contentDescription = stringResource(id = R.string.meta_logo),
+            modifier = Modifier.padding(vertical = 8.dp),
             contentScale = ContentScale.Fit
         )
 
