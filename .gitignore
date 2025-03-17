@@ -23,14 +23,12 @@
 hs_err_pid*
 replay_pid*
 
-/local.properties
-*.iml
-.gradle
-.DS_Store
-/captures
-.externalNativeBuild/
-/.cxx/
-/app/google-services.json
-/.idea/caches
-/.idea/deviceStreaming.xml
-/.idea/workspace.xml
+
+
+**/google-services.json
+
+local.properties
+
+# Gradle
+.gradle/
+.idea/
