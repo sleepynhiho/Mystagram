@@ -17,7 +17,7 @@ val localProperties = Properties().apply {
 val cloudinaryCloudName = localProperties.getProperty("cloudinary.cloud_name") ?: ""
 val cloudinaryApiKey = localProperties.getProperty("cloudinary.api_key") ?: ""
 val cloudinaryApiSecret = localProperties.getProperty("cloudinary.api_secret") ?: ""
-
+val cloudinaryUploadPreset = localProperties.getProperty("cloudinary.upload_preset") ?: ""
 android {
     namespace = "com.forrestgump.ig"
     compileSdk = 35
@@ -33,7 +33,7 @@ android {
         buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"$cloudinaryCloudName\"")
         buildConfigField("String", "CLOUDINARY_API_KEY", "\"$cloudinaryApiKey\"")
         buildConfigField("String", "CLOUDINARY_API_SECRET", "\"$cloudinaryApiSecret\"")
-
+        buildConfigField("String", "CLOUDINARY_UPLOAD_PRESET", "\"$cloudinaryUploadPreset\"")
 
     }
 

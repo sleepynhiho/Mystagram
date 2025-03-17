@@ -36,7 +36,7 @@ import androidx.compose.foundation.shape.CircleShape
 import com.forrestgump.ig.R
 import java.io.File
 import android.widget.Toast
-import androidx.annotation.RequiresApi
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.forrestgump.ig.ui.navigation.Routes
 
 
@@ -49,6 +49,8 @@ fun AddPostScreen(navHostController: NavHostController) {
     // State lưu danh sách ảnh trong thư viện (load sẵn khi mở màn hình)
     val galleryImages = remember { mutableStateListOf<Uri>() }
     var permissionGranted by remember { mutableStateOf(false) }
+
+    val addPostViewModel: AddPostViewModel = hiltViewModel()
 
     // Launcher yêu cầu quyền truy cập ảnh từ thư viện
     val requestPermissionLauncher = rememberLauncherForActivityResult(
@@ -125,6 +127,7 @@ fun AddPostScreen(navHostController: NavHostController) {
                     Toast.makeText(context, "Vui lòng chọn hoặc chụp ảnh", Toast.LENGTH_SHORT).show()
                     return@TextButton
                 }
+                addPostViewModel.updateSelectedImages(selectedImages)
                 navHostController.navigate(Routes.AddPostDetailScreen.route)
             }) {
                 Text(text = "Tiếp")
@@ -253,7 +256,6 @@ fun AddPostScreen(navHostController: NavHostController) {
 }
 
 // Hàm load danh sách ảnh từ thư viện sử dụng MediaStore
-@RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
 fun loadGalleryImages(context: Context): List<Uri> {
     val imageList = mutableListOf<Uri>()
     val projection = arrayOf(MediaStore.Images.Media._ID)

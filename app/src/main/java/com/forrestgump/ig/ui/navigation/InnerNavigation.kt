@@ -213,26 +213,6 @@ fun InnerNavigation(
             }
         }
 
-        composable(
-            route = Routes.AddPostScreen.route,
-            enterTransition = {
-                slideInVertically(
-                    initialOffsetY = { it },
-                    animationSpec = tween(durationMillis = 350)
-                )
-            },
-            exitTransition = {
-                slideOutVertically(
-                    targetOffsetY = { -it },
-                    animationSpec = tween(durationMillis = 350)
-                )
-            }
-        ) {
-            AddPostScreen(
-                navHostController
-            )
-        }
-
         val dummyChats = listOf(
             Chat(
                 "chat1",
@@ -734,20 +714,34 @@ fun InnerNavigation(
             )
         }
 
+        composable(
+            route = Routes.AddPostScreen.route,
+            enterTransition = {
+                slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(durationMillis = 350)
+                )
+            },
+            exitTransition = {
+                slideOutVertically(
+                    targetOffsetY = { -it },
+                    animationSpec = tween(durationMillis = 350)
+                )
+            }
+        ) {
+            AddPostScreen(
+                navHostController
+            )
+        }
+
         composable(route = Routes.AddPostDetailScreen.route, enterTransition = {
             fadeIn(animationSpec = tween(350))
         }, exitTransition = {
             fadeOut(animationSpec = tween(350))
         }) {
-            // Giả lập danh sách ảnh bằng cách chuyển URL thành Uri
-            val dummyImages = listOf(
-                android.net.Uri.parse("https://statictuoitre.mediacdn.vn/thumb_w/640/2017/1-1512755474911.jpg"),
-                android.net.Uri.parse("https://uploads.nguoidothi.net.vn/content/f29d9806-6f25-41c0-bcf8-4095317e3497.jpg"),
-                android.net.Uri.parse("https://tophinhanhdep.com/wp-content/uploads/2021/10/720x1480-Wallpapers.jpg")
-            )
+
             AddPostDetailScreen(
-                navHostController = navHostController,
-                selectedImages = dummyImages
+                navHostController = navHostController
             )
         }
 
