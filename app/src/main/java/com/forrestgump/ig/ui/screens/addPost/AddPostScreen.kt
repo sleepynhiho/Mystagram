@@ -41,7 +41,10 @@ import com.forrestgump.ig.ui.navigation.Routes
 
 
 @Composable
-fun AddPostScreen(navHostController: NavHostController) {
+fun AddPostScreen(
+    navHostController: NavHostController,
+    addPostViewModel: AddPostViewModel = hiltViewModel()
+    ) {
     val context = LocalContext.current
 
     // State lưu các ảnh được chọn (từ thư viện hoặc camera)
@@ -50,7 +53,6 @@ fun AddPostScreen(navHostController: NavHostController) {
     val galleryImages = remember { mutableStateListOf<Uri>() }
     var permissionGranted by remember { mutableStateOf(false) }
 
-    val addPostViewModel: AddPostViewModel = hiltViewModel()
 
     // Launcher yêu cầu quyền truy cập ảnh từ thư viện
     val requestPermissionLauncher = rememberLauncherForActivityResult(

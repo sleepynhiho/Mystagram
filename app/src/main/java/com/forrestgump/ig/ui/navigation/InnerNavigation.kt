@@ -22,7 +22,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
+import androidx.navigation.navigation
 import com.forrestgump.ig.ui.screens.home.HomeScreen
 import com.forrestgump.ig.ui.screens.home.HomeViewModel
 import com.forrestgump.ig.ui.screens.profile.MyProfileScreen
@@ -64,7 +66,8 @@ fun InnerNavigation(
     storyViewModel: StoryViewModel
 ) {
     val currentUser by userViewModel.user.collectAsState()
-
+    // Trong Activity hoặc các composable cha
+    val viewModelOfAddPost: AddPostViewModel = hiltViewModel()
     NavHost(
         navController = navHostController, startDestination = Routes.HomeScreen.route
     ) {
@@ -714,36 +717,45 @@ fun InnerNavigation(
             )
         }
 
-        composable(
-            route = Routes.AddPostScreen.route,
-            enterTransition = {
-                slideInVertically(
-                    initialOffsetY = { it },
-                    animationSpec = tween(durationMillis = 350)
-                )
-            },
-            exitTransition = {
-                slideOutVertically(
-                    targetOffsetY = { -it },
-                    animationSpec = tween(durationMillis = 350)
-                )
-            }
-        ) {
+//        composable(route = Routes.AddPostGraph.route) {
+//            NavHost(
+//                navController = navHostController,
+//                startDestination = Routes.AddPostScreen.route
+//            ) {
+//                composable(route = Routes.AddPostScreen.route) {
+//                    AddPostScreen(navHostController = navHostController)
+//                }
+//                composable(route = Routes.AddPostDetailScreen.route) {
+//
+//                    val navBackStackEntry by navHostController.currentBackStackEntryAsState()
+//                    val parentEntry = remember(navBackStackEntry) {
+//                        navHostController.getBackStackEntry(Routes.AddPostGraph.route)
+//                    }
+//
+//                    val addPostViewModel: AddPostViewModel = hiltViewModel(parentEntry)
+//
+//                    AddPostDetailScreen(
+//                        navHostController = navHostController,
+//                        addPostViewModel = addPostViewModel
+//                    )
+//                }
+//            }
+//        }
+
+
+        composable(route = Routes.AddPostScreen.route) {
             AddPostScreen(
-                navHostController
-            )
+                navHostController = navHostController,
+                addPostViewModel = viewModelOfAddPost)
         }
 
-        composable(route = Routes.AddPostDetailScreen.route, enterTransition = {
-            fadeIn(animationSpec = tween(350))
-        }, exitTransition = {
-            fadeOut(animationSpec = tween(350))
-        }) {
-
+        composable(route = Routes.AddPostDetailScreen.route) {
             AddPostDetailScreen(
-                navHostController = navHostController
+                navHostController = navHostController,
+                addPostViewModel = viewModelOfAddPost
             )
         }
+
 
     }
 }

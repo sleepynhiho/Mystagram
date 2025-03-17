@@ -74,10 +74,9 @@ fun BottomNavBar(
                     isMyProfileScreen = item.route == Routes.MyProfileScreen.route,
                     myProfileImage = myProfileImage,
                     onClick = {
-                        val route = item.route
-                        navHostController.navigate(route) {
-                            popUpTo(Routes.HomeScreen.route) // always back to home screen
-                            launchSingleTop = true // avoid tap multiple times
+                        navHostController.navigate(item.route) {
+                            popUpTo(Routes.HomeScreen.route)
+                            launchSingleTop = true
                         }
                     }
                 )
