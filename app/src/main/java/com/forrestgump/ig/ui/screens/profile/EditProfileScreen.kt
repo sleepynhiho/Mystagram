@@ -117,7 +117,7 @@ fun EditProfileScreen(
             photoFile.value = newFile
             val uri = FileProvider.getUriForFile(
                 context,
-                "${context.packageName}.fileprovider",
+                "${context.packageName}.provider",
                 newFile
             )
             takePictureLauncher.launch(uri)
@@ -354,7 +354,7 @@ fun EditProfileScreen(
                                     if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                                         val newFile = createImageFile(context)
                                         photoFile.value = newFile
-                                        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", newFile)
+                                        val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", newFile)
                                         takePictureLauncher.launch(uri)
                                     } else {
                                         cameraPermissionLauncher.launch(Manifest.permission.CAMERA)

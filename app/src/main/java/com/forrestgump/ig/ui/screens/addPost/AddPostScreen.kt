@@ -216,7 +216,7 @@ fun AddPostScreen(
                     val file = createImageFile(context)
                     val uri = FileProvider.getUriForFile(
                         context,
-                        "${context.packageName}.fileprovider",
+                        "${context.packageName}.provider",
                         file
                     )
                     photoUri = uri
