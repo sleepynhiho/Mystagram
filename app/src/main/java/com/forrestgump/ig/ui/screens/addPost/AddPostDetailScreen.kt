@@ -28,7 +28,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import android.content.Context
 import android.net.Uri
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.compose.currentBackStackEntryAsState
 import com.cloudinary.Cloudinary
 import com.cloudinary.utils.ObjectUtils
 import java.io.File
