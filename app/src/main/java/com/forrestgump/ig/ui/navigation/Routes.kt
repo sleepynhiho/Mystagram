@@ -12,7 +12,6 @@ sealed class Routes(
     data object InnerContainer: Routes(name = "InnerScreen", route = "InnerContainer")
     data object HomeScreen: Routes(iconOutlined = R.drawable.home_outlined, iconFilled = R.drawable.home_filled, name = "Home", route = "HomeScreen")
     data object SearchScreen: Routes(iconOutlined = R.drawable.search, iconFilled = R.drawable.search_selected, name = "Search", route = "SearchScreen")
-    data object AddPostScreen: Routes(iconOutlined = R.drawable.add_outlined, name = "AddPost", route = "AddPostScreen")
     data object NotificationScreen: Routes(iconOutlined = R.drawable.heart_outlined, iconFilled = R.drawable.heart_filled, name = "Notification", route = "NotificationScreen")
     data object AddStoryScreen: Routes(name = "AddStory", route = "AddStoryScreen")
     data object MyProfileScreen: Routes(name = "MyProfile", route = "MyProfileScreen")
@@ -22,6 +21,13 @@ sealed class Routes(
     data object NewChatScreen: Routes(name = "NewChat", route = "NewChat")
     data object SignupScreen: Routes(name = "Signup", route = "SignupScreen")
     data object LoginScreen: Routes(name = "Login", route = "LoginScreen")
+    data object FollowerScreen: Routes(name = "Follower", route = "FollowerScreen")
+    data object FollowingScreen: Routes(name = "Following", route = "FollowingScreen")
+    data object EditProfileScreen: Routes(name = "EditProfile", route="EditProfileScreen")
+    // Thêm NavGraph cho flow add post
+    //data object AddPostGraph: Routes(iconOutlined = R.drawable.add_outlined, name = "AddPostGraph", route = "AddPostGraph")
+    data object AddPostScreen: Routes(iconOutlined = R.drawable.add_outlined, name = "AddPost", route = "AddPostScreen")
+    data object AddPostDetailScreen : Routes(name = "AddPostDetail", route =  "AddPostDetailScreen")
 
     data object Items {
         val bottomNavItems = listOf(
