@@ -24,8 +24,6 @@ sealed class Routes(
     data object FollowerScreen: Routes(name = "Follower", route = "FollowerScreen")
     data object FollowingScreen: Routes(name = "Following", route = "FollowingScreen")
     data object EditProfileScreen: Routes(name = "EditProfile", route="EditProfileScreen")
-    // Thêm NavGraph cho flow add post
-    //data object AddPostGraph: Routes(iconOutlined = R.drawable.add_outlined, name = "AddPostGraph", route = "AddPostGraph")
     data object AddPostScreen: Routes(iconOutlined = R.drawable.add_outlined, name = "AddPost", route = "AddPostScreen")
     data object AddPostDetailScreen : Routes(name = "AddPostDetail", route =  "AddPostDetailScreen")
 

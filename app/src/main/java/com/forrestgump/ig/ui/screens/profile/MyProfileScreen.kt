@@ -1,8 +1,10 @@
 package com.forrestgump.ig.ui.screens.profile
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -13,7 +15,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -24,23 +25,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.forrestgump.ig.ui.components.Loading
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import coil.compose.rememberAsyncImagePainter
 import com.forrestgump.ig.R
-import com.forrestgump.ig.ui.components.StoryList
-import com.forrestgump.ig.data.models.UserStory
-import com.forrestgump.ig.data.models.Story
 import coil.compose.AsyncImage
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.ui.platform.LocalContext
 import com.forrestgump.ig.ui.navigation.Routes
 import androidx.navigation.NavController
-import com.forrestgump.ig.data.models.User
-import com.google.firebase.auth.FirebaseAuth
+import com.forrestgump.ig.data.models.Post
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Box
+import com.forrestgump.ig.ui.components.PostItem
 
 
 @Composable
@@ -48,13 +47,6 @@ fun MyProfileScreen(
     uiState: UiState,
     navController: NavController
 ) {
-    // Tạm thời set cứng để demo
-    uiState.isLoading = false
-    var user = FirebaseAuth.getInstance().currentUser
-    if (user == null) return
-    var name = user.displayName
-    var email = user.email
-    var photoUrl = user.photoUrl
 
     if (!uiState.isLoading) {
         Surface(
@@ -64,7 +56,7 @@ fun MyProfileScreen(
             Column {
                 // Thanh top bar
                 ProfileTopBar(
-                    title = "__td.tung",
+                    title = uiState.curUser.username,
                     onBackClicked = { /* TODO */ },
                     onMoreClicked = {
                         navController.navigate(Routes.SettingsScreen.route)
@@ -73,16 +65,17 @@ fun MyProfileScreen(
 
                 // Khu vực hiển thị thông tin chính: Avatar, Thống kê, Tên, Bio,...
                 ProfileInfoSection(
-                    fullName = email.toString(),
-                    bio = "Trò chơi quyền lực là sách hay, được viết bởi Ngô Di Lân, nhập môn tìm hiểu thế giới quan về địa chính trị",
-                    posts = 0,
-                    followers = 47,
-                    following = 110,
+                    profileImage =  uiState.curUser.profileImage,
+                    fullName = uiState.curUser.fullName,
+                    bio = uiState.curUser.bio,
+                    posts = uiState.postCount,
+                    followers = uiState.curUser.followers.size,
+                    following = uiState.curUser.following.size,
                     navController = navController
                 )
 
                 // (Tuỳ chọn) Khu vực Story Highlights, v.v. (Ở Instagram thường có một hàng story highlight)
-                StoryHighlightsSection()
+//                StoryHighlightsSection()
 
                 // Khu vực nút "Chỉnh sửa" và "Chia sẻ"
                 ProfileActionButtons(navController = navController)
@@ -91,22 +84,14 @@ fun MyProfileScreen(
                 ProfileTabRow()
 
                 // Khu vực hiển thị bài viết
-                // Ở đây demo khi chưa có bài viết
 
-                val posts = listOf(
-                    "https://storage.googleapis.com/blogvxr-uploads/2020/10/A%CC%89nh-de%CC%A3p-Vie%CC%A3%CC%82t-Nam.jpg",
-                    "https://img.tripi.vn/cdn-cgi/image/width=700,height=700/https://gcs.tripi.vn/public-tripi/tripi-feed/img/474068sWa/anh-dep-cau-rong-da-nang-viet-nam_055418962.jpg",
-                    "https://media.istockphoto.com/id/1401126607/vi/anh/khung-c%E1%BA%A3nh-tr%C3%AAn-kh%C3%B4ng-c%E1%BB%A7a-nh%E1%BB%AFng-t%C3%B2a-nh%C3%A0-ch%E1%BB%8Dc-tr%E1%BB%9Di-tuy%E1%BB%87t-%C4%91%E1%BA%B9p-d%E1%BB%8Dc-theo-d%C3%B2ng-s%C3%B4ng-tr%C3%AAn-b%E1%BA%A7u-tr%E1%BB%9Di.jpg?s=612x612&w=0&k=20&c=tKG0XCBB-k7AuUUNvH6VrCW7DjSojIGmrxJD6rcPabE=",
-                    "https://wyndham-thanhthuy.com/wp-content/uploads/2024/01/dia-diem-chup-anh-dep-o-ha-noi-1.jpg",
-                    "https://icdn.24h.com.vn/upload/4-2019/images/2019-12-17/1576580871-929bdf4f16b86295376a79e7a8a0b7fe.jpg",
-                    "https://teky.edu.vn/blog/wp-content/uploads/2022/03/Hinh-nen-may-tinh-dep-chu-de-phong-canh.jpg",
-                    "https://mia.vn/media/uploads/blog-du-lich/canh-dep-viet-nam-4-1710380274.jpg",
-                    "https://vinhomegoldenriver.com/wp-content/uploads/2023/03/Vinhomes-Golden-River-Quan-1.jpg"
-                )
-                val context = LocalContext.current
-                PostFeed(posts = posts, onPostClick = { postUrl ->
+                PostFeed(posts = uiState.posts, onPostClick = { postIdx: Post ->
                     // Hiển thị Toast khi nhấn vào ảnh
-                    Toast.makeText(context, "Clicked on post: $postUrl", Toast.LENGTH_SHORT).show()
+                    PostItem(
+                        post = postIdx,
+                        onLikeClicked = {},
+                        onCommentClicked = {},
+                    )
                 })
             }
         }
@@ -158,6 +143,7 @@ fun ProfileTopBar(
  */
 @Composable
 fun ProfileInfoSection(
+    profileImage: String,
     fullName: String,
     bio: String,
     posts: Int,
@@ -174,9 +160,16 @@ fun ProfileInfoSection(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+
+            val painterImage = if (profileImage.startsWith("http://") || profileImage.startsWith("https://")) {
+                rememberAsyncImagePainter(model = profileImage)
+            } else {
+                val resId = R.drawable.default_profile_img
+                painterResource(id = resId)
+            }
             // Ảnh đại diện
             Image(
-                painter = rememberAsyncImagePainter("https://ci3.googleusercontent.com/mail-sig/AIorK4zn5K76pJRVaezbkBYcJUCKTfDnFxB9SIyhdYuSW5UtQ4PVBfYHktxkIvuUlD2VossPsbTNEpbzKa7E"),
+                painter = painterImage,
                 contentDescription = "Profile Image",
                 modifier = Modifier
                     .size(80.dp)
@@ -270,46 +263,6 @@ fun ProfileActionButtons(
     }
 }
 
-/**
- * Khu vực Story Highlights (có thể là danh sách vòng tròn story)
- */
-@Composable
-fun StoryHighlightsSection() {
-    // Demo đơn giản hiển thị một hàng text
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 16.dp),
-        horizontalArrangement = Arrangement.Start
-    ) {
-        StoryList(
-            onAddStoryClicked = { /* Xử lý sự kiện khi nhấn vào "Add Story" */ },
-            userStories = listOf(
-                UserStory(
-                    // Giả sử mỗi UserStory có thêm thuộc tính username nếu cần dùng làm key
-                    stories = listOf(
-                        Story(username = "story1"),
-                        Story(username = "story2"),
-                        Story(username = "story3")
-                    )
-                    // Nếu có thuộc tính username cho UserStory, bạn có thể truyền ở đây:
-                    // username = "user1"
-                )
-            ),
-            myStories = listOf(
-                UserStory(
-                    stories = listOf(
-                        Story(username = "mystory1"),
-                        Story(username = "mystory2")
-                    )
-                    // username = "usernameCuaToi"
-                )
-            ),
-            currentUser = User(),
-            onViewStoryClicked = {_, _ -> },
-        )
-    }
-}
 
 /**
  * Tab hiển thị Bài viết, Reels, Thẻ gắn,... (ở Instagram)
@@ -354,7 +307,7 @@ fun ProfileTabItem(label: String) {
  * Khu vực danh sách bài viết. Ở đây demo khi chưa có bài viết.
  */
 @Composable
-fun PostFeed(posts: List<String>, onPostClick: (String) -> Unit) {
+fun PostFeed(posts: List<Post>, onPostClick: (Post) -> Unit) {
     // Lấy thông tin cấu hình màn hình hiện tại
     val configuration = LocalConfiguration.current
     // Tính 1/3 độ rộng màn hình (screenWidthDp là số nguyên, chuyển thành dp)
@@ -373,25 +326,38 @@ fun PostFeed(posts: List<String>, onPostClick: (String) -> Unit) {
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(posts) { post ->
-            AsyncImage(
-                model = post,
-                contentDescription = "Ảnh bài viết",
-                contentScale = ContentScale.Crop,
+            Box(
                 modifier = Modifier
                     .width(imageWidth)
                     .height(imageWidth)
                     .clickable { onPostClick(post) } // Xử lý sự kiện click vào ảnh
-            )
+            ) {
+                // Hiển thị ảnh chính
+                AsyncImage(
+                    model = post.mediaUrls[0],
+                    contentDescription = "Ảnh bài viết",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                // Nếu có nhiều hơn 1 ảnh, hiển thị biểu tượng stack ở góc trên phải
+                if (post.mediaUrls.size > 1) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                            .background(Color.Black.copy(alpha = 0.6f), shape = CircleShape)
+                            .padding(6.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_multiple), // Biểu tượng album (chồng ảnh)
+                            contentDescription = "Multiple media",
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
         }
     }
-}
-
-
-@Preview(showBackground = true, backgroundColor = 0xFF000000)
-@Composable
-fun MyProfileScreenPreview() {
-    MyProfileScreen(
-        uiState = UiState(isLoading = false),
-        navController = TODO()
-    )
 }

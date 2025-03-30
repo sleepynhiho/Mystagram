@@ -187,6 +187,10 @@ fun InnerNavigation(
         }) {
             val uiState by viewModelProfile.uiState.collectAsState()
 
+            LaunchedEffect (Unit) {
+                viewModelProfile.loadUserData()
+            }
+
             MyProfileScreen(
                 uiState = uiState, navController = navHostController
             )
@@ -716,32 +720,6 @@ fun InnerNavigation(
                 onAvatarClick = { /* Mở trình chọn ảnh để thay đổi avatar */ }
             )
         }
-
-//        composable(route = Routes.AddPostGraph.route) {
-//            NavHost(
-//                navController = navHostController,
-//                startDestination = Routes.AddPostScreen.route
-//            ) {
-//                composable(route = Routes.AddPostScreen.route) {
-//                    AddPostScreen(navHostController = navHostController)
-//                }
-//                composable(route = Routes.AddPostDetailScreen.route) {
-//
-//                    val navBackStackEntry by navHostController.currentBackStackEntryAsState()
-//                    val parentEntry = remember(navBackStackEntry) {
-//                        navHostController.getBackStackEntry(Routes.AddPostGraph.route)
-//                    }
-//
-//                    val addPostViewModel: AddPostViewModel = hiltViewModel(parentEntry)
-//
-//                    AddPostDetailScreen(
-//                        navHostController = navHostController,
-//                        addPostViewModel = addPostViewModel
-//                    )
-//                }
-//            }
-//        }
-
 
         composable(route = Routes.AddPostScreen.route) {
             AddPostScreen(
