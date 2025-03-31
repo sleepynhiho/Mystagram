@@ -2,8 +2,10 @@ package com.forrestgump.ig.ui.screens.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.forrestgump.ig.data.models.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -63,7 +65,20 @@ class AuthViewModel @Inject constructor() : ViewModel() {
                         user?.updateProfile(profileUpdates)
                             ?.addOnCompleteListener { updateTask ->
                                 if (updateTask.isSuccessful) {
-                                    onResult(true, null)
+                                    val db = FirebaseFirestore.getInstance();
+                                    val userData = User(
+                                        userId = user.uid,
+                                        email = email,
+                                        username = username,
+                                        profileImage = "@drawable/default_profile_image",
+                                    )
+                                    db.collection("users").document(user.uid).set(userData)
+                                        .addOnSuccessListener {
+                                            onResult(true, null)
+                                        }
+                                        .addOnFailureListener { e ->
+                                            onResult(false, e.message)
+                                         }
                                 } else {
                                     onResult(false, updateTask.exception?.message)
                                 }

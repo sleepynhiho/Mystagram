@@ -13,6 +13,7 @@ data class User(
     var email: String = "",                     // Email người dùng
     var profileImage: String = "",           // Ảnh đại diện
     var bio: String = "",                       // Tiểu sử người dùng
-    var followers: List<String> = emptyList(),  // Danh sách follower
-    var following: List<String> = emptyList()   // Danh sách following
+    var followers: List<String> = emptyList(),  // Danh sách follower's userId
+    var following: List<String> = emptyList(),   // Danh sách following's userId
+    var location: String = "",
 ) : Parcelable
