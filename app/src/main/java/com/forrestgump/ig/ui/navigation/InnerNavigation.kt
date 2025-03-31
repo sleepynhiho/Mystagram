@@ -95,10 +95,8 @@ fun InnerNavigation(
                 currentUser?.let { it1 -> viewModelHome.updateUserStories(userStories, it1) }
             }
 
-            // Gọi loadNextPosts ngay khi HomeScreen được tạo
             LaunchedEffect(Unit) {
                 viewModelHome.loadNextPosts()
-                //viewModelHome.refreshPosts()
             }
 
 
