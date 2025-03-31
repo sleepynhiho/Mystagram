@@ -1,5 +1,6 @@
 package com.forrestgump.ig.ui.components
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -8,7 +9,6 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -39,7 +39,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.media3.common.util.UnstableApi
 import coil.compose.AsyncImage
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
@@ -65,6 +64,7 @@ fun PostItem(
     onLikeClicked: () -> Unit,
     onCommentClicked: () -> Unit,
 ) {
+    Log.d("PostItem", "Rendering post: ${post.postId}")
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -127,6 +127,9 @@ fun PostMedia(post: Post) {
     // Giả sử Post có thuộc tính mediaUrls: List<String>
     // Nếu không có thì dùng 1 ảnh duy nhất từ mediaUrl
     val mediaUrls = if (post.mediaUrls.isNotEmpty()) post.mediaUrls else listOf(post.mediaUrls)
+    var showFullScreenImage by remember { mutableStateOf(false) }
+    var currentImageIndex by remember { mutableStateOf(0) }
+
     if (mediaUrls.size > 1) {
         // Sử dụng HorizontalPager để hiển thị danh sách ảnh
         val pagerState = rememberPagerState()
@@ -148,6 +151,10 @@ fun PostMedia(post: Post) {
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxSize()
+                        .clickable {
+                            currentImageIndex = page
+                            showFullScreenImage = true
+                        }
                         .background(Color.LightGray)
                 )
             }
@@ -165,14 +172,31 @@ fun PostMedia(post: Post) {
             )
         }
     } else {
-        // Nếu chỉ có 1 ảnh thì hiển thị thông thường
-        AsyncImage(
-            model = mediaUrls.first(),
-            contentDescription = "Post Media",
+        // Nếu chỉ có 1 ảnh, hiển thị ảnh trong container cố định và click để xem full
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 250.dp)
-                .background(Color.LightGray)
+                .height(300.dp) // chiều cao cố định cho Post
+                .clickable {
+                    currentImageIndex = 0
+                    showFullScreenImage = true
+                }
+        ) {
+            AsyncImage(
+                model = mediaUrls.first(),
+                contentDescription = "Post Media",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.LightGray)
+            )
+        }
+    }
+    // Dialog hiển thị ảnh full screen
+    if (showFullScreenImage) {
+        FullScreenImageDialog(
+            imageUrl = mediaUrls[currentImageIndex].toString(),
+            onDismissRequest = { showFullScreenImage = false }
         )
     }
 }

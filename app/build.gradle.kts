@@ -130,4 +130,12 @@ dependencies {
     implementation(libs.androidx.activity.compose.v180)
     implementation (libs.cloudinary.android)
 
+    // Dependency cho Paging Library (runtime)
+    implementation (libs.androidx.paging.runtime)
+
+    // Dùng với Jetpack Compose:
+    implementation (libs.androidx.paging.compose)
+    implementation (libs.androidx.paging.compose.v100alpha18)
+
+
 }
