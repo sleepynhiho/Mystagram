@@ -17,7 +17,7 @@ val localProperties = Properties().apply {
 val cloudinaryCloudName = localProperties.getProperty("cloudinary.cloud_name") ?: ""
 val cloudinaryApiKey = localProperties.getProperty("cloudinary.api_key") ?: ""
 val cloudinaryApiSecret = localProperties.getProperty("cloudinary.api_secret") ?: ""
-
+val cloudinaryUploadPreset = localProperties.getProperty("cloudinary.upload_preset") ?: ""
 android {
     namespace = "com.forrestgump.ig"
     compileSdk = 35
@@ -33,7 +33,7 @@ android {
         buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"$cloudinaryCloudName\"")
         buildConfigField("String", "CLOUDINARY_API_KEY", "\"$cloudinaryApiKey\"")
         buildConfigField("String", "CLOUDINARY_API_SECRET", "\"$cloudinaryApiSecret\"")
-
+        buildConfigField("String", "CLOUDINARY_UPLOAD_PRESET", "\"$cloudinaryUploadPreset\"")
 
     }
 
@@ -89,7 +89,6 @@ dependencies {
     implementation(libs.play.services.cast.framework)
     implementation(libs.androidx.animation.android)
     implementation(libs.androidx.animation.android)
-    implementation(libs.androidx.runtime.livedata)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -125,6 +124,10 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.android.lottie.compose)
 
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.activity.compose.v180)
     implementation (libs.cloudinary.android)
 
 }
