@@ -26,7 +26,10 @@ class HomeViewModel @Inject constructor(
 
     // Gọi hàm load thêm bài viết từ repository
     fun loadNextPosts() {
+        if (uiState.value.isLoadingMore || !uiState.value.hasMore) return
+
         viewModelScope.launch {
+            uiState.update { it.copy(isLoadingMore = true) }
             try {
                 val newPosts: List<Post> = postRepository.getPosts(pageSize)
                 if (newPosts.isNotEmpty()) {
@@ -34,16 +37,41 @@ class HomeViewModel @Inject constructor(
                         // Nối danh sách bài viết hiện có với bài viết mới
                         currentState.copy(
                             posts = currentState.posts + newPosts,
-                            isLoading = false
+                            isLoading = false,
+                            isLoadingMore = false,
+                            hasMore = newPosts.size >= pageSize
                         )
                     }
                     val totalPosts = uiState.value.posts.size
                     Log.d("HomeViewModel", "Tổng số post đã load: $totalPosts")
                 } else {
                     // Không còn bài viết để load thêm (có thể thêm biến trạng thái 'hasMore')
+                    uiState.update { it.copy(isLoadingMore = false, hasMore = false) }
                 }
             } catch (e: Exception) {
                 // Xử lý lỗi nếu cần (ví dụ: cập nhật trạng thái lỗi trong uiState)
+                uiState.update { it.copy(isLoadingMore = false) }
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun refreshPosts() {
+        viewModelScope.launch {
+            uiState.update { it.copy(isRefreshing = true) }
+            // Reset lại phân trang để load trang đầu tiên
+            postRepository.resetPagination()
+            try {
+                val refreshedPosts = postRepository.getPosts(pageSize)  // load 5 post đầu tiên
+                uiState.update {
+                    it.copy(
+                        posts = refreshedPosts,  // Thay thế danh sách post cũ
+                        isRefreshing = false,
+                        hasMore = refreshedPosts.size >= pageSize
+                    )
+                }
+            } catch (e: Exception) {
+                uiState.update { it.copy(isRefreshing = false) }
                 e.printStackTrace()
             }
         }

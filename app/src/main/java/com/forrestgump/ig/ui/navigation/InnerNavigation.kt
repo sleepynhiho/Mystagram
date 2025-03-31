@@ -98,6 +98,7 @@ fun InnerNavigation(
             // Gọi loadNextPosts ngay khi HomeScreen được tạo
             LaunchedEffect(Unit) {
                 viewModelHome.loadNextPosts()
+                //viewModelHome.refreshPosts()
             }
 
 
