@@ -1,4 +1,4 @@
-package com.forrestgump.ig.ui.screens.story.components
+package com.forrestgump.ig.ui.screens.addStory.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
