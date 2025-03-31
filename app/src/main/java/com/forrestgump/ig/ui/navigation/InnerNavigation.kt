@@ -7,7 +7,10 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -15,6 +18,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
@@ -49,6 +54,7 @@ import com.forrestgump.ig.ui.screens.addPost.AddPostViewModel
 import com.forrestgump.ig.ui.screens.addStory.AddStoryViewModel
 import com.forrestgump.ig.ui.screens.profile.EditProfileScreen
 import com.forrestgump.ig.ui.screens.profile.FollowScreen
+import com.forrestgump.ig.ui.screens.profile.PostDetailScreen
 import java.util.Date
 import com.forrestgump.ig.ui.screens.settings.SettingsScreen
 import com.forrestgump.ig.ui.screens.story.StoryViewModel
@@ -89,9 +95,16 @@ fun InnerNavigation(
                 currentUser?.let { it1 -> viewModelHome.updateUserStories(userStories, it1) }
             }
 
+            // Gọi loadNextPosts ngay khi HomeScreen được tạo
+            LaunchedEffect(Unit) {
+                viewModelHome.loadNextPosts()
+            }
+
 
             currentUser?.let { it1 ->
-                HomeScreen(contentPadding = contentPadding,
+                HomeScreen(
+                    viewModel = viewModelHome,
+                    contentPadding = contentPadding,
                     uiState = uiState,
                     currentUser = it1,
                     onAddStoryClicked = {
@@ -734,6 +747,37 @@ fun InnerNavigation(
             )
         }
 
+        composable(
+            route = Routes.PostDetailScreen.route,
+            arguments = listOf(
+                navArgument("postId") { type = NavType.StringType }
+            ),
+            enterTransition = {
+                fadeIn(animationSpec = tween(350))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(350))
+            }
+        ) { navBackStackEntry ->
+            val postId = navBackStackEntry.arguments?.getString("postId") ?: ""
+            // Lấy post từ ViewModel dựa trên postId
+            val post = viewModelProfile.getPostById(postId)
+
+            post?.let {
+                PostDetailScreen(
+                    post = it,
+                    onBackPressed = { navHostController.popBackStack() }
+                )
+            } ?: run {
+                // Hiển thị màn hình lỗi nếu không tìm thấy post
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Text(
+                        "Không tìm thấy bài viết",
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+            }
+        }
 
     }
 }

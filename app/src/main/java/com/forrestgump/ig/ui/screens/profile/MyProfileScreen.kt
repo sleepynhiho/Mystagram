@@ -10,9 +10,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -85,57 +82,15 @@ fun MyProfileScreen(
 
                 // Khu vực hiển thị bài viết
 
-                PostFeed(posts = uiState.posts, onPostClick = { postIdx: Post ->
-                    // Hiển thị Toast khi nhấn vào ảnh
-                    PostItem(
-                        post = postIdx,
-                        onLikeClicked = {},
-                        onCommentClicked = {},
-                    )
+                PostFeed(posts = uiState.posts, onPostClick = { post ->
+                    // Chuyển đến màn hình chi tiết khi nhấn vào post
+                    navController.navigate("PostDetailScreen/${post.postId}")
                 })
             }
         }
     } else {
         Loading()
     }
-}
-
-/**
- * Thanh top bar đơn giản, hiển thị username + icon back, icon menu
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ProfileTopBar(
-    title: String,
-    onBackClicked: () -> Unit,
-    onMoreClicked: () -> Unit
-) {
-    TopAppBar(
-        title = {
-            Text(text = title, color = Color.White)
-        },
-        navigationIcon = {
-            IconButton(onClick = onBackClicked) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.White
-                )
-            }
-        },
-        actions = {
-            IconButton(onClick = onMoreClicked) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = "More",
-                    tint = Color.White
-                )
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Black
-        )
-    )
 }
 
 /**

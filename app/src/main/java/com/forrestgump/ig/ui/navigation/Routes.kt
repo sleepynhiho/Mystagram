@@ -26,7 +26,7 @@ sealed class Routes(
     data object EditProfileScreen: Routes(name = "EditProfile", route="EditProfileScreen")
     data object AddPostScreen: Routes(iconOutlined = R.drawable.add_outlined, name = "AddPost", route = "AddPostScreen")
     data object AddPostDetailScreen : Routes(name = "AddPostDetail", route =  "AddPostDetailScreen")
-
+    data object PostDetailScreen: Routes(name = "PostDetail", route = "PostDetailScreen/{postId}")
     data object Items {
         val bottomNavItems = listOf(
             HomeScreen,

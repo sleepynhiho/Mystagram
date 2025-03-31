@@ -53,14 +53,6 @@ fun AddPostDetailScreen(
     var caption by remember { mutableStateOf("") }
     var isEditingCaption by remember { mutableStateOf(false) }
 
-//    // Cách tốt hơn
-//    val navBackStackEntry by navHostController.currentBackStackEntryAsState()
-//    val parentEntry = remember(navBackStackEntry) {
-//        navHostController.getBackStackEntry(Routes.AddPostScreen.route)
-//    }
-//    // Sử dụng cùng một instance của AddPostViewModel
-//    val addPostViewModel: AddPostViewModel = hiltViewModel(parentEntry)
-
     // Lấy danh sách ảnh từ ViewModel
     val selectedImages = addPostViewModel.selectedImages.collectAsState().value
 

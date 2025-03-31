@@ -76,6 +76,10 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun getPostById(postId: String): Post? {
+        return uiState.value.posts.find { it.postId == postId }
+    }
+
     private fun clearUiState() {
         uiState.update { UiState() }
     }
