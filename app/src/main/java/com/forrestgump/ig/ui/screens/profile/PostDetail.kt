@@ -22,7 +22,8 @@ import com.forrestgump.ig.utils.constants.Utils.MainBackground
 @Composable
 fun PostDetailScreen(
     post: Post,
-    onBackPressed: () -> Unit
+    onBackPressed: () -> Unit,
+    currentUserID: String
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -48,8 +49,8 @@ fun PostDetailScreen(
             )
             PostItem(
                 post = post,
-                onLikeClicked = {},
                 onCommentClicked = {},
+                currentUserID = currentUserID
             )
         }
     }

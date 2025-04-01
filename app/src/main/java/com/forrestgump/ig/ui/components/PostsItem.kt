@@ -39,6 +39,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
@@ -46,6 +47,7 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.R
+import com.forrestgump.ig.ui.screens.addPost.AddPostViewModel
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.google.accompanist.pager.ExperimentalPagerApi
 import java.text.SimpleDateFormat
@@ -61,8 +63,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun PostItem(
     post: Post,
-    onLikeClicked: () -> Unit,
     onCommentClicked: () -> Unit,
+    currentUserID: String,
+    addPostViewModel: AddPostViewModel = hiltViewModel()
 ) {
     Log.d("PostItem", "Rendering post: ${post.postId}")
     Column(
@@ -72,7 +75,11 @@ fun PostItem(
     ) {
         PostHeader(post)
         PostMedia(post)
-        PostActions(post, onCommentClicked)
+        PostActions(
+            post, onCommentClicked,
+            addPostViewModel,
+            currentUserID
+        )
         PostDetails(post)
     }
 }
@@ -222,11 +229,13 @@ val reactionDrawables = mapOf(
 )
 
 @Composable
-fun PostActions(post: Post, onCommentClicked: () -> Unit) {
-    var selectedReaction by remember { mutableStateOf<String?>(null) }
+fun PostActions(post: Post, onCommentClicked: () -> Unit, addPostViewModel: AddPostViewModel, currentUserID: String) {
     var showReactions by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     var job by remember { mutableStateOf<Job?>(null) }
+    var selectedReaction by remember {
+        mutableStateOf(post.reactions.entries.find{it.value.contains(currentUserID)}?.key)
+    }
 
     Box(
         modifier = Modifier.fillMaxWidth()
@@ -253,11 +262,16 @@ fun PostActions(post: Post, onCommentClicked: () -> Unit) {
                                 job?.cancel() // Hủy job nếu thả tay trước 300ms
                             },
                             onTap = {
-                                selectedReaction = if (selectedReaction == null) {
-                                    "love"
-                                } else {
-                                    null
-                                }
+                                Log.d("NHII", "onTap")
+                                selectedReaction?.let { it1 -> Log.d("NHII", it1) }
+                                val newReaction = if (selectedReaction == null) "love" else null
+                                addPostViewModel.updateReaction(
+                                    post.postId,
+                                    currentUserID,
+                                    selectedReaction,
+                                    newReaction
+                                )
+                                selectedReaction = newReaction
                                 showReactions = false
                             }
                         )
@@ -311,7 +325,14 @@ fun PostActions(post: Post, onCommentClicked: () -> Unit) {
                             modifier = Modifier
                                 .size(35.dp)
                                 .clickable {
-                                    selectedReaction = key
+                                    val newReaction = if (selectedReaction == key) null else key
+                                    addPostViewModel.updateReaction(
+                                        post.postId,
+                                        currentUserID,
+                                        selectedReaction,
+                                        newReaction
+                                    )
+                                    selectedReaction = newReaction
                                     showReactions = false
                                 }
                         ) {
@@ -327,7 +348,12 @@ fun PostActions(post: Post, onCommentClicked: () -> Unit) {
 @Composable
 fun PostDetails(post: Post) {
     // Số reactions
-    val sortedReactions = post.reactions.entries.sortedBy { it.value }
+    // Chuyển đổi reactions thành Map<String, Int> (reactionType -> số lượng userId)
+    val reactionCounts = post.reactions.mapValues { it.value.size }
+
+    // Sắp xếp reactions theo số lượng từ cao đến thấp
+    val sortedReactions = reactionCounts.entries.sortedByDescending { it.value }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(start = 40.dp)
@@ -350,8 +376,9 @@ fun PostDetails(post: Post) {
         Spacer(modifier = Modifier.width(4.dp))
 
         // Hiển thị tổng số reactions
+        val totalReactions = reactionCounts.values.sum()
         Text(
-            text = "${post.reactions.values.sum()} reactions",
+            text = "$totalReactions",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -409,7 +436,6 @@ fun PostItemPreview() {
             userId = "user_123",
             username = "hcmusgang",
             profileImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUyAfXfniYfSTZ7Z2HjW2COSyC8WTH3TgkGw&s",
-            // Nếu có nhiều ảnh, bạn có thể truyền vào một danh sách URL
             mediaUrls = listOf(
                 "https://static.vecteezy.com/system/resources/thumbnails/046/366/986/small_2x/beautiful-white-water-lily-and-pink-water-lily-flowers-on-rock-in-mountain-river-photo.jpg",
                 "https://via.placeholder.com/300",
@@ -420,14 +446,14 @@ fun PostItemPreview() {
             mimeType = "image/png",
             timestamp = Date(),
             reactions = mapOf(
-                "love" to 43800,
-                "sad" to 8000,
-                "angry" to 9000
+                "love" to List(43800) { "user_$it" }, // 43800 users reacted with "love"
+                "sad" to List(8000) { "user_$it" },   // 8000 users reacted with "sad"
+                "angry" to List(9000) { "user_$it" }  // 9000 users reacted with "angry"
             ),
         ),
-        onLikeClicked = {},
         onCommentClicked = {},
+        currentUserID = "a"
     )
-
 }
+
 

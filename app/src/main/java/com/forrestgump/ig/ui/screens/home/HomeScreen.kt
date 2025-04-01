@@ -91,7 +91,8 @@ fun HomeScreen(
                     isLoadingMore = uiState.isLoadingMore,
                     hasMore = uiState.hasMore,
                     onRefresh = { viewModel.refreshPosts() },
-                    onLoadMore = { viewModel.loadNextPosts() }
+                    onLoadMore = { viewModel.loadNextPosts() },
+                    currentUserID = currentUser.userId
                 )
             }
         } else {
