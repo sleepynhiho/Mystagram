@@ -2,6 +2,7 @@ package com.forrestgump.ig.ui.screens.addPost
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cloudinary.Cloudinary
@@ -103,5 +104,42 @@ class AddPostViewModel @Inject constructor(
             }
         }
     }
+
+    fun updateReaction(postId: String, currentUserId: String, previousReaction: String?, newReaction: String?) {
+        viewModelScope.launch {
+            try {
+                val postRef = firestore.collection("posts").document(postId)
+
+                firestore.runTransaction { transaction ->
+                    val snapshot = transaction.get(postRef)
+
+                    // Lấy dữ liệu reactions từ Firestore
+                    val reactions = snapshot["reactions"] as? Map<String, List<String>> ?: emptyMap()
+                    val updatedReactions = reactions.toMutableMap()
+
+                    // Xóa reaction cũ (nếu có)
+                    previousReaction?.let { oldReaction ->
+                        val users = updatedReactions[oldReaction]?.toMutableList() ?: mutableListOf()
+                        users.remove(currentUserId)
+                        if (users.isEmpty()) updatedReactions.remove(oldReaction) else updatedReactions[oldReaction] = users
+                    }
+
+                    // Thêm reaction mới (nếu có)
+                    newReaction?.let { newReact ->
+                        val users = updatedReactions[newReact]?.toMutableList() ?: mutableListOf()
+                        if (!users.contains(currentUserId)) {
+                            users.add(currentUserId)
+                            updatedReactions[newReact] = users
+                        }
+                    }
+
+                    transaction.update(postRef, "reactions", updatedReactions)
+                }
+            } catch (e: Exception) {
+                Log.e("UpdateReaction", "Error updating reaction", e)
+            }
+        }
+    }
+
 
 }

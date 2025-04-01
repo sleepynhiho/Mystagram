@@ -138,5 +138,5 @@ dependencies {
     implementation (libs.androidx.paging.compose.v100alpha18)
     implementation (libs.accompanist.swiperefresh)
 
-
+    implementation(libs.firebase.functions.ktx)
 }
