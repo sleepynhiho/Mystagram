@@ -1,9 +1,17 @@
 package com.forrestgump.ig.ui.screens.auth
 
+import android.app.Activity
+import android.content.Context
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.forrestgump.ig.R
 import com.forrestgump.ig.data.models.User
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -79,7 +87,7 @@ class AuthViewModel @Inject constructor(
                                         }
                                         .addOnFailureListener { e ->
                                             onResult(false, e.message)
-                                         }
+                                        }
                                 } else {
                                     onResult(false, updateTask.exception?.message)
                                 }
@@ -92,16 +100,33 @@ class AuthViewModel @Inject constructor(
     }
 
     // Hàm quên mật khẩu
-    fun forgotPassword(email: String, onResult: (Boolean, String?) -> Unit) {
+    fun forgotPassword(context: Context, email: String, onResult: (Boolean, String?) -> Unit) {
         viewModelScope.launch {
-            auth.sendPasswordResetEmail(email)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        onResult(true, null)
+            firestore.collection("users")
+                .whereEqualTo("email", email)
+                .get()
+                .addOnSuccessListener { documents ->
+                    if (!documents.isEmpty) {
+                        auth.sendPasswordResetEmail(email)
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    onResult(true, null)
+                                } else {
+                                    onResult(false, task.exception?.message)
+                                }
+                            }
                     } else {
-                        onResult(false, task.exception?.message)
+                        onResult(false, context.getString(R.string.email_has_not_been_registered))
                     }
+                }
+                .addOnFailureListener { e ->
+                    onResult(
+                        false,
+                        e.message ?: context.getString(R.string.error_when_checking_email)
+                    )
                 }
         }
     }
+
+
 }

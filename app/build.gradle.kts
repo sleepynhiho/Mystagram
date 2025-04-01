@@ -139,4 +139,7 @@ dependencies {
     implementation (libs.accompanist.swiperefresh)
 
     implementation(libs.firebase.functions.ktx)
+    implementation(libs.coil.compose)
+    implementation (libs.google.firebase.auth.ktx)
+    implementation (libs.play.services.auth)
 }

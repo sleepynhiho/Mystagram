@@ -99,4 +99,11 @@
     <string name="dark_mode_system">Hệ thống</string>
     <string name="dark_mode_light">Sáng</string>
     <string name="dark_mode_dark">Tối</string>
+    <string name="enter_email_password_reset">Nhập email của bạn để nhận liên kết đặt lại mật khẩu</string>
+    <string name="email_reset_sent">Email đặt lại mật khẩu đã được gửi</string>
+    <string name="cancel">Hủy</string>
+    <string name="confirm">Xác nhận</string>
+    <string name="sent_request">Gửi yêu cầu</string>
+    <string name="email_has_not_been_registered">Email chưa được đăng ký</string>
+    <string name="error_when_checking_email">Lỗi khi kiểm tra email</string>
 </resources>

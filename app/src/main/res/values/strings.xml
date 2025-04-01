@@ -100,4 +100,12 @@
     <string name="dark_mode_light">Light</string>
     <string name="dark_mode_dark">Dark</string>
 
+
+    <string name="enter_email_password_reset">Enter your email to receive a password reset.</string>
+    <string name="email_reset_sent">Email reset password sent</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+    <string name="sent_request">Send request</string>
+    <string name="email_has_not_been_registered">Email has not been registered</string>"
+    <string name="error_when_checking_email">Error when checking email</string>"
 </resources>

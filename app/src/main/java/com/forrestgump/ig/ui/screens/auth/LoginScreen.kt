@@ -1,5 +1,7 @@
 package com.forrestgump.ig.ui.screens.auth
 
+import android.app.Activity
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -24,8 +27,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,6 +61,8 @@ fun LoginScreen(
     authViewModel: AuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
 ) {
     val context = LocalContext.current
+    val activity = context as? Activity
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
@@ -62,9 +70,18 @@ fun LoginScreen(
     val englishText = stringResource(id = R.string.english_language)
     val vietnamText = stringResource(id = R.string.vietnamese_language)
     val errorMessageTemplate = stringResource(id = R.string.error_message)
+    val emailResetTemplate = stringResource(id = R.string.email_reset_sent)
     var selectedLanguage by remember { mutableStateOf("") }
     selectedLanguage = stringResource(id = R.string.language_default)
+
     var isLoading by remember { mutableStateOf(false) }
+    var isResetLoading by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
+    var resetEmail by remember { mutableStateOf("") }
+    var resetMessage by remember { mutableStateOf("") }
+
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -261,9 +278,58 @@ fun LoginScreen(
             fontSize = 14.sp,
             color = Color(0xFF29649B),
             modifier = Modifier.clickable {
-                // Xử lý logic forgot password nếu cần
+                showDialog = true
             }
         )
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text(stringResource(id = R.string.forgot_password)) },
+                text = {
+                    Column {
+                        Text(stringResource(id = R.string.enter_email_password_reset))
+                        Spacer(modifier = Modifier.height(8.dp))
+                        TextField(
+                            value = resetEmail,
+                            onValueChange = { resetEmail = it },
+                            placeholder = { Text(stringResource(id = R.string.email)) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        if (resetMessage.isNotEmpty()) {
+                            Text(text = resetMessage, color = Color.Red, fontSize = 12.sp)
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        if (resetEmail.isNotBlank() && !isResetLoading) {
+                            isResetLoading = true
+                            authViewModel.forgotPassword(context, resetEmail) { success, errorMsg ->
+                                isResetLoading = false
+                                resetMessage = if (success) emailResetTemplate else errorMsg
+                                    ?: "Error occurred."
+                            }
+                        }
+                    }) {
+                        if (isResetLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .width(24.dp)
+                                    .height(24.dp)
+                            )
+                        } else {
+                            Text(stringResource(id = R.string.sent_request))
+                        }
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDialog = false }) {
+                        Text(stringResource(id = R.string.cancel))
+                    }
+                }
+            )
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
