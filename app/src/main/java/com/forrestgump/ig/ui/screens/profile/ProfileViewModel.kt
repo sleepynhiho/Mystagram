@@ -26,7 +26,6 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor(
     private val firestore: FirebaseFirestore, // Inject Firestore từ AppModule
     private val cloudinary: Cloudinary,
-    @ApplicationContext private val context: Context // Inject Application Context
 ) : ViewModel() {
 
     var uiState = MutableStateFlow(UiState())
@@ -37,8 +36,7 @@ class ProfileViewModel @Inject constructor(
         val userFromFB = FirebaseAuth.getInstance().currentUser
         userFromFB?.let { user ->
             val userId = user.uid
-            val db = FirebaseFirestore.getInstance()
-            db.collection("users").document(userId).get()
+            firestore.collection("users").document(userId).get()
                 .addOnSuccessListener { document ->
                     if (document != null && document.exists()) {
                         val updatedUser = User(
@@ -56,7 +54,7 @@ class ProfileViewModel @Inject constructor(
                             currentState.copy(isLoading = false, curUser = updatedUser)
                         }
                         // Sau đó, load thông tin posts của user
-                        db.collection("posts")
+                        firestore.collection("posts")
                             .whereEqualTo("userId", userId)
                             .get()
                             .addOnSuccessListener { querySnapshot ->
@@ -94,7 +92,7 @@ class ProfileViewModel @Inject constructor(
         return uiState.value.posts.find { it.postId == postId }
     }
 
-    private fun getFileFromUri(uriString: String): File? {
+    private fun getFileFromUri(context: Context, uriString: String): File? {
         val uri = uriString.toUri()
         val inputStream = context.contentResolver.openInputStream(uri) ?: return null
         val tempFile = File.createTempFile("upload", ".jpg", context.cacheDir)
@@ -117,6 +115,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun updateUserProfile(
+        context: Context,
         newProfileImage: String,
         newFullName: String,
         newUsername: String,
@@ -127,7 +126,7 @@ class ProfileViewModel @Inject constructor(
         val currentUser = uiState.value.curUser
         fun updateFirestoreWithImage(imageUrl: String) {
             val updatedUser = currentUser.copy(
-                profileImage = newProfileImage,
+                profileImage = imageUrl,
                 fullName = newFullName,
                 username = newUsername,
                 bio = newBio
@@ -138,7 +137,7 @@ class ProfileViewModel @Inject constructor(
             val userDocRef = firestore.collection("users").document(currentUser.userId)
             userDocRef.update(
                 mapOf(
-                    "profileImage" to newProfileImage,
+                    "profileImage" to imageUrl,
                     "fullName" to newFullName,
                     "username" to newUsername,
                     "bio" to newBio
@@ -152,7 +151,7 @@ class ProfileViewModel @Inject constructor(
                         val batch = firestore.batch()
                         querySnapshot.documents.forEach { doc ->
                             // Giả sử trường ảnh đại diện trong post là "profileImageUrl"
-                            batch.update(doc.reference, "profileImageUrl", newProfileImage)
+                            batch.update(doc.reference, "profileImageUrl", imageUrl)
                         }
                         batch.commit()
                             .addOnSuccessListener {
@@ -173,13 +172,12 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             if (isLocalImage(newProfileImage)) {
                 try {
-                    // Nếu newProfileImage là content URI, chuyển thành file tạm
-                    val fileToUpload = if (newProfileImage.startsWith("content://")) {
-                        getFileFromUri(newProfileImage) ?: File(newProfileImage)
-                    } else {
-                        File(newProfileImage)
-                    }
+                    Log.d("ProfileViewModel", "${newProfileImage}")
 
+                    // Nếu newProfileImage là content URI, chuyển thành file tạm
+                    val fileToUpload = getFileFromUri(context, newProfileImage)
+
+                    Log.d("ProfileViewModel", "${fileToUpload}")
                     val uploadResult = withContext(Dispatchers.IO) {
                         cloudinary.uploader().unsignedUpload(
                             fileToUpload,

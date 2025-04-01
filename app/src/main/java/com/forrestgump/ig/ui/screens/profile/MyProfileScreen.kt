@@ -36,6 +36,7 @@ import androidx.navigation.NavController
 import com.forrestgump.ig.data.models.Post
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.graphics.FilterQuality
 import com.forrestgump.ig.ui.components.PostItem
 
 
@@ -126,8 +127,10 @@ fun ProfileInfoSection(
             Image(
                 painter = painterImage,
                 contentDescription = "Profile Image",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(80.dp)
+                    .fillMaxSize()
                     .clip(CircleShape)
             )
 

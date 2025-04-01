@@ -59,6 +59,7 @@ import java.io.FileOutputStream
 import java.io.OutputStream
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
 import android.widget.Toast
@@ -136,6 +137,7 @@ fun EditProfileScreen(
             newProfileImage = uri
         }
     }
+
 
     Scaffold(
         topBar = {
@@ -256,33 +258,6 @@ fun EditProfileScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { /*TO DO*/ }  // Áp dụng clickable cho cả Column
-                        .padding( vertical = 12.dp),
-                ) {
-                    Divider(
-                        color = Color.LightGray,
-                        thickness = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Pin 3 Posts nổi bật nhất",
-                        color = Color.Black,
-                        fontSize = 16.sp
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Divider(
-                        color = Color.LightGray,
-                        thickness = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
                         .padding( vertical = 12.dp)
                 ) {
                     Divider(
@@ -383,7 +358,9 @@ fun EditProfileScreen(
                 Button(
                     onClick = {
                         focusManager.clearFocus() // Loại bỏ focus khi nhấn nút lưu
+                        Log.d("EditProfileScreen", "${newProfileImage}")
                         viewModel.updateUserProfile(
+                            context = context,
                             newProfileImage = newProfileImage,
                             newFullName = newFullName,
                             newUsername = newUsername,
@@ -449,11 +426,12 @@ fun EditField(
     }
 }
 
-fun createImageFile(context: android.content.Context): File {
-    val storageDir = context.getExternalFilesDir(null)
+fun createImageFile(context: Context): File {
+    val storageDir = context.cacheDir
     return File.createTempFile(
         "avatar_${System.currentTimeMillis()}",
         ".jpg",
         storageDir
     )
 }
+
