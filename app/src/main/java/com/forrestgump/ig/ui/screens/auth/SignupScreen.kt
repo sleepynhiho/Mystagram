@@ -1,5 +1,6 @@
 package com.forrestgump.ig.ui.screens.auth
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -33,9 +35,10 @@ fun SignupScreen(
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
     val successMessage = stringResource(id = R.string.successful_registration)
     val passwordMismatchMessage = stringResource(id = R.string.password_mismatch)
-
+    val context = LocalContext.current
     val errorMessageTemplate = stringResource(id = R.string.error_message)
 
     Scaffold(
@@ -141,44 +144,52 @@ fun SignupScreen(
             Button(
                 onClick = {
                     if (password == confirmPassword) {
+                        isLoading = true // Hiển thị hiệu ứng xoay
                         authViewModel.signup(email, password, username) { success, errorMsg ->
-                            message = if (success) {
-                                successMessage
+                            isLoading = false // Ẩn hiệu ứng xoay
+                            if (success) {
+                                Toast.makeText(context, successMessage, Toast.LENGTH_SHORT).show()
+                                navController.navigate(Routes.LoginScreen.route) {
+                                    popUpTo(Routes.SignupScreen.route) { inclusive = true }
+                                }
                             } else {
-                                errorMessageTemplate.format(errorMsg)
+                                val errorMessage = errorMessageTemplate.format(errorMsg)
+                                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
                             }
                         }
                     } else {
-                        message = passwordMismatchMessage
+                        Toast.makeText(context, passwordMismatchMessage, Toast.LENGTH_SHORT).show()
                     }
                 },
-                enabled = username.isNotBlank() && email.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank(),
+                enabled = username.isNotBlank() && email.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank() && !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp)
                     .height(48.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF0095F6)
-                ),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0095F6)),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Text(
-                    text = stringResource(id = R.string.register),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.White,
-                )
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = stringResource(id = R.string.register),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White,
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
-
-            // Hiển thị thông báo lỗi/thành công
-            if (message.isNotEmpty()) {
-                Text(text = message, color = Color.Red, fontSize = 14.sp)
-            }
 
             Spacer(modifier = Modifier.weight(1f))
 
             // Already have account link
+            // Nút chuyển về đăng nhập
             TextButton(
                 onClick = { navController.navigate(Routes.LoginScreen.route) },
                 modifier = Modifier.padding(bottom = 16.dp)
