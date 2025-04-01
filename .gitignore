@@ -36,5 +36,13 @@ replay_pid*
 /.idea/workspace.xml
 .gradle/
 .idea/
-local.properties
 
+# Ignore Firebase Functions build directory
+functions/node_modules/
+functions/package-lock.json
+functions/.firebase/
+
+firebase.json
+firestore.rules
+storage.rules
+database.rules.json

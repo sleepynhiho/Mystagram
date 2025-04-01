@@ -19,6 +19,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,23 +31,30 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.forrestgump.ig.R
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.forrestgump.ig.data.models.Chat
 import com.forrestgump.ig.data.models.Message
 import com.forrestgump.ig.data.models.MessageType
+import com.forrestgump.ig.ui.screens.chat.ChatViewModel
 import java.util.Date
 
 @Composable
 fun ChatBoxContent(
     myUserId: String,
     chat: Chat,
-    messages: List<Message>,
-    innerPadding: PaddingValues
+    innerPadding: PaddingValues,
+    chatViewModel: ChatViewModel = hiltViewModel()
 ) {
+    val messages by chatViewModel.messages.collectAsState()
+
+    val sortedMessages = remember(messages) {
+        messages.sortedByDescending { it.timestamp }
+    }
     val otherUsername = if (myUserId == chat.user1Id) chat.user2Username else chat.user1Username
     val otherUserProfileImage = if (myUserId == chat.user1Id) chat.user2ProfileImage else chat.user1ProfileImage
+
 
     LazyColumn(
         contentPadding = innerPadding,
@@ -51,7 +63,7 @@ fun ChatBoxContent(
             .background(MainBackground),
         reverseLayout = true // Latest message
     ) {
-        items(messages) { message ->
+        items(sortedMessages) { message ->
             val isMine = myUserId == message.senderId
 
             Row(
@@ -118,23 +130,10 @@ fun ChatBoxContentPreview() {
         lastMessageTime = Date()
     )
 
-    val sampleMessages = listOf(
-        Message("msg1", "user1", MessageType.TEXT, "Hello!", null, true, Date()),
-        Message("msg2", "user2", MessageType.IMAGE, null, "https://picsum.photos/200", false, Date()),
-        Message("msg3", "user1", MessageType.TEXT, "What's up?", null, true, Date()),
-        Message("msg4", "user2", MessageType.TEXT, "Not much, you?", null, false, Date()),
-        Message("msg5", "user1", MessageType.IMAGE, null, "https://picsum.photos/201", true, Date()),
-        Message("msg6", "user2", MessageType.TEXT, "Nice pic!", null, false, Date()),
-        Message("msg7", "user1", MessageType.TEXT, "Thanks!", null, true, Date()),
-        Message("msg8", "user2", MessageType.IMAGE, null, "https://picsum.photos/202", false, Date()),
-        Message("msg9", "user1", MessageType.TEXT, "Where was that?", null, true, Date()),
-        Message("msg10", "user2", MessageType.TEXT, "At the beach!", null, false, Date())
-    )
-
     ChatBoxContent(
         myUserId = "user1",
         chat = sampleChat,
-        messages = sampleMessages,
-        innerPadding = PaddingValues()
+        innerPadding = PaddingValues(),
+        chatViewModel = TODO()
     )
 }
