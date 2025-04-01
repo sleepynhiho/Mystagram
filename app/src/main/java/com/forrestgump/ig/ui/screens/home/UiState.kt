@@ -9,5 +9,8 @@ data class UiState(
     var userStories: List<UserStory> = emptyList(),
     var isLoading: Boolean = true,
     var showStoryScreen: Boolean = false,
-    var userStoryIndex: Int = 0
+    var userStoryIndex: Int = 0,
+    var isRefreshing: Boolean = false,  // trạng thái refresh
+    var isLoadingMore: Boolean = false, // trạng thái load thêm
+    var hasMore: Boolean = true         // đã còn post để load hay chưa
 )
