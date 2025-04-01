@@ -244,9 +244,8 @@ fun AddPostDetailScreen(
                 }
 
                 // Gọi hàm upload post sử dụng Cloudinary (hoặc Firebase Storage nếu thay đổi)
-                uploadPostToFirebaseUsingCloudinary(
+                addPostViewModel.uploadPostToFirebase(
                     context = context,
-                    selectedImages = selectedImages,
                     caption = caption,
                     userId = currentUser.userId,
                     username = currentUser.username,
@@ -284,95 +283,6 @@ fun getFileFromUri(context: Context, uri: Uri): File {
         }
     }
     return tempFile
-}
-
-fun uploadImageToCloudinary(
-    context: Context,
-    fileUri: Uri,
-    onSuccess: (String) -> Unit,
-    onFailure: (Exception) -> Unit
-) {
-    // Cấu hình Cloudinary dùng unsigned upload
-    val config = hashMapOf(
-        "cloud_name" to BuildConfig.CLOUDINARY_CLOUD_NAME,
-        "api_key" to BuildConfig.CLOUDINARY_API_KEY,
-        "upload_preset" to BuildConfig.CLOUDINARY_UPLOAD_PRESET // hoặc nếu bạn định nghĩa qua BuildConfig: BuildConfig.CLOUDINARY_UPLOAD_PRESET
-    )
-    val cloudinary = Cloudinary(config)
-    val file = getFileFromUri(context, fileUri)
-
-    // Chạy upload trong background (có thể dùng coroutine thay cho Thread)
-    Thread {
-        try {
-            // Upload ảnh và nhận về kết quả dưới dạng Map
-            val result = cloudinary.uploader().unsignedUpload(
-                file,
-                BuildConfig.CLOUDINARY_UPLOAD_PRESET,
-                ObjectUtils.emptyMap()
-            )
-            val secureUrl = result["secure_url"] as String
-            onSuccess(secureUrl)
-        } catch (e: Exception) {
-            // Chuyển sang Main thread để hiển thị Toast
-            Handler(Looper.getMainLooper()).post {
-                Toast.makeText(context, "Lỗi: ${e.message}", Toast.LENGTH_SHORT).show()
-                onFailure(e)
-            }
-        }
-    }.start()
-}
-
-fun uploadPostToFirebaseUsingCloudinary(
-    context: Context,
-    selectedImages: List<Uri>,
-    caption: String,
-    userId: String,
-    username: String,
-    profileImageUrl: String,
-    onSuccess: () -> Unit,
-    onFailure: (Exception) -> Unit
-) {
-    val mediaUrls = mutableListOf<String>()
-    var uploadCount = 0
-
-    if (selectedImages.isEmpty()) {
-        onFailure(Exception("Chưa có ảnh để upload"))
-        return
-    }
-
-    // Upload từng ảnh lên Cloudinary
-    for (uri in selectedImages) {
-        uploadImageToCloudinary(context, uri, { imageUrl ->
-            synchronized(mediaUrls) {
-                mediaUrls.add(imageUrl)
-                uploadCount++
-                // Sau khi upload hết tất cả ảnh
-                if (uploadCount == selectedImages.size) {
-                    // Tạo đối tượng Post và lưu vào Firestore
-                    val db = FirebaseFirestore.getInstance()
-                    val postId = db.collection("posts").document().id
-                    val post = Post(
-                        postId = postId,
-                        userId = userId,
-                        username = username,
-                        profileImageUrl = profileImageUrl,
-                        mediaUrls = mediaUrls,
-                        caption = caption,
-                        reactions = emptyMap(),
-                        commentsCount = 0,
-                        mimeType = "image",
-                        timestamp = null  // @ServerTimestamp sẽ được Firestore set tự động
-                    )
-                    db.collection("posts").document(postId)
-                        .set(post)
-                        .addOnSuccessListener { onSuccess() }
-                        .addOnFailureListener { e -> onFailure(e) }
-                }
-            }
-        }, { exception ->
-            onFailure(exception)
-        })
-    }
 }
 
 

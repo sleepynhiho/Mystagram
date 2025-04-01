@@ -87,6 +87,10 @@ fun HomeScreen(
                         )
                     },
                     posts = uiState.posts,
+                    isRefreshing = uiState.isRefreshing,
+                    isLoadingMore = uiState.isLoadingMore,
+                    hasMore = uiState.hasMore,
+                    onRefresh = { viewModel.refreshPosts() },
                     onLoadMore = { viewModel.loadNextPosts() }
                 )
             }

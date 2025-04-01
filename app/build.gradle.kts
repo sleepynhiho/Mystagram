@@ -136,6 +136,7 @@ dependencies {
     // Dùng với Jetpack Compose:
     implementation (libs.androidx.paging.compose)
     implementation (libs.androidx.paging.compose.v100alpha18)
+    implementation (libs.accompanist.swiperefresh)
 
 
 }

@@ -40,4 +40,8 @@ class PostRepository @Inject constructor(
                 cont.resumeWithException(exception)
             }
     }
+    // Hàm reset lại pagination (để refresh load lại trang đầu)
+    fun resetPagination() {
+        lastVisible = null
+    }
 }
