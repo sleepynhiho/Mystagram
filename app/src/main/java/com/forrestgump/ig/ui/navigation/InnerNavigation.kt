@@ -760,10 +760,13 @@ fun InnerNavigation(
             val post = viewModelProfile.getPostById(postId)
 
             post?.let {
-                PostDetailScreen(
-                    post = it,
-                    onBackPressed = { navHostController.popBackStack() }
-                )
+                currentUser?.let { it1 ->
+                    PostDetailScreen(
+                        post = it,
+                        onBackPressed = { navHostController.popBackStack() },
+                        currentUserID = it1.userId
+                    )
+                }
             } ?: run {
                 // Hiển thị màn hình lỗi nếu không tìm thấy post
                 Box(modifier = Modifier.fillMaxSize()) {

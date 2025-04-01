@@ -9,14 +9,15 @@ import com.forrestgump.ig.ui.components.PostItem
 @Composable
 fun PostList(
     posts: List<Post>,
-    onLoadMore: () -> Unit
+    onLoadMore: () -> Unit,
+    currentUserID: String
 ) {
     LazyColumn {
         itemsIndexed(posts) { index, post ->
             PostItem(
                 post = post,
-                onLikeClicked = {},
-                onCommentClicked = {}
+                onCommentClicked = {},
+                currentUserID = currentUserID
             )
             // Khi hiển thị bài viết cuối cùng, gọi load thêm
             if (index == posts.lastIndex) {

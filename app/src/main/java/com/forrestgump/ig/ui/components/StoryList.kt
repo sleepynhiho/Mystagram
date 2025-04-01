@@ -8,7 +8,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import com.forrestgump.ig.R
-import com.forrestgump.ig.ui.screens.story.components.AddStoryCard
+import com.forrestgump.ig.ui.screens.addStory.components.AddStoryCard
 import com.forrestgump.ig.data.models.Story
 import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.data.models.UserStory
