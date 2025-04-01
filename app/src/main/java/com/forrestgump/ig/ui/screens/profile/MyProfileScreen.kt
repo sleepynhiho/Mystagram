@@ -54,7 +54,7 @@ fun MyProfileScreen(
                 // Thanh top bar
                 ProfileTopBar(
                     title = uiState.curUser.username,
-                    onBackClicked = { /* TODO */ },
+                    onBackClicked = { navController.popBackStack() },
                     onMoreClicked = {
                         navController.navigate(Routes.SettingsScreen.route)
                     }
@@ -244,18 +244,6 @@ fun ProfileTabRow() {
             color = MaterialTheme.colorScheme.onBackground
         )
     }
-}
-
-@Composable
-fun ProfileTabItem(label: String) {
-    ClickableText(
-        text = AnnotatedString(label),
-        onClick = { /* TODO */ },
-        modifier = Modifier
-            .fillMaxHeight()
-            .padding(horizontal = 16.dp),
-        style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
-    )
 }
 
 /**
