@@ -30,8 +30,11 @@ class MainActivity : ComponentActivity() {
     override fun attachBaseContext(base: Context) {
         val prefs = base.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         val savedLang = prefs.getString("language_code", "en") ?: "en"
-        super.attachBaseContext(updateBaseContextLocale(base, savedLang))
+        val context = updateBaseContextLocale(base, savedLang)
+        applyOverrideConfiguration(context.resources.configuration)
+        super.attachBaseContext(context)
     }
+
 
     private fun updateBaseContextLocale(context: Context, language: String): Context {
         val locale = Locale(language)

@@ -95,4 +95,9 @@
     <string name="posts">Posts</string>
     <string name="followers">Followers</string>
     <string name="following">Followings</string>
+
+    <string name="dark_mode_system">System</string>
+    <string name="dark_mode_light">Light</string>
+    <string name="dark_mode_dark">Dark</string>
+
 </resources>

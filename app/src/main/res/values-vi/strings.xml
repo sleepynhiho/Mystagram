@@ -95,4 +95,8 @@
     <string name="posts">Bài viết</string>
     <string name="followers">Người theo dõi</string>
     <string name="following">Đang theo dõi</string>
+
+    <string name="dark_mode_system">Hệ thống</string>
+    <string name="dark_mode_light">Sáng</string>
+    <string name="dark_mode_dark">Tối</string>
 </resources>

@@ -65,7 +65,6 @@ import com.forrestgump.ig.utils.constants.changeAppLanguage
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(navController: NavController) {
-    var isDarkMode by remember { mutableStateOf(false) }
     val isPremium by remember { mutableStateOf(false) }
     val savedText = stringResource(id = R.string.saved)
     val notificationsText = stringResource(id = R.string.notifications)
@@ -176,13 +175,6 @@ fun SettingsScreen(navController: NavController) {
                     onClick = { showLanguageDialog = true })
             }
 
-            item {
-                SettingsRowWithSwitch(
-                    icon = Icons.Default.Brightness6,
-                    title = stringResource(id = R.string.dark_mode),
-                    checked = isDarkMode,
-                    onCheckedChange = { isDarkMode = it })
-            }
 
             item {
                 SettingsRow(
@@ -271,48 +263,6 @@ fun SectionHeader(title: String) {
 }
 
 @Composable
-fun AccountsCenterRow() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { /* TODO: điều hướng sang Accounts Center */ }
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = "Accounts Center",
-                color = Color.Black,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = "Meta",
-                color = Color.Gray,
-                fontSize = 12.sp
-            )
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = null,
-                tint = Color.Gray
-            )
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = "Password, security, personal details, ad preferences",
-            color = Color.Gray,
-            fontSize = 12.sp
-        )
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(
-            text = "Manage your connected experiences and account settings\nacross Meta technologies. Learn more",
-            color = Color.Gray,
-            fontSize = 12.sp
-        )
-    }
-}
-
-@Composable
 fun SettingsRow(itemData: SettingsItemData, onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
@@ -346,47 +296,6 @@ fun SettingsRow(itemData: SettingsItemData, onClick: () -> Unit = {}) {
             contentDescription = null,
             tint = onSurface,
             modifier = Modifier.padding(start = 8.dp)
-        )
-    }
-}
-
-
-@Composable
-fun SettingsRowWithSwitch(
-    icon: ImageVector,
-    title: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onCheckedChange(!checked) }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = title,
-            tint = onSurface,
-            modifier = Modifier.size(20.dp)
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = title,
-            color = onSurface,
-            fontSize = 15.sp,
-            modifier = Modifier.weight(1f)
-        )
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
-                checkedTrackColor = Color.Gray,
-                uncheckedThumbColor = Color.White,
-                uncheckedTrackColor = Color.DarkGray
-            )
         )
     }
 }

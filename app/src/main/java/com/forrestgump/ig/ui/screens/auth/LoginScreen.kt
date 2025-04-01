@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -63,7 +64,7 @@ fun LoginScreen(
     val errorMessageTemplate = stringResource(id = R.string.error_message)
     var selectedLanguage by remember { mutableStateOf("") }
     selectedLanguage = stringResource(id = R.string.language_default)
-
+    var isLoading by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -100,10 +101,18 @@ fun LoginScreen(
             }
             DropdownMenu(
                 expanded = expanded,
-                onDismissRequest = { expanded = false }
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.fillMaxWidth()
             ) {
                 DropdownMenuItem(
-                    text = { Text(text = englishText) },
+                    text = {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = englishText)
+                        }
+                    },
                     onClick = {
                         selectedLanguage = englishText
                         changeAppLanguage(context, "en")
@@ -111,7 +120,14 @@ fun LoginScreen(
                     }
                 )
                 DropdownMenuItem(
-                    text = { Text(text = vietnamText) },
+                    text = {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = vietnamText)
+                        }
+                    },
                     onClick = {
                         selectedLanguage = vietnamText
                         changeAppLanguage(context, "vi")
@@ -119,6 +135,7 @@ fun LoginScreen(
                     }
                 )
             }
+
         }
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -166,17 +183,21 @@ fun LoginScreen(
 
         Button(
             onClick = {
-                authViewModel.login(email, password) { success, errorMsg ->
-                    if (success) {
-                        navController.navigate(Routes.InnerContainer.route) {
-                            popUpTo(Routes.LoginScreen.route) { inclusive = true }
+                if (email.isNotBlank() && password.isNotBlank()) {
+                    isLoading = true
+                    authViewModel.login(email, password) { success, errorMsg ->
+                        isLoading = false
+                        if (success) {
+                            navController.navigate(Routes.InnerContainer.route) {
+                                popUpTo(Routes.LoginScreen.route) { inclusive = true }
+                            }
+                        } else {
+                            message = errorMessageTemplate.format(errorMsg)
                         }
-                    } else {
-                        message = errorMessageTemplate.format(errorMsg)
                     }
                 }
             },
-            enabled = email.isNotBlank() && password.isNotBlank(),
+            enabled = !isLoading && email.isNotBlank() && password.isNotBlank(),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
@@ -185,13 +206,23 @@ fun LoginScreen(
             ),
             shape = RoundedCornerShape(8.dp)
         ) {
-            Text(
-                text = stringResource(id = R.string.login),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
+            if (isLoading) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    modifier = Modifier
+                        .width(24.dp)
+                        .height(24.dp)
+                )
+            } else {
+                Text(
+                    text = stringResource(id = R.string.login),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
         }
+
         Spacer(modifier = Modifier.height(16.dp))
         if (message.isNotEmpty()) {
             Text(text = message, color = Color.Red, fontSize = 14.sp)
@@ -216,31 +247,6 @@ fun LoginScreen(
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = stringResource(id = R.string.login_with_google),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = onSurface
-            )
-        }
-
-        // *** Thêm nút Login with Facebook ***
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedButton(
-            onClick = { /* handle facebook login logic */ },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp),
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            // Icon Facebook
-            Icon(
-                painter = painterResource(id = R.drawable.facebook_logo),
-                contentDescription = stringResource(id = R.string.facebook_logo_desc),
-                tint = Color.Unspecified,
-                modifier = Modifier.height(24.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = stringResource(id = R.string.login_with_facebook),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = onSurface
