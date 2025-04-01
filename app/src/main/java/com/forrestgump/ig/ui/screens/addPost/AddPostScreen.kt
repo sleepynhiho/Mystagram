@@ -36,14 +36,15 @@ import androidx.compose.foundation.shape.CircleShape
 import com.forrestgump.ig.R
 import java.io.File
 import android.widget.Toast
-import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.forrestgump.ig.ui.navigation.Routes
-import com.forrestgump.ig.utils.constants.Utils.MainBackground
-import com.forrestgump.ig.utils.constants.Utils.onSurface
 
 
 @Composable
-fun AddPostScreen(navHostController: NavHostController) {
+fun AddPostScreen(
+    navHostController: NavHostController,
+    addPostViewModel: AddPostViewModel = hiltViewModel()
+    ) {
     val context = LocalContext.current
 
     // State lưu các ảnh được chọn (từ thư viện hoặc camera)
@@ -51,6 +52,7 @@ fun AddPostScreen(navHostController: NavHostController) {
     // State lưu danh sách ảnh trong thư viện (load sẵn khi mở màn hình)
     val galleryImages = remember { mutableStateListOf<Uri>() }
     var permissionGranted by remember { mutableStateOf(false) }
+
 
     // Launcher yêu cầu quyền truy cập ảnh từ thư viện
     val requestPermissionLauncher = rememberLauncherForActivityResult(
@@ -111,32 +113,26 @@ fun AddPostScreen(navHostController: NavHostController) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
-                .background(MainBackground),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             IconButton(onClick = { navHostController.popBackStack() }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_close), // icon dấu X
-                    contentDescription = "Back",
-                    tint = onSurface
+                    contentDescription = "Back"
                 )
             }
-            Text(
-                text = stringResource(id = R.string.new_post),
-                style = MaterialTheme.typography.titleMedium,
-                color = onSurface
-            )
+            Text(text = "Bài viết mới", style = MaterialTheme.typography.titleMedium)
             TextButton(onClick = {
                 if (selectedImages.isEmpty()) {
-                    Toast.makeText(context, "Vui lòng chọn hoặc chụp ảnh", Toast.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(context, "Vui lòng chọn hoặc chụp ảnh", Toast.LENGTH_SHORT).show()
                     return@TextButton
                 }
+                addPostViewModel.updateSelectedImages(selectedImages)
                 navHostController.navigate(Routes.AddPostDetailScreen.route)
             }) {
-                Text(text = stringResource(id = R.string.next))
+                Text(text = "Tiếp")
             }
 
         }
@@ -150,10 +146,7 @@ fun AddPostScreen(navHostController: NavHostController) {
         ) {
             if (selectedImages.isEmpty()) {
                 // Hiển thị placeholder nếu chưa có ảnh được chọn
-                Text(
-                    stringResource(id = R.string.no_select_photo),
-                    modifier = Modifier.align(Alignment.Center)
-                )
+                Text("Chưa chọn ảnh", modifier = Modifier.align(Alignment.Center))
             } else {
                 // Dùng HorizontalPager cho trải nghiệm lướt mượt
                 val pagerState = rememberPagerState(initialPage = 0) { selectedImages.size }
@@ -215,7 +208,7 @@ fun AddPostScreen(navHostController: NavHostController) {
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(stringResource(id = R.string.choose_multiple_photos))
+                    Text("Chọn nhiều")
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 IconButton(onClick = {
@@ -223,7 +216,7 @@ fun AddPostScreen(navHostController: NavHostController) {
                     val file = createImageFile(context)
                     val uri = FileProvider.getUriForFile(
                         context,
-                        "${context.packageName}.fileprovider",
+                        "${context.packageName}.provider",
                         file
                     )
                     photoUri = uri
@@ -232,7 +225,7 @@ fun AddPostScreen(navHostController: NavHostController) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_camera), // icon camera
                         contentDescription = "Chụp ảnh",
-                        tint = onSurface,
+                        tint = Color.Black,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -279,8 +272,7 @@ fun loadGalleryImages(context: Context): List<Uri> {
         val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
         while (cursor.moveToNext()) {
             val id = cursor.getLong(idColumn)
-            val contentUri =
-                Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id.toString())
+            val contentUri = Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id.toString())
             imageList.add(contentUri)
         }
     }

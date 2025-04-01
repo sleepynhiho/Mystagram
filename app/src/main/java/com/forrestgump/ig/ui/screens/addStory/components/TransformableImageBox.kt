@@ -113,7 +113,7 @@ fun TransformableImageBox(
                 )
             ).size
         } else {
-            IntSize(15, 60) // ✅ Set aa reasonable default size when text is empty
+            IntSize(15, 60)
         }
 
         if (addTextClicked) {

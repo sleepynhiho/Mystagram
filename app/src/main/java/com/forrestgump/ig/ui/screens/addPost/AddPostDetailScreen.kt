@@ -1,4 +1,3 @@
-// File: AddPostDetailScreen.kt
 package com.forrestgump.ig.ui.screens.addPost
 
 import android.widget.Toast
@@ -19,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
@@ -27,28 +25,44 @@ import com.forrestgump.ig.R
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.stringResource
+import android.content.Context
+import android.net.Uri
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.cloudinary.Cloudinary
+import com.cloudinary.utils.ObjectUtils
+import java.io.File
+import java.io.FileOutputStream
+import com.forrestgump.ig.data.models.Post
+import com.forrestgump.ig.ui.navigation.Routes
+import com.google.firebase.firestore.FirebaseFirestore
+import com.forrestgump.ig.ui.viewmodels.UserViewModel
+import android.os.Handler
+import android.os.Looper
+import com.forrestgump.ig.BuildConfig
 
 @Composable
 fun AddPostDetailScreen(
     navHostController: NavHostController,
-    // Giả sử danh sách ảnh được truyền từ AddPostScreen (có thể dùng ViewModel hay NavArgs)
-    selectedImages: List<android.net.Uri>,
+    addPostViewModel: AddPostViewModel = hiltViewModel(),
+    userViewModel: UserViewModel = hiltViewModel()  // Inject UserViewModel
 ) {
+    val currentUser = userViewModel.user.collectAsState().value
     val context = LocalContext.current
 
     // State cho caption: ban đầu hiển thị placeholder, khi nhấn chuyển thành TextField
     var caption by remember { mutableStateOf("") }
     var isEditingCaption by remember { mutableStateOf(false) }
 
+    // Lấy danh sách ảnh từ ViewModel
+    val selectedImages = addPostViewModel.selectedImages.collectAsState().value
+
     // Pager state cho HorizontalPager (sử dụng thư viện compose foundation pager)
     val pagerState = rememberPagerState(initialPage = 0) { selectedImages.size }
     val focusManager = LocalFocusManager.current
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .clickable { focusManager.clearFocus() }
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .clickable { focusManager.clearFocus() }
     ) {
         // Top Bar
         Row(
@@ -65,7 +79,7 @@ fun AddPostDetailScreen(
                 )
             }
             Text(
-                text = stringResource(id = R.string.new_post),
+                text = "Bài viết mới",
                 style = MaterialTheme.typography.titleMedium
             )
             // Để cân bằng layout, nếu không có nút bên phải có thể dùng Spacer
@@ -80,7 +94,7 @@ fun AddPostDetailScreen(
                 .background(Color.LightGray)
         ) {
             if (selectedImages.isEmpty()) {
-                Text(stringResource(id = R.string.no_select_photo), modifier = Modifier.align(Alignment.Center))
+                Text("Chưa chọn ảnh", modifier = Modifier.align(Alignment.Center))
             } else {
                 HorizontalPager(
                     state = pagerState,
@@ -220,7 +234,33 @@ fun AddPostDetailScreen(
         Button(
             onClick = {
                 // Xử lý chia sẻ bài viết (ở đây ví dụ hiển thị Toast)
-                Toast.makeText(context, "Đã chia sẻ", Toast.LENGTH_SHORT).show()
+                if (selectedImages.isEmpty()) {
+                    Toast.makeText(context, "Vui lòng chọn ảnh", Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                if (currentUser == null) {
+                    Toast.makeText(context, "User chưa đăng nhập", Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+
+                // Gọi hàm upload post sử dụng Cloudinary (hoặc Firebase Storage nếu thay đổi)
+                addPostViewModel.uploadPostToFirebase(
+                    context = context,
+                    caption = caption,
+                    userId = currentUser.userId,
+                    username = currentUser.username,
+                    profileImageUrl = currentUser.profileImage,
+                    onSuccess = {
+                        Toast.makeText(context, "Đăng bài thành công", Toast.LENGTH_SHORT).show()
+                        navHostController.navigate(Routes.HomeScreen.route) {
+                            popUpTo(Routes.HomeScreen.route) { inclusive = true }
+                        }
+                    },
+                    onFailure = { exception ->
+                        Toast.makeText(context, "Lỗi: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    }
+                )
+
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -233,3 +273,17 @@ fun AddPostDetailScreen(
         }
     }
 }
+
+fun getFileFromUri(context: Context, uri: Uri): File {
+    val inputStream = context.contentResolver.openInputStream(uri)
+    val tempFile = File.createTempFile("upload", ".jpg", context.cacheDir)
+    inputStream.use { input ->
+        FileOutputStream(tempFile).use { output ->
+            input?.copyTo(output)
+        }
+    }
+    return tempFile
+}
+
+
+

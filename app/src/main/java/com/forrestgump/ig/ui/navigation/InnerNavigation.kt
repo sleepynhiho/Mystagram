@@ -7,7 +7,10 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -15,6 +18,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
@@ -22,7 +27,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
+import androidx.navigation.navigation
 import com.forrestgump.ig.ui.screens.home.HomeScreen
 import com.forrestgump.ig.ui.screens.home.HomeViewModel
 import com.forrestgump.ig.ui.screens.profile.MyProfileScreen
@@ -47,6 +54,7 @@ import com.forrestgump.ig.ui.screens.addPost.AddPostViewModel
 import com.forrestgump.ig.ui.screens.addStory.AddStoryViewModel
 import com.forrestgump.ig.ui.screens.profile.EditProfileScreen
 import com.forrestgump.ig.ui.screens.profile.FollowScreen
+import com.forrestgump.ig.ui.screens.profile.PostDetailScreen
 import java.util.Date
 import com.forrestgump.ig.ui.screens.settings.SettingsScreen
 import com.forrestgump.ig.ui.screens.story.StoryViewModel
@@ -64,7 +72,8 @@ fun InnerNavigation(
     storyViewModel: StoryViewModel
 ) {
     val currentUser by userViewModel.user.collectAsState()
-
+    // Trong Activity hoặc các composable cha
+    val viewModelOfAddPost: AddPostViewModel = hiltViewModel()
     NavHost(
         navController = navHostController, startDestination = Routes.HomeScreen.route
     ) {
@@ -86,9 +95,15 @@ fun InnerNavigation(
                 currentUser?.let { it1 -> viewModelHome.updateUserStories(userStories, it1) }
             }
 
+            LaunchedEffect(Unit) {
+                viewModelHome.loadNextPosts()
+            }
+
 
             currentUser?.let { it1 ->
-                HomeScreen(contentPadding = contentPadding,
+                HomeScreen(
+                    viewModel = viewModelHome,
+                    contentPadding = contentPadding,
                     uiState = uiState,
                     currentUser = it1,
                     onAddStoryClicked = {
@@ -184,6 +199,10 @@ fun InnerNavigation(
         }) {
             val uiState by viewModelProfile.uiState.collectAsState()
 
+            LaunchedEffect (Unit) {
+                viewModelProfile.loadUserData()
+            }
+
             MyProfileScreen(
                 uiState = uiState, navController = navHostController
             )
@@ -211,26 +230,6 @@ fun InnerNavigation(
                     navHostController = navHostController
                 )
             }
-        }
-
-        composable(
-            route = Routes.AddPostScreen.route,
-            enterTransition = {
-                slideInVertically(
-                    initialOffsetY = { it },
-                    animationSpec = tween(durationMillis = 350)
-                )
-            },
-            exitTransition = {
-                slideOutVertically(
-                    targetOffsetY = { -it },
-                    animationSpec = tween(durationMillis = 350)
-                )
-            }
-        ) {
-            AddPostScreen(
-                navHostController
-            )
         }
 
         val dummyChats = listOf(
@@ -714,33 +713,61 @@ fun InnerNavigation(
             enterTransition = { fadeIn(animationSpec = tween(350)) },
             exitTransition = { fadeOut(animationSpec = tween(350)) }
         ) {
+            LaunchedEffect(Unit) {
+                viewModelProfile.loadUserData()
+            }
             EditProfileScreen(
                 navController = navHostController,
-                // Những giá trị này có thể được thay thế bằng dữ liệu thực từ ViewModel khi tích hợp backend
-                initialFullName = "John Doe",
-                initialUserName = "john_doe",
-                initialBio = "This is my bio",
-                isPremium = false,
-                onChangePremiumStatus = { /* Xử lý thay đổi gói premium */ },
-                onAvatarClick = { /* Mở trình chọn ảnh để thay đổi avatar */ }
+                viewModel = viewModelProfile,
             )
         }
 
-        composable(route = Routes.AddPostDetailScreen.route, enterTransition = {
-            fadeIn(animationSpec = tween(350))
-        }, exitTransition = {
-            fadeOut(animationSpec = tween(350))
-        }) {
-            // Giả lập danh sách ảnh bằng cách chuyển URL thành Uri
-            val dummyImages = listOf(
-                android.net.Uri.parse("https://statictuoitre.mediacdn.vn/thumb_w/640/2017/1-1512755474911.jpg"),
-                android.net.Uri.parse("https://uploads.nguoidothi.net.vn/content/f29d9806-6f25-41c0-bcf8-4095317e3497.jpg"),
-                android.net.Uri.parse("https://tophinhanhdep.com/wp-content/uploads/2021/10/720x1480-Wallpapers.jpg")
-            )
+        composable(route = Routes.AddPostScreen.route) {
+            AddPostScreen(
+                navHostController = navHostController,
+                addPostViewModel = viewModelOfAddPost)
+        }
+
+        composable(route = Routes.AddPostDetailScreen.route) {
             AddPostDetailScreen(
                 navHostController = navHostController,
-                selectedImages = dummyImages
+                addPostViewModel = viewModelOfAddPost
             )
+        }
+
+        composable(
+            route = Routes.PostDetailScreen.route,
+            arguments = listOf(
+                navArgument("postId") { type = NavType.StringType }
+            ),
+            enterTransition = {
+                fadeIn(animationSpec = tween(350))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(350))
+            }
+        ) { navBackStackEntry ->
+            val postId = navBackStackEntry.arguments?.getString("postId") ?: ""
+            // Lấy post từ ViewModel dựa trên postId
+            val post = viewModelProfile.getPostById(postId)
+
+            post?.let {
+                currentUser?.let { it1 ->
+                    PostDetailScreen(
+                        post = it,
+                        onBackPressed = { navHostController.popBackStack() },
+                        currentUserID = it1.userId
+                    )
+                }
+            } ?: run {
+                // Hiển thị màn hình lỗi nếu không tìm thấy post
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Text(
+                        "Không tìm thấy bài viết",
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+            }
         }
 
     }

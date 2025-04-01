@@ -59,8 +59,14 @@ import java.io.FileOutputStream
 import java.io.OutputStream
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.pm.PackageManager
+import android.util.Log
 import android.widget.Toast
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -72,18 +78,16 @@ import androidx.core.content.ContextCompat
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
+    viewModel: ProfileViewModel,
     navController: NavController,
-    initialFullName: String = "Nguyễn Văn A", // Sẽ thay bằng dữ liệu từ server
-    initialUserName: String = "nguyenvana",     // Sẽ thay bằng dữ liệu từ server
-    initialBio: String = "Đây là tiểu sử của tôi.", // Sẽ thay bằng dữ liệu từ server
     isPremium: Boolean = false,
-    onChangePremiumStatus: () -> Unit = {},
-    onAvatarClick: () -> Unit = {}
 ) {
     // State quản lý giá trị nhập vào, khi tích hợp backend bạn sẽ update theo dữ liệu thực
-    val fullName = remember { mutableStateOf(initialFullName) }
-    val userName = remember { mutableStateOf(initialUserName) }
-    val bio = remember { mutableStateOf(initialBio) }
+    val uiState by viewModel.uiState.collectAsState()
+    var newProfileImage by remember { mutableStateOf(uiState.curUser.profileImage) }
+    var newFullName by remember { mutableStateOf(uiState.curUser.fullName) }
+    var newUsername by remember { mutableStateOf(uiState.curUser.username) }
+    var newBio by remember { mutableStateOf(uiState.curUser.bio) }
     val focusManager = LocalFocusManager.current
     val accountPrivacy = remember { mutableStateOf(false) }
     val selectedImageUri = remember { mutableStateOf<String?>(null) }
@@ -117,13 +121,20 @@ fun EditProfileScreen(
             photoFile.value = newFile
             val uri = FileProvider.getUriForFile(
                 context,
-                "${context.packageName}.fileprovider",
+                "${context.packageName}.provider",
                 newFile
             )
             takePictureLauncher.launch(uri)
         } else {
             // User từ chối quyền
             Toast.makeText(context, "Bạn cần cấp quyền Camera để chụp ảnh mới.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // Đồng bộ newProfileImage khi người dùng chọn ảnh mới
+    LaunchedEffect(selectedImageUri.value) {
+        selectedImageUri.value?.let { uri ->
+            newProfileImage = uri
         }
     }
 
@@ -173,8 +184,9 @@ fun EditProfileScreen(
                     Image(
                         painter = rememberAsyncImagePainter(
                             model = selectedImageUri.value
-                                ?: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTaqpJxl9RlSTBk9colJ6YL_UQ8rmB1v87JKw&s"
+                                ?: newProfileImage // Nếu chưa chọn ảnh mới, dùng ảnh từ newProfileImage
                         ),
+
                         contentDescription = "Avatar",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
@@ -195,53 +207,26 @@ fun EditProfileScreen(
                 // Ô nhập liệu cho "Tên"
                 EditField(
                     label = "Tên",
-                    text = fullName.value,
-                    onTextChange = { fullName.value = it }
+                    text = newFullName,
+                    onTextChange = { newFullName = it }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Ô nhập liệu cho "Tên người dùng"
                 EditField(
                     label = "Tên người dùng",
-                    text = userName.value,
-                    onTextChange = { userName.value = it }
+                    text = newUsername,
+                    onTextChange = { newUsername = it }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Ô nhập liệu cho "Tiểu sử"
                 EditField(
                     label = "Tiểu sử",
-                    text = bio.value,
-                    onTextChange = { bio.value = it }
+                    text = newBio,
+                    onTextChange = { newBio = it }
                 )
                 Spacer(modifier = Modifier.height(24.dp))
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onChangePremiumStatus() }  // Áp dụng clickable cho cả Column
-                        .padding( vertical = 12.dp),
-                ) {
-                    Divider(
-                        color = Color.LightGray,
-                        thickness = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = if (isPremium) "Hủy gói premium" else "Chuyển thành tài khoản premium",
-                        color = Color.Black,
-                        fontSize = 16.sp
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Divider(
-                        color = Color.LightGray,
-                        thickness = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
 
                 Column(
                     modifier = Modifier
@@ -256,7 +241,7 @@ fun EditProfileScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Pin 3 Posts nổi bật nhất",
+                        text = if (isPremium) "Hủy gói premium" else "Chuyển thành tài khoản premium",
                         color = Color.Black,
                         fontSize = 16.sp
                     )
@@ -354,7 +339,7 @@ fun EditProfileScreen(
                                     if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                                         val newFile = createImageFile(context)
                                         photoFile.value = newFile
-                                        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", newFile)
+                                        val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", newFile)
                                         takePictureLauncher.launch(uri)
                                     } else {
                                         cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
@@ -373,7 +358,22 @@ fun EditProfileScreen(
                 Button(
                     onClick = {
                         focusManager.clearFocus() // Loại bỏ focus khi nhấn nút lưu
-                        // onSave() // Gọi callback lưu dữ liệu (tự cài đặt)
+                        Log.d("EditProfileScreen", "${newProfileImage}")
+                        viewModel.updateUserProfile(
+                            context = context,
+                            newProfileImage = newProfileImage,
+                            newFullName = newFullName,
+                            newUsername = newUsername,
+                            newBio = newBio,
+                            onSuccess = {
+                                // Sau khi cập nhật thành công, có thể navigate back hoặc show thông báo
+                                navController.popBackStack()
+                            },
+                            onFailure = { exception ->
+                                // Hiển thị thông báo lỗi
+                                Log.e("EditProfileScreen", "Error updating profile", exception)
+                            }
+                        )
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -426,11 +426,12 @@ fun EditField(
     }
 }
 
-fun createImageFile(context: android.content.Context): File {
-    val storageDir = context.getExternalFilesDir(null)
+fun createImageFile(context: Context): File {
+    val storageDir = context.cacheDir
     return File.createTempFile(
         "avatar_${System.currentTimeMillis()}",
         ".jpg",
         storageDir
     )
 }
+
