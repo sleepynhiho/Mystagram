@@ -721,15 +721,12 @@ fun InnerNavigation(
             enterTransition = { fadeIn(animationSpec = tween(350)) },
             exitTransition = { fadeOut(animationSpec = tween(350)) }
         ) {
+            LaunchedEffect(Unit) {
+                viewModelProfile.loadUserData()
+            }
             EditProfileScreen(
                 navController = navHostController,
-                // Những giá trị này có thể được thay thế bằng dữ liệu thực từ ViewModel khi tích hợp backend
-                initialFullName = "John Doe",
-                initialUserName = "john_doe",
-                initialBio = "This is my bio",
-                isPremium = false,
-                onChangePremiumStatus = { /* Xử lý thay đổi gói premium */ },
-                onAvatarClick = { /* Mở trình chọn ảnh để thay đổi avatar */ }
+                viewModel = viewModelProfile,
             )
         }
 

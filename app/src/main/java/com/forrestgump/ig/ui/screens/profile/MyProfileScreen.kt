@@ -36,6 +36,7 @@ import androidx.navigation.NavController
 import com.forrestgump.ig.data.models.Post
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.graphics.FilterQuality
 import com.forrestgump.ig.ui.components.PostItem
 
 
@@ -54,7 +55,7 @@ fun MyProfileScreen(
                 // Thanh top bar
                 ProfileTopBar(
                     title = uiState.curUser.username,
-                    onBackClicked = { /* TODO */ },
+                    onBackClicked = { navController.popBackStack() },
                     onMoreClicked = {
                         navController.navigate(Routes.SettingsScreen.route)
                     }
@@ -126,8 +127,10 @@ fun ProfileInfoSection(
             Image(
                 painter = painterImage,
                 contentDescription = "Profile Image",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(80.dp)
+                    .fillMaxSize()
                     .clip(CircleShape)
             )
 
@@ -244,18 +247,6 @@ fun ProfileTabRow() {
             color = MaterialTheme.colorScheme.onBackground
         )
     }
-}
-
-@Composable
-fun ProfileTabItem(label: String) {
-    ClickableText(
-        text = AnnotatedString(label),
-        onClick = { /* TODO */ },
-        modifier = Modifier
-            .fillMaxHeight()
-            .padding(horizontal = 16.dp),
-        style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
-    )
 }
 
 /**

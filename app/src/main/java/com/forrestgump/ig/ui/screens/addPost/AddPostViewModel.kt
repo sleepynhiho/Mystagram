@@ -45,6 +45,7 @@ class AddPostViewModel @Inject constructor(
         withContext(Dispatchers.IO) {
             try {
                 val file = getFileFromUri(context, fileUri)
+                Log.d("AddPostViewModel", "${file}")
                 // Sử dụng cloudinary đã được inject
                 val result = cloudinary.uploader().unsignedUpload(
                     file,
