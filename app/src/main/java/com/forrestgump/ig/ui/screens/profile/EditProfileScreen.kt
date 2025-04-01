@@ -80,7 +80,6 @@ import androidx.core.content.ContextCompat
 fun EditProfileScreen(
     viewModel: ProfileViewModel,
     navController: NavController,
-    isPremium: Boolean = false,
 ) {
     // State quản lý giá trị nhập vào, khi tích hợp backend bạn sẽ update theo dữ liệu thực
     val uiState by viewModel.uiState.collectAsState()
@@ -88,8 +87,9 @@ fun EditProfileScreen(
     var newFullName by remember { mutableStateOf(uiState.curUser.fullName) }
     var newUsername by remember { mutableStateOf(uiState.curUser.username) }
     var newBio by remember { mutableStateOf(uiState.curUser.bio) }
+    var newStateOfPremium by remember { mutableStateOf(uiState.curUser.isPremium) }
+    var newAccountPrivacy by remember { mutableStateOf(uiState.curUser.isPrivate) }
     val focusManager = LocalFocusManager.current
-    val accountPrivacy = remember { mutableStateOf(false) }
     val selectedImageUri = remember { mutableStateOf<String?>(null) }
     val showChooseImageDialog = remember { mutableStateOf(false) }
     val photoFile = remember { mutableStateOf<File?>(null) }
@@ -139,6 +139,7 @@ fun EditProfileScreen(
     }
 
 
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -154,6 +155,50 @@ fun EditProfileScreen(
                     }
                 }
             )
+        },
+        bottomBar = {
+            // Button "Lưu" màu xanh, hình chữ nhật bo tròn 4 góc
+            Button(
+                onClick = {
+                    focusManager.clearFocus() // Loại bỏ focus khi nhấn nút lưu
+                    Log.d("EditProfileScreen", "${newProfileImage}")
+                    viewModel.updateUserProfile(
+                        context = context,
+                        newProfileImage = newProfileImage,
+                        newFullName = newFullName,
+                        newUsername = newUsername,
+                        newBio = newBio,
+                        newAccountPrivacy = newAccountPrivacy,
+                        onSuccess = {
+                            // Sau khi cập nhật thành công, có thể navigate back hoặc show thông báo
+                            navController.popBackStack()
+                        },
+                        onFailure = { exception ->
+                            // Hiển thị thông báo lỗi
+                            Log.e("EditProfileScreen", "Error updating profile", exception)
+                        }
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .clip(RoundedCornerShape(40.dp))
+                    .shadow(elevation = 8.dp, shape = RoundedCornerShape(4.dp))
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(Color(0xFF00BCD4), Color(0xFF2196F3))
+                        ),
+                        shape = RoundedCornerShape(40.dp)
+                    ),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                contentPadding = PaddingValues()
+            ) {
+                Text(
+                    text = "Lưu",
+                    color = Color.White,
+                    modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
+                )
+            }
         }
     ) { paddingValues ->
         Box(
@@ -237,13 +282,13 @@ fun EditProfileScreen(
                         .clickable { /* TODO: Handle premium click */ }
                 ) {
                     Text(
-                        text = if (isPremium) "Hủy gói premium" else "Chuyển thành tài khoản premium",
+                        text = if (newStateOfPremium) "Hủy gói premium" else "Chuyển thành tài khoản premium",
                         color = Color.Black,
                         fontSize = 16.sp
                     )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 // Privacy Section
                 Box(
@@ -268,8 +313,8 @@ fun EditProfileScreen(
                             Text(text = "Account privacy", color = Color.Black, fontSize = 15.sp)
                         }
                         Switch(
-                            checked = accountPrivacy.value,
-                            onCheckedChange = { newValue -> accountPrivacy.value = newValue },
+                            checked = newAccountPrivacy,
+                            onCheckedChange = { newValue -> newAccountPrivacy = newValue },
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.White,
                                 checkedTrackColor = Color.Gray,
@@ -281,7 +326,7 @@ fun EditProfileScreen(
                 }
 
                 // Spacer tạo khoảng cách
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 // Location Section
                 Box(
@@ -297,6 +342,7 @@ fun EditProfileScreen(
                         fontSize = 16.sp
                     )
                 }
+
 
                 if (showChooseImageDialog.value) {
                     AlertDialog(
@@ -339,48 +385,6 @@ fun EditProfileScreen(
                             }
                         },
                         confirmButton = {}
-                    )
-                }
-
-
-                // Button "Lưu" màu xanh, hình chữ nhật bo tròn 4 góc
-                Button(
-                    onClick = {
-                        focusManager.clearFocus() // Loại bỏ focus khi nhấn nút lưu
-                        Log.d("EditProfileScreen", "${newProfileImage}")
-                        viewModel.updateUserProfile(
-                            context = context,
-                            newProfileImage = newProfileImage,
-                            newFullName = newFullName,
-                            newUsername = newUsername,
-                            newBio = newBio,
-                            onSuccess = {
-                                // Sau khi cập nhật thành công, có thể navigate back hoặc show thông báo
-                                navController.popBackStack()
-                            },
-                            onFailure = { exception ->
-                                // Hiển thị thông báo lỗi
-                                Log.e("EditProfileScreen", "Error updating profile", exception)
-                            }
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(40.dp))
-                        .shadow(elevation = 8.dp, shape = RoundedCornerShape(4.dp))
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(Color(0xFF00BCD4), Color(0xFF2196F3))
-                            ),
-                            shape = RoundedCornerShape(40.dp)
-                        ),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                    contentPadding = PaddingValues()
-                ) {
-                    Text(
-                        text = "Lưu",
-                        color = Color.White,
-                        modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
                     )
                 }
 
