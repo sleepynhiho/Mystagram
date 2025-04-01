@@ -228,53 +228,36 @@ fun EditProfileScreen(
                 )
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Column(
+                // Premium Section
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { /*TO DO*/ }  // Áp dụng clickable cho cả Column
-                        .padding( vertical = 12.dp),
+                        .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
+                        .padding(12.dp)
+                        .clickable { /* TODO: Handle premium click */ }
                 ) {
-                    Divider(
-                        color = Color.LightGray,
-                        thickness = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = if (isPremium) "Hủy gói premium" else "Chuyển thành tài khoản premium",
                         color = Color.Black,
                         fontSize = 16.sp
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Divider(
-                        color = Color.LightGray,
-                        thickness = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Column(
+                // Privacy Section
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding( vertical = 12.dp)
+                        .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
+                        .padding(12.dp)
                 ) {
-                    Divider(
-                        color = Color.LightGray,
-                        thickness = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Default.Lock,
                                 contentDescription = "Account privacy",
@@ -282,11 +265,7 @@ fun EditProfileScreen(
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(16.dp))
-                            Text(
-                                text = "Account privacy",
-                                color = Color.Black,
-                                fontSize = 15.sp
-                            )
+                            Text(text = "Account privacy", color = Color.Black, fontSize = 15.sp)
                         }
                         Switch(
                             checked = accountPrivacy.value,
@@ -299,15 +278,25 @@ fun EditProfileScreen(
                             )
                         )
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Divider(
-                        color = Color.LightGray,
-                        thickness = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                // Spacer tạo khoảng cách
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Location Section
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
+                        .padding(12.dp)
+                        .clickable { /* TODO: Handle location click */ }
+                ) {
+                    Text(
+                        text = "Chỉnh sửa vị trí",
+                        color = Color.Black,
+                        fontSize = 16.sp
+                    )
+                }
 
                 if (showChooseImageDialog.value) {
                     AlertDialog(
