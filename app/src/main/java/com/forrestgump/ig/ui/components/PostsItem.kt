@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -106,8 +107,11 @@ fun PostHeader(post: Post) {
         AsyncImage(
             model = post.profileImageUrl,
             contentDescription = "User Avatar",
+            contentScale = ContentScale.Crop,
+            filterQuality = FilterQuality.None,
             modifier = Modifier
                 .size(40.dp)
+                .fillMaxSize()
                 .clip(CircleShape)
         )
         Spacer(modifier = Modifier.width(8.dp))

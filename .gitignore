@@ -37,12 +37,5 @@ replay_pid*
 .gradle/
 .idea/
 
-# Ignore Firebase Functions build directory
 functions/node_modules/
-functions/package-lock.json
-functions/.firebase/
 
-firebase.json
-firestore.rules
-storage.rules
-database.rules.json

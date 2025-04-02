@@ -12,7 +12,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AuthViewModel @Inject constructor() : ViewModel() {
+class AuthViewModel @Inject constructor(
+    private val firestore: FirebaseFirestore,
+) : ViewModel() {
 
     // Khởi tạo FirebaseAuth instance
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
@@ -65,14 +67,13 @@ class AuthViewModel @Inject constructor() : ViewModel() {
                         user?.updateProfile(profileUpdates)
                             ?.addOnCompleteListener { updateTask ->
                                 if (updateTask.isSuccessful) {
-                                    val db = FirebaseFirestore.getInstance();
                                     val userData = User(
                                         userId = user.uid,
                                         email = email,
                                         username = username,
                                         profileImage = "@drawable/default_profile_image",
                                     )
-                                    db.collection("users").document(user.uid).set(userData)
+                                    firestore.collection("users").document(user.uid).set(userData)
                                         .addOnSuccessListener {
                                             onResult(true, null)
                                         }

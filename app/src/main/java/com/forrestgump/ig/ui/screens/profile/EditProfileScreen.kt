@@ -59,8 +59,14 @@ import java.io.FileOutputStream
 import java.io.OutputStream
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.pm.PackageManager
+import android.util.Log
 import android.widget.Toast
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -72,20 +78,18 @@ import androidx.core.content.ContextCompat
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
+    viewModel: ProfileViewModel,
     navController: NavController,
-    initialFullName: String = "Nguyễn Văn A", // Sẽ thay bằng dữ liệu từ server
-    initialUserName: String = "nguyenvana",     // Sẽ thay bằng dữ liệu từ server
-    initialBio: String = "Đây là tiểu sử của tôi.", // Sẽ thay bằng dữ liệu từ server
-    isPremium: Boolean = false,
-    onChangePremiumStatus: () -> Unit = {},
-    onAvatarClick: () -> Unit = {}
 ) {
     // State quản lý giá trị nhập vào, khi tích hợp backend bạn sẽ update theo dữ liệu thực
-    val fullName = remember { mutableStateOf(initialFullName) }
-    val userName = remember { mutableStateOf(initialUserName) }
-    val bio = remember { mutableStateOf(initialBio) }
+    val uiState by viewModel.uiState.collectAsState()
+    var newProfileImage by remember { mutableStateOf(uiState.curUser.profileImage) }
+    var newFullName by remember { mutableStateOf(uiState.curUser.fullName) }
+    var newUsername by remember { mutableStateOf(uiState.curUser.username) }
+    var newBio by remember { mutableStateOf(uiState.curUser.bio) }
+    var newStateOfPremium by remember { mutableStateOf(uiState.curUser.isPremium) }
+    var newAccountPrivacy by remember { mutableStateOf(uiState.curUser.isPrivate) }
     val focusManager = LocalFocusManager.current
-    val accountPrivacy = remember { mutableStateOf(false) }
     val selectedImageUri = remember { mutableStateOf<String?>(null) }
     val showChooseImageDialog = remember { mutableStateOf(false) }
     val photoFile = remember { mutableStateOf<File?>(null) }
@@ -127,6 +131,14 @@ fun EditProfileScreen(
         }
     }
 
+    // Đồng bộ newProfileImage khi người dùng chọn ảnh mới
+    LaunchedEffect(selectedImageUri.value) {
+        selectedImageUri.value?.let { uri ->
+            newProfileImage = uri
+        }
+    }
+
+
 
     Scaffold(
         topBar = {
@@ -143,6 +155,50 @@ fun EditProfileScreen(
                     }
                 }
             )
+        },
+        bottomBar = {
+            // Button "Lưu" màu xanh, hình chữ nhật bo tròn 4 góc
+            Button(
+                onClick = {
+                    focusManager.clearFocus() // Loại bỏ focus khi nhấn nút lưu
+                    Log.d("EditProfileScreen", "${newProfileImage}")
+                    viewModel.updateUserProfile(
+                        context = context,
+                        newProfileImage = newProfileImage,
+                        newFullName = newFullName,
+                        newUsername = newUsername,
+                        newBio = newBio,
+                        newAccountPrivacy = newAccountPrivacy,
+                        onSuccess = {
+                            // Sau khi cập nhật thành công, có thể navigate back hoặc show thông báo
+                            navController.popBackStack()
+                        },
+                        onFailure = { exception ->
+                            // Hiển thị thông báo lỗi
+                            Log.e("EditProfileScreen", "Error updating profile", exception)
+                        }
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .clip(RoundedCornerShape(40.dp))
+                    .shadow(elevation = 8.dp, shape = RoundedCornerShape(4.dp))
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(Color(0xFF00BCD4), Color(0xFF2196F3))
+                        ),
+                        shape = RoundedCornerShape(40.dp)
+                    ),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                contentPadding = PaddingValues()
+            ) {
+                Text(
+                    text = "Lưu",
+                    color = Color.White,
+                    modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
+                )
+            }
         }
     ) { paddingValues ->
         Box(
@@ -173,8 +229,9 @@ fun EditProfileScreen(
                     Image(
                         painter = rememberAsyncImagePainter(
                             model = selectedImageUri.value
-                                ?: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTaqpJxl9RlSTBk9colJ6YL_UQ8rmB1v87JKw&s"
+                                ?: newProfileImage // Nếu chưa chọn ảnh mới, dùng ảnh từ newProfileImage
                         ),
+
                         contentDescription = "Avatar",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
@@ -195,101 +252,57 @@ fun EditProfileScreen(
                 // Ô nhập liệu cho "Tên"
                 EditField(
                     label = "Tên",
-                    text = fullName.value,
-                    onTextChange = { fullName.value = it }
+                    text = newFullName,
+                    onTextChange = { newFullName = it }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Ô nhập liệu cho "Tên người dùng"
                 EditField(
                     label = "Tên người dùng",
-                    text = userName.value,
-                    onTextChange = { userName.value = it }
+                    text = newUsername,
+                    onTextChange = { newUsername = it }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Ô nhập liệu cho "Tiểu sử"
                 EditField(
                     label = "Tiểu sử",
-                    text = bio.value,
-                    onTextChange = { bio.value = it }
+                    text = newBio,
+                    onTextChange = { newBio = it }
                 )
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Column(
+                // Premium Section
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onChangePremiumStatus() }  // Áp dụng clickable cho cả Column
-                        .padding( vertical = 12.dp),
+                        .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
+                        .padding(12.dp)
+                        .clickable { /* TODO: Handle premium click */ }
                 ) {
-                    Divider(
-                        color = Color.LightGray,
-                        thickness = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = if (isPremium) "Hủy gói premium" else "Chuyển thành tài khoản premium",
+                        text = if (newStateOfPremium) "Hủy gói premium" else "Chuyển thành tài khoản premium",
                         color = Color.Black,
                         fontSize = 16.sp
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Divider(
-                        color = Color.LightGray,
-                        thickness = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-                Column(
+                // Privacy Section
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { /*TO DO*/ }  // Áp dụng clickable cho cả Column
-                        .padding( vertical = 12.dp),
+                        .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
+                        .padding(12.dp)
                 ) {
-                    Divider(
-                        color = Color.LightGray,
-                        thickness = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Pin 3 Posts nổi bật nhất",
-                        color = Color.Black,
-                        fontSize = 16.sp
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Divider(
-                        color = Color.LightGray,
-                        thickness = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding( vertical = 12.dp)
-                ) {
-                    Divider(
-                        color = Color.LightGray,
-                        thickness = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Default.Lock,
                                 contentDescription = "Account privacy",
@@ -297,15 +310,11 @@ fun EditProfileScreen(
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(16.dp))
-                            Text(
-                                text = "Account privacy",
-                                color = Color.Black,
-                                fontSize = 15.sp
-                            )
+                            Text(text = "Account privacy", color = Color.Black, fontSize = 15.sp)
                         }
                         Switch(
-                            checked = accountPrivacy.value,
-                            onCheckedChange = { newValue -> accountPrivacy.value = newValue },
+                            checked = newAccountPrivacy,
+                            onCheckedChange = { newValue -> newAccountPrivacy = newValue },
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.White,
                                 checkedTrackColor = Color.Gray,
@@ -314,15 +323,26 @@ fun EditProfileScreen(
                             )
                         )
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Divider(
-                        color = Color.LightGray,
-                        thickness = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
+                }
+
+                // Spacer tạo khoảng cách
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Location Section
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
+                        .padding(12.dp)
+                        .clickable { /* TODO: Handle location click */ }
+                ) {
+                    Text(
+                        text = "Chỉnh sửa vị trí",
+                        color = Color.Black,
+                        fontSize = 16.sp
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
 
                 if (showChooseImageDialog.value) {
                     AlertDialog(
@@ -368,33 +388,6 @@ fun EditProfileScreen(
                     )
                 }
 
-
-                // Button "Lưu" màu xanh, hình chữ nhật bo tròn 4 góc
-                Button(
-                    onClick = {
-                        focusManager.clearFocus() // Loại bỏ focus khi nhấn nút lưu
-                        // onSave() // Gọi callback lưu dữ liệu (tự cài đặt)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(40.dp))
-                        .shadow(elevation = 8.dp, shape = RoundedCornerShape(4.dp))
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(Color(0xFF00BCD4), Color(0xFF2196F3))
-                            ),
-                            shape = RoundedCornerShape(40.dp)
-                        ),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                    contentPadding = PaddingValues()
-                ) {
-                    Text(
-                        text = "Lưu",
-                        color = Color.White,
-                        modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
-                    )
-                }
-
             }
         }
     }
@@ -426,11 +419,12 @@ fun EditField(
     }
 }
 
-fun createImageFile(context: android.content.Context): File {
-    val storageDir = context.getExternalFilesDir(null)
+fun createImageFile(context: Context): File {
+    val storageDir = context.cacheDir
     return File.createTempFile(
         "avatar_${System.currentTimeMillis()}",
         ".jpg",
         storageDir
     )
 }
+

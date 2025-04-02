@@ -44,6 +44,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUsers = void 0;
 // import { onRequest } from "firebase-functions/v2/https";
 // import * as logger from "firebase-functions/logger";
+Object.defineProperty(exports, "__esModule", { value: true });
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
 // export const helloWorld = onRequest((request, response) => {
