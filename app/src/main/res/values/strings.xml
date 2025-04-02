@@ -108,4 +108,11 @@
     <string name="sent_request">Send request</string>
     <string name="email_has_not_been_registered">Email has not been registered</string>"
     <string name="error_when_checking_email">Error when checking email</string>"
+    <string name="search_filters">Search Filters</string>
+    <string name="search_by_name">Search by name</string>
+    <string name="search_by_location">Search by location</string>
+    <string name="search_by_content">Search by content</string>
+    <string name="search_by_time">Search by time</string>
+    <string name="no_acc_found">No account found</string>
+    <string name="no_post_found">No post found</string>
 </resources>
