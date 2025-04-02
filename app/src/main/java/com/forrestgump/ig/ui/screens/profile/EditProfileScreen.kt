@@ -87,8 +87,8 @@ fun EditProfileScreen(
     var newFullName by remember { mutableStateOf(uiState.curUser.fullName) }
     var newUsername by remember { mutableStateOf(uiState.curUser.username) }
     var newBio by remember { mutableStateOf(uiState.curUser.bio) }
-    var newStateOfPremium by remember { mutableStateOf(uiState.curUser.isPremium) }
-    var newAccountPrivacy by remember { mutableStateOf(uiState.curUser.isPrivate) }
+//    var newStateOfPremium by remember { mutableStateOf(uiState.curUser.isPremium) }
+//    var newAccountPrivacy by remember { mutableStateOf(uiState.curUser.isPrivate) }
     val focusManager = LocalFocusManager.current
     val selectedImageUri = remember { mutableStateOf<String?>(null) }
     val showChooseImageDialog = remember { mutableStateOf(false) }
@@ -168,7 +168,7 @@ fun EditProfileScreen(
                         newFullName = newFullName,
                         newUsername = newUsername,
                         newBio = newBio,
-                        newAccountPrivacy = newAccountPrivacy,
+//                        newAccountPrivacy = newAccountPrivacy,
                         onSuccess = {
                             // Sau khi cập nhật thành công, có thể navigate back hoặc show thông báo
                             navController.popBackStack()
@@ -281,11 +281,11 @@ fun EditProfileScreen(
                         .padding(12.dp)
                         .clickable { /* TODO: Handle premium click */ }
                 ) {
-                    Text(
-                        text = if (newStateOfPremium) "Hủy gói premium" else "Chuyển thành tài khoản premium",
-                        color = Color.Black,
-                        fontSize = 16.sp
-                    )
+//                    Text(
+//                        text = if (newStateOfPremium) "Hủy gói premium" else "Chuyển thành tài khoản premium",
+//                        color = Color.Black,
+//                        fontSize = 16.sp
+//                    )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -312,16 +312,16 @@ fun EditProfileScreen(
                             Spacer(modifier = Modifier.width(16.dp))
                             Text(text = "Account privacy", color = Color.Black, fontSize = 15.sp)
                         }
-                        Switch(
-                            checked = newAccountPrivacy,
-                            onCheckedChange = { newValue -> newAccountPrivacy = newValue },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = Color.Gray,
-                                uncheckedThumbColor = Color.White,
-                                uncheckedTrackColor = Color.DarkGray
-                            )
-                        )
+//                        Switch(
+//                            checked = newAccountPrivacy,
+//                            onCheckedChange = { newValue -> newAccountPrivacy = newValue },
+//                            colors = SwitchDefaults.colors(
+//                                checkedThumbColor = Color.White,
+//                                checkedTrackColor = Color.Gray,
+//                                uncheckedThumbColor = Color.White,
+//                                uncheckedTrackColor = Color.DarkGray
+//                            )
+//                        )
                     }
                 }
 

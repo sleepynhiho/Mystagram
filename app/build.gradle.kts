@@ -139,4 +139,5 @@ dependencies {
     implementation (libs.accompanist.swiperefresh)
 
     implementation(libs.firebase.functions.ktx)
+    implementation(libs.firebase.messaging.ktx)
 }
