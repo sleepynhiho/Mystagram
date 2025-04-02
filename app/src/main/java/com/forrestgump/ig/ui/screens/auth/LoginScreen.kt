@@ -200,7 +200,7 @@ fun LoginScreen(
 
         Button(
             onClick = {
-                if (email.isNotBlank() && password.isNotBlank()) {
+                if (email.trim().isNotBlank() && password.isNotBlank()) {
                     isLoading = true
                     authViewModel.login(email, password) { success, errorMsg ->
                         isLoading = false
