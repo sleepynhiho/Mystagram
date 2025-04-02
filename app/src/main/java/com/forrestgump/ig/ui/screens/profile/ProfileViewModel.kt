@@ -48,7 +48,9 @@ class ProfileViewModel @Inject constructor(
                             location = document.getString("location") ?: "",
                             // followers và following được lưu là List<String> trong document
                             followers = document.get("followers") as? List<String> ?: emptyList(),
-                            following = document.get("following") as? List<String> ?: emptyList()
+                            following = document.get("following") as? List<String> ?: emptyList(),
+                            isPrivate = document.getBoolean("private") ?: false,
+                            isPremium = document.getBoolean("premium") ?: false
                         )
                         uiState.update { currentState ->
                             currentState.copy(isLoading = false, curUser = updatedUser)
@@ -120,6 +122,7 @@ class ProfileViewModel @Inject constructor(
         newFullName: String,
         newUsername: String,
         newBio: String,
+        newAccountPrivacy: Boolean,
         onSuccess: () -> Unit = {},
         onFailure: (Exception) -> Unit = {}
     ) {
@@ -129,6 +132,7 @@ class ProfileViewModel @Inject constructor(
                 profileImage = imageUrl,
                 fullName = newFullName,
                 username = newUsername,
+                isPrivate = newAccountPrivacy,
                 bio = newBio
             )
             // Cập nhật uiState ngay trên local
@@ -140,7 +144,8 @@ class ProfileViewModel @Inject constructor(
                     "profileImage" to imageUrl,
                     "fullName" to newFullName,
                     "username" to newUsername,
-                    "bio" to newBio
+                    "bio" to newBio,
+                    "private" to newAccountPrivacy
                 )
             ).addOnSuccessListener {
                 // Sau khi cập nhật user, tiến hành cập nhật ảnh đại diện trong các bài post
