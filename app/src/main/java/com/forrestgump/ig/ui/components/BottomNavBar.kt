@@ -58,7 +58,7 @@ fun BottomNavBar(
                 )
             }
             .height(48.dp),
-        color = MainBackground,
+        color = MaterialTheme.colorScheme.background,
     ) {
         Row(
             modifier = Modifier

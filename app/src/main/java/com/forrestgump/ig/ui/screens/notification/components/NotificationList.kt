@@ -52,7 +52,7 @@ fun NotificationList(
         contentPadding = innerPadding,
         modifier = Modifier
             .fillMaxSize()
-            .background(color = MainBackground),
+            .background(color = MaterialTheme.colorScheme.background),
         content = {
             item { NotificationHeader() }
             items(notifications) { notification ->
@@ -70,7 +70,7 @@ fun NotificationHeader() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = MainBackground)
+            .background(color = MaterialTheme.colorScheme.background)
             .height(40.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
@@ -130,7 +130,7 @@ fun NotificationListItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = MainBackground)
+            .background(color = MaterialTheme.colorScheme.background)
             .height(72.dp)
             .clickable {
 //                navHostController.navigate("ChatBoxScreen/${chat.chatId}")

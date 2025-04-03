@@ -219,7 +219,7 @@ fun SearchScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MainBackground)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier.fillMaxSize()
@@ -234,7 +234,7 @@ fun SearchScreen(
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Back",
-                    tint = onSurface,
+                    tint = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier
                         .size(24.dp)
                         .clickable(
@@ -252,9 +252,9 @@ fun SearchScreen(
                         .weight(1f)
                         .wrapContentHeight()
                         .focusRequester(focusRequester)
-                        .background(MainBackground),
+                        .background(MaterialTheme.colorScheme.background),
                     colors = TextFieldDefaults.colors(
-                        cursorColor = onSurface,
+                        cursorColor = MaterialTheme.colorScheme.onBackground,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     ),
@@ -262,7 +262,7 @@ fun SearchScreen(
                         Icon(
                             imageVector = Icons.Rounded.Search,
                             contentDescription = "Search",
-                            tint = onSurface,
+                            tint = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.size(18.dp)
                         )
                     },
@@ -275,7 +275,7 @@ fun SearchScreen(
                                     Icon(
                                         imageVector = Icons.Default.Clear,
                                         contentDescription = "Clear",
-                                        tint = onSurface,
+                                        tint = MaterialTheme.colorScheme.onBackground,
                                         modifier = Modifier.size(16.dp)
                                     )
                                 }
@@ -296,7 +296,7 @@ fun SearchScreen(
                     },
                     singleLine = true,
                     textStyle = LocalTextStyle.current.copy(
-                        fontSize = 13.sp, color = onSurface
+                        fontSize = 13.sp, color = MaterialTheme.colorScheme.onBackground
                     ),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
@@ -321,12 +321,12 @@ fun SearchScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MainBackground)
+                        .background(MaterialTheme.colorScheme.background)
                         .padding(16.dp)
                 ) {
                     Text(
                         text = stringResource(id = R.string.search_filters),
-                        color = onSurface,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 12.dp)
@@ -394,7 +394,7 @@ fun TabRow(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MainBackground)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Row(
             modifier = Modifier
@@ -478,7 +478,7 @@ fun FilterOption(
 
         Text(
             text = title,
-            color = onSurface,
+            color = MaterialTheme.colorScheme.onBackground,
             fontSize = 14.sp,
             modifier = Modifier.padding(start = 4.dp)
         )
@@ -492,7 +492,7 @@ fun AccountsContent(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(MainBackground),
+            .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(bottom = 35.dp)
     ) {
         item {
@@ -554,23 +554,23 @@ fun ResultsHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MainBackground)
+            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = title, color = onSurface, fontSize = 18.sp, fontWeight = FontWeight.Bold
+            text = title, color = MaterialTheme.colorScheme.onBackground, fontSize = 18.sp, fontWeight = FontWeight.Bold
         )
 
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(12.dp))
-                .background(MainBackground)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
             Text(
-                text = "$count results", color = onSurface, fontSize = 12.sp
+                text = "$count results", color = MaterialTheme.colorScheme.onBackground, fontSize = 12.sp
             )
         }
     }
@@ -590,7 +590,7 @@ fun EmptyResults(message: String) {
             Icon(
                 imageVector = Icons.Outlined.SearchOff,
                 contentDescription = null,
-                tint = onSurface,
+                tint = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier
                     .size(48.dp)
                     .padding(bottom = 16.dp)
@@ -656,7 +656,7 @@ fun AccountItem(account: Account) {
         ) {
             Text(
                 text = account.username,
-                color = onSurface,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )

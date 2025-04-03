@@ -54,18 +54,18 @@ fun SignupScreen(
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MainBackground
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
-        containerColor = MainBackground
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 16.dp)
-                .background(MainBackground),
+                .background(MaterialTheme.colorScheme.background),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Header section
@@ -73,14 +73,14 @@ fun SignupScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp)
-                    .background(MainBackground),
+                    .background(MaterialTheme.colorScheme.background),
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
                     text = stringResource(id = R.string.signup_title),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = onSurface
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(

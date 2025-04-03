@@ -49,7 +49,7 @@ fun MyProfileScreen(
     if (!uiState.isLoading) {
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = MainBackground // Hoặc Color.Black, tuỳ bạn
+            color = MaterialTheme.colorScheme.background // Hoặc Color.Black, tuỳ bạn
         ) {
             Column {
                 // Thanh top bar

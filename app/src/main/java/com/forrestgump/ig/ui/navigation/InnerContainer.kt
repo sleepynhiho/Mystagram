@@ -1,5 +1,6 @@
 package com.forrestgump.ig.ui.navigation
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -41,7 +42,7 @@ fun InnerContainer(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = MainBackground,
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             if (showBottomNavBar) {
                 BottomNavBar(

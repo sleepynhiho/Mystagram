@@ -2,6 +2,7 @@ package com.forrestgump.ig.ui.screens.chat
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,7 +37,7 @@ fun ChatBoxScreen(
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .background(MainBackground),
+            .background(MaterialTheme.colorScheme.background),
         topBar = {
             ChatBoxTopBar(
                 navHostController = navHostController,

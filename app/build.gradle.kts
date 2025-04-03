@@ -118,7 +118,7 @@ dependencies {
     implementation(libs.accompanist.pager)
     implementation(libs.accompanist.pager.indicators)
     implementation(libs.androidx.material.icons.extended)
-    implementation (libs.android.lottie.compose)
+    implementation(libs.android.lottie.compose)
 
     // Firebase Authentication
     implementation(libs.firebase.auth)
@@ -128,18 +128,24 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.activity.compose.v180)
-    implementation (libs.cloudinary.android)
+    implementation(libs.cloudinary.android)
 
     // Dependency cho Paging Library (runtime)
-    implementation (libs.androidx.paging.runtime)
+    implementation(libs.androidx.paging.runtime)
 
     // Dùng với Jetpack Compose:
-    implementation (libs.androidx.paging.compose)
-    implementation (libs.androidx.paging.compose.v100alpha18)
-    implementation (libs.accompanist.swiperefresh)
+    implementation(libs.androidx.paging.compose)
+    implementation(libs.androidx.paging.compose.v100alpha18)
+    implementation(libs.accompanist.swiperefresh)
 
     implementation(libs.firebase.functions.ktx)
     implementation(libs.coil.compose)
-    implementation (libs.google.firebase.auth.ktx)
-    implementation (libs.play.services.auth)
+    implementation(libs.google.firebase.auth.ktx)
+    implementation(libs.play.services.auth)
+
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.runtime)
+    implementation(libs.androidx.ui.v178)
+    implementation(libs.androidx.material3.window.size.class1)
+    implementation(libs.accompanist.systemuicontroller)
 }

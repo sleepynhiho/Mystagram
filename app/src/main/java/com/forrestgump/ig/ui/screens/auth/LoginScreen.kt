@@ -86,7 +86,7 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp)
-            .background(MainBackground),
+            .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Status bar space
@@ -104,12 +104,12 @@ fun LoginScreen(
                 Text(
                     text = selectedLanguage,
                     fontSize = 16.sp,
-                    color = onSurface
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Icon(
                     painter = painterResource(id = R.drawable.next),
                     contentDescription = stringResource(id = R.string.language_dropdown),
-                    tint = onSurface,
+                    tint = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier
                         .padding(start = 4.dp)
                         .rotate(90F)
@@ -266,7 +266,7 @@ fun LoginScreen(
                 text = stringResource(id = R.string.login_with_google),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = onSurface
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
 
