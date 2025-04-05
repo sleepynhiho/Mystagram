@@ -277,7 +277,8 @@ fun SettingsScreen(navController: NavController) {
         ThemeSelectionDialog(
             currentTheme = currentTheme,
             themeManager = themeManager,
-            onDismiss = { showDarkModeDialog = false }
+            onDismiss = { showDarkModeDialog = false },
+            onThemeChanged = { themeManager.applyTheme() } // Apply theme immediately
         )
     }
 }
@@ -286,7 +287,8 @@ fun SettingsScreen(navController: NavController) {
 fun ThemeSelectionDialog(
     currentTheme: String,
     themeManager: ThemeManager,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onThemeChanged: () -> Unit // Add callback for immediate theme change
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -298,7 +300,8 @@ fun ThemeSelectionDialog(
                     selected = currentTheme == "system",
                     icon = Icons.Default.Settings,
                     onClick = {
-                        themeManager.saveThemePreference("system") // Chỉ lưu qua ThemeManager
+                        themeManager.saveThemePreference("system")
+                        onThemeChanged() // Trigger theme change
                         onDismiss()
                     }
                 )
@@ -307,7 +310,8 @@ fun ThemeSelectionDialog(
                     selected = currentTheme == "light",
                     icon = Icons.Default.LightMode,
                     onClick = {
-                        themeManager.saveThemePreference("light") // Chỉ lưu qua ThemeManager
+                        themeManager.saveThemePreference("light")
+                        onThemeChanged() // Trigger theme change
                         onDismiss()
                     }
                 )
@@ -316,7 +320,8 @@ fun ThemeSelectionDialog(
                     selected = currentTheme == "dark",
                     icon = Icons.Default.DarkMode,
                     onClick = {
-                        themeManager.saveThemePreference("dark") // Chỉ lưu qua ThemeManager
+                        themeManager.saveThemePreference("dark")
+                        onThemeChanged() // Trigger theme change
                         onDismiss()
                     }
                 )

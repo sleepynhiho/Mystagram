@@ -95,4 +95,8 @@ class ThemeManager(context: Context) {
     private fun loadThemePreference(): String {
         return sharedPreferences.getString("theme_preference", "system") ?: "system"
     }
+
+    fun applyTheme() {
+        _currentTheme.value = loadThemePreference() // Notify listeners of theme change
+    }
 }

@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val themePreference by themeViewModel.currentTheme.collectAsState()
+            val themePreference by themeManager.currentTheme.collectAsState(initial = "system") // Add initial value
             val isSystemDark = isSystemInDarkTheme()
             val isDarkTheme = when (themePreference) {
                 "system" -> isSystemDark

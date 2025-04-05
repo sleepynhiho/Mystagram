@@ -52,8 +52,8 @@ fun HomeScreen(
     onStoryScreenClicked: (Boolean, Int) -> Unit,
     onChatScreenClicked: () -> Unit,
 ) {
-    var userStoryIndex by remember { mutableIntStateOf(0) }
-    var isMyStory by remember { mutableStateOf(true) }
+    var userStoryIndex by remember { mutableIntStateOf(0) } // Provide initial value
+    var isMyStory by remember { mutableStateOf(true) } // Provide initial value
 
     Surface(
         modifier = Modifier.fillMaxSize(),
