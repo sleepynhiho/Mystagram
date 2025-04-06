@@ -1,13 +1,32 @@
 package com.forrestgump.ig.ui.screens.search
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.*
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
@@ -18,11 +37,34 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Divider
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.FilterList
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.PlayCircle
+import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,21 +82,24 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.forrestgump.ig.R
-import com.forrestgump.ig.ui.screens.profile.UiState
-import java.text.SimpleDateFormat
-import java.util.*
-import com.forrestgump.ig.utils.constants.Utils.MainBackground
+import com.forrestgump.ig.data.models.Post
+import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.utils.constants.Utils.onSurface
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
     uiState: UiState
 ) {
-    var searchQuery by remember { mutableStateOf("wuthering waves") }
-    var selectedTab by remember { mutableStateOf("Accounts") }
+    var searchQuery by remember { mutableStateOf("") }
+    var selectedTab by remember { mutableStateOf("Users") }
     var showFilters by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
@@ -65,322 +110,203 @@ fun SearchScreen(
     var postContentFilter by remember { mutableStateOf(true) }
     var postTimeFilter by remember { mutableStateOf(false) }
 
-    val tabs = listOf("Posts", "Accounts")
+    val tabs = listOf("Users", "Posts")
 
-    // Sample data with more details for filtering
-    val accounts = listOf(
-        Account(
-            username = "wuthering_waves",
-            displayName = "Wuthering Waves",
-            location = "Global",
-            imageUrl = "https://picsum.photos/seed/101/300"
-        ),
-        Account(
-            username = "wutheringwave.id",
-            displayName = "WW-id | Wuthering Waves Indonesia",
-            location = "Indonesia",
-            imageUrl = "https://picsum.photos/seed/102/300",
-            hasColorfulBorder = true
-        ),
-        Account(
-            username = "wutheringwaves",
-            displayName = "Wuthering Waves",
-            location = "Japan",
-            imageUrl = "https://picsum.photos/seed/103/300"
-        ),
-        Account(
-            username = "wutheringwaves.build",
-            displayName = "Wuthering Waves Build",
-            location = "United States",
-            imageUrl = "https://picsum.photos/seed/104/300",
-            hasColorfulBorder = true
-        ),
-        Account(
-            username = "wutheringwavez.id",
-            displayName = "Wuthering Waves",
-            location = "Indonesia",
-            imageUrl = "https://picsum.photos/seed/105/300",
-            hasColorfulBorder = true
-        ),
-        Account(
-            username = "wuthering_waves",
-            displayName = "Wuthering Waves",
-            location = "Global",
-            imageUrl = "https://picsum.photos/seed/106/300",
-            hasColorfulBorder = true
-        ),
-        Account(
-            username = "wutheringwave.id",
-            displayName = "WW-id | Wuthering Waves Indonesia",
-            location = "Indonesia",
-            imageUrl = "https://picsum.photos/seed/107/300",
-            hasColorfulBorder = true
-        ),
-        Account(
-            username = "wutheringwaves",
-            displayName = "Wuthering Waves",
-            location = "Japan",
-            imageUrl = "https://picsum.photos/seed/108/300",
-            hasColorfulBorder = true
-        ),
-        Account(
-            username = "wutheringwaves.build",
-            displayName = "Wuthering Waves Build",
-            location = "United States",
-            imageUrl = "https://picsum.photos/seed/109/300",
-            hasColorfulBorder = true
-        )
-    )
-
-    val posts = listOf(
-        Post(
-            id = "post1",
-            content = "Wuthering Waves gameplay preview",
-            imageUrl = "https://picsum.photos/seed/201/300",
-            timestamp = "2023-05-15T14:30:00",
-            username = "wuthering_waves"
-        ), Post(
-            id = "post2",
-            content = "New character reveal for Wuthering Waves",
-            imageUrl = "https://picsum.photos/seed/202/300",
-            timestamp = "2023-05-20T09:15:00",
-            username = "wutheringwave.id",
-            views = 301000
-        ), Post(
-            id = "post3",
-            content = "Wuthering Waves beta testing announcement",
-            imageUrl = "https://picsum.photos/seed/203/300",
-            timestamp = "2023-05-25T18:45:00",
-            username = "wutheringwaves"
-        ), Post(
-            id = "post4",
-            content = "Best builds for Wuthering Waves characters",
-            imageUrl = "https://picsum.photos/seed/204/300",
-            timestamp = "2023-06-01T11:20:00",
-            username = "wutheringwaves.build"
-        ), Post(
-            id = "post5",
-            content = "Wuthering Waves Indonesia community meetup",
-            imageUrl = "https://picsum.photos/seed/205/300",
-            timestamp = "2023-06-05T16:00:00",
-            username = "wutheringwavez.id"
-        ), Post(
-            id = "post6",
-            content = "Wuthering Waves official soundtrack release",
-            imageUrl = "https://picsum.photos/seed/206/300",
-            timestamp = "2023-06-10T13:30:00",
-            username = "wuthering_waves"
-        ), Post(
-            id = "post7",
-            content = "New update for Wuthering Waves gameplay",
-            imageUrl = "https://picsum.photos/seed/207/300",
-            timestamp = "2023-06-15T10:45:00",
-            username = "wutheringwaves.build",
-            views = 250000
-        ), Post(
-            id = "post8",
-            content = "Wuthering Waves beta launch event",
-            imageUrl = "https://picsum.photos/seed/208/300",
-            timestamp = "2023-06-20T17:20:00",
-            username = "wutheringwavez.id"
-        )
-    )
-
-    // Filter accounts based on search criteria
-    val filteredAccounts = accounts.filter { account ->
+    // Filter users based on search criteria
+    val filteredUsers = uiState.users.filter { user ->
         val matchesName = if (userNameFilter) {
-            account.username.contains(
-                searchQuery,
-                ignoreCase = true
-            ) || account.displayName.contains(searchQuery, ignoreCase = true)
+            user.username.contains(searchQuery, ignoreCase = true) ||
+                    user.fullName.contains(searchQuery, ignoreCase = true)
         } else true
 
         val matchesLocation = if (userLocationFilter) {
-            account.location.contains(searchQuery, ignoreCase = true)
+            user.location.contains(searchQuery, ignoreCase = true)
         } else true
 
-        matchesName || matchesLocation
+        matchesName && matchesLocation
     }
 
     // Filter posts based on search criteria
-    val filteredPosts = posts.filter { post ->
+    val filteredPosts = uiState.posts.filter { post ->
         val matchesContent = if (postContentFilter) {
-            post.content.contains(searchQuery, ignoreCase = true)
+            post.caption.contains(searchQuery, ignoreCase = true)
         } else true
 
         val matchesTime = if (postTimeFilter) {
-            // Simple example: check if the post is from May (05)
-            post.timestamp.contains("-05-")
+            post.timestamp?.toString()?.contains("-05-") ?: false
         } else true
 
-        matchesContent || matchesTime
+        matchesContent && matchesTime
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
+    if (uiState.isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-            // Search bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+            CircularProgressIndicator()
+        }
+    } else {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize()
             ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onBackground,
+                // Search bar
+                Row(
                     modifier = Modifier
-                        .size(24.dp)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) { })
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) { })
 
-                Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
 
-                // Enhanced search field with better styling
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    modifier = Modifier
-                        .weight(1f)
-                        .wrapContentHeight()
-                        .focusRequester(focusRequester)
-                        .background(MaterialTheme.colorScheme.background),
-                    colors = TextFieldDefaults.colors(
-                        cursorColor = MaterialTheme.colorScheme.onBackground,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Rounded.Search,
-                            contentDescription = "Search",
-                            tint = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    },
-                    trailingIcon = {
-                        Row {
-                            if (searchQuery.isNotEmpty()) {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        modifier = Modifier
+                            .weight(1f)
+                            .wrapContentHeight()
+                            .focusRequester(focusRequester)
+                            .background(MaterialTheme.colorScheme.background),
+                        colors = TextFieldDefaults.colors(
+                            cursorColor = MaterialTheme.colorScheme.onBackground,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Rounded.Search,
+                                contentDescription = "Search",
+                                tint = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        },
+                        trailingIcon = {
+                            Row {
+                                if (searchQuery.isNotEmpty()) {
+                                    IconButton(
+                                        onClick = { searchQuery = "" },
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Clear,
+                                            contentDescription = "Clear",
+                                            tint = MaterialTheme.colorScheme.onBackground,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                }
+
                                 IconButton(
-                                    onClick = { searchQuery = "" }, modifier = Modifier.size(32.dp)
+                                    onClick = { showFilters = !showFilters },
+                                    modifier = Modifier.size(32.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.Clear,
-                                        contentDescription = "Clear",
-                                        tint = MaterialTheme.colorScheme.onBackground,
-                                        modifier = Modifier.size(16.dp)
+                                        imageVector = Icons.Outlined.FilterList,
+                                        contentDescription = "Filters",
+                                        tint = if (showFilters) Color(0xFF3897F0) else Color.Gray,
+                                        modifier = Modifier.size(18.dp)
                                     )
                                 }
                             }
+                        },
+                        singleLine = true,
+                        textStyle = LocalTextStyle.current.copy(
+                            fontSize = 13.sp, color = MaterialTheme.colorScheme.onBackground
+                        ),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
+                    )
+                }
 
-                            IconButton(
-                                onClick = { showFilters = !showFilters },
-                                modifier = Modifier.size(32.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.FilterList,
-                                    contentDescription = "Filters",
-                                    tint = if (showFilters) Color(0xFF3897F0) else Color.Gray,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                        }
-                    },
-                    singleLine = true,
-                    textStyle = LocalTextStyle.current.copy(
-                        fontSize = 13.sp, color = MaterialTheme.colorScheme.onBackground
+                // Filter options
+                AnimatedVisibility(
+                    visible = showFilters,
+                    enter = fadeIn(animationSpec = tween(200)) + expandVertically(
+                        animationSpec = tween(250)
                     ),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                    keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
-
+                    exit = fadeOut(animationSpec = tween(200)) + shrinkVertically(
+                        animationSpec = tween(250)
                     )
-            }
-
-            // Filter options with improved animation and styling
-            AnimatedVisibility(
-                visible = showFilters,
-                enter = fadeIn(animationSpec = tween(200)) + expandVertically(
-                    animationSpec = tween(
-                        250
-                    )
-                ),
-                exit = fadeOut(animationSpec = tween(200)) + shrinkVertically(
-                    animationSpec = tween(
-                        250
-                    )
-                )
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.background)
-                        .padding(16.dp)
                 ) {
-                    Text(
-                        text = stringResource(id = R.string.search_filters),
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-
-                    // Enhanced filter options with better styling
-                    if (selectedTab == "Accounts") {
-                        FilterOption(
-                            title = stringResource(id = R.string.search_by_name),
-                            isChecked = userNameFilter,
-                            onCheckedChange = { userNameFilter = it },
-                            icon = Icons.Outlined.Person
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.background)
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.search_filters),
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 12.dp)
                         )
 
-                        FilterOption(
-                            title = stringResource(id = R.string.search_by_location),
-                            isChecked = userLocationFilter,
-                            onCheckedChange = { userLocationFilter = it },
-                            icon = Icons.Outlined.LocationOn
-                        )
-                    } else {
-                        FilterOption(
-                            title = stringResource(id = R.string.search_by_content),
-                            isChecked = postContentFilter,
-                            onCheckedChange = { postContentFilter = it },
-                            icon = Icons.Outlined.Description
-                        )
+                        if (selectedTab == "Users") {
+                            FilterOption(
+                                title = stringResource(id = R.string.search_by_name),
+                                isChecked = userNameFilter,
+                                onCheckedChange = { userNameFilter = it },
+                                icon = Icons.Outlined.Person
+                            )
 
-                        FilterOption(
-                            title = stringResource(id = R.string.search_by_time),
-                            isChecked = postTimeFilter,
-                            onCheckedChange = { postTimeFilter = it },
-                            icon = Icons.Outlined.CalendarToday
-                        )
+                            FilterOption(
+                                title = stringResource(id = R.string.search_by_location),
+                                isChecked = userLocationFilter,
+                                onCheckedChange = { userLocationFilter = it },
+                                icon = Icons.Outlined.LocationOn
+                            )
+                        } else {
+                            FilterOption(
+                                title = stringResource(id = R.string.search_by_content),
+                                isChecked = postContentFilter,
+                                onCheckedChange = { postContentFilter = it },
+                                icon = Icons.Outlined.Description
+                            )
+
+                            FilterOption(
+                                title = stringResource(id = R.string.search_by_time),
+                                isChecked = postTimeFilter,
+                                onCheckedChange = { postTimeFilter = it },
+                                icon = Icons.Outlined.CalendarToday
+                            )
+                        }
                     }
                 }
-            }
 
-            // Enhanced tabs with better styling and animations
-            TabRow(
-                selectedTab = selectedTab, tabs = tabs, onTabSelected = { selectedTab = it })
+                // Tabs
+                TabRow(
+                    selectedTab = selectedTab, tabs = tabs, onTabSelected = { selectedTab = it })
 
-            // Content based on selected tab
-            when (selectedTab) {
-                "Accounts" -> {
-                    AccountsContent(
-                        accounts = filteredAccounts, resultsCount = filteredAccounts.size
-                    )
-                }
+                // Content based on selected tab
+                when (selectedTab) {
+                    "Users" -> {
+                        UsersContent(
+                            users = filteredUsers, resultsCount = filteredUsers.size
+                        )
+                    }
 
-                "Posts" -> {
-                    PostsContent(
-                        posts = filteredPosts, resultsCount = filteredPosts.size
-                    )
+                    "Posts" -> {
+                        PostsContent(
+                            posts = filteredPosts, resultsCount = filteredPosts.size
+                        )
+                    }
                 }
             }
         }
@@ -486,8 +412,8 @@ fun FilterOption(
 }
 
 @Composable
-fun AccountsContent(
-    accounts: List<Account>, resultsCount: Int
+fun UsersContent(
+    users: List<User>, resultsCount: Int
 ) {
     LazyColumn(
         modifier = Modifier
@@ -497,17 +423,17 @@ fun AccountsContent(
     ) {
         item {
             ResultsHeader(
-                title = "Accounts", count = resultsCount
+                title = "Users", count = resultsCount
             )
         }
 
-        if (accounts.isEmpty()) {
+        if (users.isEmpty()) {
             item {
                 EmptyResults(message = stringResource(id = R.string.no_acc_found))
             }
         } else {
-            items(accounts) { account ->
-                AccountItem(account = account)
+            items(users) { user ->
+                UserItem(user = user)
             }
         }
     }
@@ -560,7 +486,10 @@ fun ResultsHeader(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = title, color = MaterialTheme.colorScheme.onBackground, fontSize = 18.sp, fontWeight = FontWeight.Bold
+            text = title,
+            color = MaterialTheme.colorScheme.onBackground,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
         )
 
         Box(
@@ -570,7 +499,9 @@ fun ResultsHeader(
                 .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
             Text(
-                text = "$count results", color = MaterialTheme.colorScheme.onBackground, fontSize = 12.sp
+                text = "$count results",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 12.sp
             )
         }
     }
@@ -604,50 +535,24 @@ fun EmptyResults(message: String) {
 }
 
 @Composable
-fun AccountItem(account: Account) {
+fun UserItem(user: User) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { }
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically) {
-        // Enhanced profile picture with better styling
-        Box {
-            if (account.hasColorfulBorder) {
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .background(
-                            brush = Brush.sweepGradient(
-                                colors = listOf(
-                                    Color(0xFFFF0000),
-                                    Color(0xFFFF9800),
-                                    Color(0xFFFFEB3B),
-                                    Color(0xFF4CAF50),
-                                    Color(0xFF2196F3),
-                                    Color(0xFF9C27B0),
-                                    Color(0xFFFF0000)
-                                )
-                            ), shape = CircleShape
-                        )
-                )
-            }
-
-            Image(
-                painter = rememberAsyncImagePainter(model = account.imageUrl),
-                contentDescription = "Profile picture",
-                modifier = Modifier
-                    .size(if (account.hasColorfulBorder) 52.dp else 56.dp)
-                    .clip(CircleShape)
-                    .align(if (account.hasColorfulBorder) Alignment.Center else Alignment.TopStart)
-                    .border(
-                        width = if (account.hasColorfulBorder) 0.dp else 1.dp,
-                        color = Color.Gray,
-                        shape = CircleShape
-                    ),
-                contentScale = ContentScale.Crop
-            )
-        }
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Profile picture
+        Image(
+            painter = rememberAsyncImagePainter(model = user.profileImage),
+            contentDescription = "Profile picture",
+            modifier = Modifier
+                .size(56.dp)
+                .clip(CircleShape)
+                .border(1.dp, Color.Gray, CircleShape),
+            contentScale = ContentScale.Crop
+        )
 
         Spacer(modifier = Modifier.width(12.dp))
 
@@ -655,36 +560,40 @@ fun AccountItem(account: Account) {
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = account.username,
+                text = user.username,
                 color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
-                text = account.displayName,
+                text = user.fullName,
                 color = Color.Gray,
                 fontSize = 14.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(top = 4.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.LocationOn,
-                    contentDescription = "Location",
-                    tint = Color(0xFF3897F0),
-                    modifier = Modifier.size(12.dp)
-                )
+            if (user.location.isNotEmpty()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = 4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.LocationOn,
+                        contentDescription = "Location",
+                        tint = Color(0xFF3897F0),
+                        modifier = Modifier.size(12.dp)
+                    )
 
-                Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
 
-                Text(
-                    text = account.location, color = Color.Gray, fontSize = 12.sp
-                )
+                    Text(
+                        text = user.location,
+                        color = Color.Gray,
+                        fontSize = 12.sp
+                    )
+                }
             }
         }
 
@@ -701,7 +610,9 @@ fun AccountItem(account: Account) {
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
         ) {
             Text(
-                text = "Follow", fontSize = 12.sp, fontWeight = FontWeight.Bold
+                text = "Follow",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
             )
         }
     }
@@ -713,11 +624,12 @@ fun PostItem(post: Post) {
         modifier = Modifier
             .aspectRatio(1f)
             .padding(0.5.dp)
-            .clickable { }) {
-        // Enhanced post image with subtle shadow
+            .clickable { }
+    ) {
+        // Post image
         Image(
-            painter = rememberAsyncImagePainter(model = post.imageUrl),
-            contentDescription = post.content,
+            painter = rememberAsyncImagePainter(model = post.mediaUrls.firstOrNull()),
+            contentDescription = post.caption,
             modifier = Modifier
                 .fillMaxSize()
                 .shadow(1.dp),
@@ -740,7 +652,7 @@ fun PostItem(post: Post) {
         )
 
         // For posts with view count
-        post.views?.let { views ->
+        post.reactions["views"]?.size?.let { views ->
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
@@ -770,7 +682,7 @@ fun PostItem(post: Post) {
             try {
                 val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
                 val outputFormat = SimpleDateFormat("MMM dd", Locale.getDefault())
-                val date = inputFormat.parse(post.timestamp)
+                val date = inputFormat.parse(post.timestamp.toString())
                 outputFormat.format(date ?: Date())
             } catch (e: Exception) {
                 "Unknown date"
@@ -794,20 +706,3 @@ fun PostItem(post: Post) {
         }
     }
 }
-
-data class Account(
-    val username: String,
-    val displayName: String,
-    val location: String,
-    val imageUrl: String,
-    val hasColorfulBorder: Boolean = false
-)
-
-data class Post(
-    val id: String,
-    val content: String,
-    val imageUrl: String,
-    val timestamp: String,
-    val username: String,
-    val views: Int? = null
-)

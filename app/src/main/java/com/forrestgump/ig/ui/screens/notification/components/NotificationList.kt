@@ -169,12 +169,12 @@ fun NotificationListPreview() {
         notifications = listOf(
             Notification(
                 senderUsername = "jane_doe",
-                senderProfileImage = R.drawable.default_profile_img.toString(),
+                senderProfileImage = R.drawable.default_profile_image.toString(),
                 type = NotificationType.LIKE
             ),
             Notification(
                 senderUsername = "john_doe",
-                senderProfileImage = R.drawable.default_profile_img.toString(),
+                senderProfileImage = R.drawable.default_profile_image.toString(),
                 type = NotificationType.FOLLOW
             )
         ),

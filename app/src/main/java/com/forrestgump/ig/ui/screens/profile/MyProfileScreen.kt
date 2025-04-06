@@ -120,7 +120,7 @@ fun ProfileInfoSection(
             val painterImage = if (profileImage.startsWith("http://") || profileImage.startsWith("https://")) {
                 rememberAsyncImagePainter(model = profileImage)
             } else {
-                val resId = R.drawable.default_profile_img
+                val resId = R.drawable.default_profile_image
                 painterResource(id = resId)
             }
             // Ảnh đại diện

@@ -59,6 +59,7 @@ import java.util.Date
 import com.forrestgump.ig.ui.screens.settings.SettingsScreen
 import com.forrestgump.ig.ui.screens.story.StoryViewModel
 import com.forrestgump.ig.ui.viewmodels.UserViewModel
+import com.forrestgump.ig.ui.screens.search.SearchViewModel
 
 
 @UnstableApi
@@ -69,7 +70,8 @@ fun InnerNavigation(
     viewModelHome: HomeViewModel = hiltViewModel(),
     viewModelProfile: ProfileViewModel,
     userViewModel: UserViewModel,
-    storyViewModel: StoryViewModel
+    storyViewModel: StoryViewModel,
+    searchViewModel: SearchViewModel
 ) {
     val currentUser by userViewModel.user.collectAsState()
     // Trong Activity hoặc các composable cha
@@ -121,10 +123,10 @@ fun InnerNavigation(
         }, exitTransition = {
             fadeOut(animationSpec = tween(350))
         }) {
-            val uiState by viewModelProfile.uiState.collectAsState()
+            val uiState by searchViewModel.uiState.collectAsState()
 
             SearchScreen(
-                uiState = uiState,
+                uiState = uiState
             )
         }
 
@@ -199,7 +201,7 @@ fun InnerNavigation(
         }) {
             val uiState by viewModelProfile.uiState.collectAsState()
 
-            LaunchedEffect (Unit) {
+            LaunchedEffect(Unit) {
                 viewModelProfile.loadUserData()
             }
 
@@ -370,7 +372,8 @@ fun InnerNavigation(
         }
 
 
-        composable(route = "${Routes.ChatBoxScreen.route}/{chatId}",
+        composable(
+            route = "${Routes.ChatBoxScreen.route}/{chatId}",
             arguments = listOf(navArgument("chatId") { type = NavType.StringType }),
             enterTransition = {
                 slideInHorizontally(animationSpec = tween(), initialOffsetX = { it })
@@ -725,7 +728,8 @@ fun InnerNavigation(
         composable(route = Routes.AddPostScreen.route) {
             AddPostScreen(
                 navHostController = navHostController,
-                addPostViewModel = viewModelOfAddPost)
+                addPostViewModel = viewModelOfAddPost
+            )
         }
 
         composable(route = Routes.AddPostDetailScreen.route) {

@@ -63,7 +63,7 @@ class StoryRepository @Inject constructor(
                 val tasks = userDocuments.map { userDoc ->
                     val userId = userDoc.id
                     val username = userDoc.getString("username") ?: "Unknown"
-                    val profileImage = userDoc.getString("profileImage") ?: R.drawable.default_profile_img.toString()
+                    val profileImage = userDoc.getString("profileImage") ?: R.drawable.default_profile_image.toString()
 
                     firestore.collection("stories").document(userId)
                         .collection("stories")
