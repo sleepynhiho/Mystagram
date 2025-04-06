@@ -338,33 +338,37 @@ fun TabRow(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) { onTabSelected(tab) }
-                        .padding(vertical = 8.dp)) {
+                        .padding(vertical = 8.dp)
+                ) {
                     Text(
                         text = tab,
-                        color = if (isSelected) onSurface else Color.Gray,
-                        fontSize = 15.sp,
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray,
+                        fontSize = 16.sp, // Unified font size
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    // Animated indicator
+                    // Unified indicator size and alignment
                     Box(
                         modifier = Modifier
-                            .width(40.dp)
-                            .height(2.dp)
+                            .width(48.dp) // Consistent width
+                            .height(3.dp) // Slightly thicker for better visibility
                             .graphicsLayer {
                                 alpha = if (isSelected) 1f else 0f
                             }
                             .background(
-                                if (isSelected) Color(0xFF3897F0) else Color.Transparent
-                            ))
+                                if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
+                            )
+                    )
                 }
             }
         }
 
         Divider(
-            color = Color(0xFF333333), thickness = 0.5.dp, modifier = Modifier.fillMaxWidth()
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f),
+            thickness = 0.5.dp,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
@@ -480,28 +484,28 @@ fun ResultsHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp) // Consistent padding
+            .background(MaterialTheme.colorScheme.background),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             text = title,
             color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 18.sp,
+            fontSize = 16.sp,
             fontWeight = FontWeight.Bold
         )
 
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.background)
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                 .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
             Text(
                 text = "$count results",
-                color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 12.sp
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 14.sp
             )
         }
     }
