@@ -38,7 +38,8 @@ fun Posts(
     hasMore: Boolean,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
-    currentUserID: String
+    currentUserID: String,
+    onCommentClicked: (Post) -> Unit
 ) {
     // Tạo pull refresh state mới của Material
     val pullRefreshState = rememberPullRefreshState(
@@ -61,7 +62,7 @@ fun Posts(
             itemsIndexed(posts) { index, post ->
                 PostItem(
                     post = post,
-                    onCommentClicked = {},
+                    onCommentClicked = { onCommentClicked(post)},
                     currentUserID = currentUserID
                 )
                 // Khi hiển thị post cuối cùng, gọi load thêm

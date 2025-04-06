@@ -38,8 +38,6 @@ fun ChatBoxScreen(
     }
 
     // Lắng nghe cập nhật messages
-
-
     chat?.let { updatedChat ->
         Scaffold(
             modifier = Modifier
@@ -65,7 +63,7 @@ fun ChatBoxScreen(
                         chatViewModel.saveMessageToFirestore(updatedChat, newMessage, currentUser.userId)
                     },
                     onUploadImage = {
-                        // Xử lý khi tải ảnh lên
+                        // fix: Xử lý khi tải ảnh lên
                     }
                 )
             }

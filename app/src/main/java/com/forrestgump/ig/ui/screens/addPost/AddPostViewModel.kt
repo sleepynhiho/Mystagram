@@ -12,8 +12,10 @@ import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -141,6 +143,26 @@ class AddPostViewModel @Inject constructor(
             }
         }
     }
+
+    private val _post = MutableStateFlow<Post?>(null)
+    val post: StateFlow<Post?> = _post
+
+
+    fun observePost(postId: String) {
+        firestore.collection("posts")
+            .document(postId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.e("PostViewModel", "Error fetching post data", error)
+                    return@addSnapshotListener
+                }
+
+                snapshot?.toObject(Post::class.java)?.let { updatedPost ->
+                    _post.value = updatedPost
+                }
+            }
+    }
+
 
 
 }

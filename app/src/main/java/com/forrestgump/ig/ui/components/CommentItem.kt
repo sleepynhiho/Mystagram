@@ -110,7 +110,6 @@ fun CommentItemPreview() {
     CommentItem(
         comment = Comment(
             commentId = "cmt123",
-            postId = "post456",
             userId = "userA",
             username = "alice",
             profileImage = "https://example.com/alice.jpg",

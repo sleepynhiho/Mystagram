@@ -23,4 +23,5 @@
     <string name="search_new_chat">To:</string>
     <string name="search_placeholder">Search</string>
     <string name="chat_placeholder">Message...</string>
+    <string name="comment_header">Comments</string>
 </resources>

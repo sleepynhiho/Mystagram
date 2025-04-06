@@ -10,7 +10,6 @@ import java.util.Date
 @Parcelize
 data class Comment(
     var commentId: String = "",      // ID của bình luận
-    var postId: String = "",         // ID bài viết mà bình luận thuộc về
     var userId: String = "",         // ID người bình luận
     var username: String = "",       // Username người bình luận
     var profileImage: String = "", // Ảnh đại diện người bình luận
