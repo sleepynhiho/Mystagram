@@ -27,9 +27,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
-import androidx.navigation.navigation
 import com.forrestgump.ig.ui.screens.home.HomeScreen
 import com.forrestgump.ig.ui.screens.home.HomeViewModel
 import com.forrestgump.ig.ui.screens.profile.MyProfileScreen
@@ -51,7 +49,6 @@ import com.forrestgump.ig.ui.screens.auth.SignupScreen
 import com.forrestgump.ig.ui.screens.addPost.AddPostScreen
 import com.forrestgump.ig.ui.screens.chat.NewChatScreen
 import com.forrestgump.ig.ui.screens.addPost.AddPostViewModel
-import com.forrestgump.ig.ui.screens.addStory.AddStoryViewModel
 import com.forrestgump.ig.ui.screens.profile.EditProfileScreen
 import com.forrestgump.ig.ui.screens.profile.FollowScreen
 import com.forrestgump.ig.ui.screens.profile.PostDetailScreen
@@ -59,6 +56,7 @@ import java.util.Date
 import com.forrestgump.ig.ui.screens.settings.SettingsScreen
 import com.forrestgump.ig.ui.screens.story.StoryViewModel
 import com.forrestgump.ig.ui.viewmodels.UserViewModel
+import com.forrestgump.ig.ui.screens.profile.EditLocationScreen
 
 
 @UnstableApi
@@ -778,5 +776,11 @@ fun InnerNavigation(
             }
         }
 
+        composable(route = Routes.EditLocationScreen.route) {
+            EditLocationScreen(
+                viewModel = viewModelProfile,
+                navController = navHostController
+            )
+        }
     }
 }

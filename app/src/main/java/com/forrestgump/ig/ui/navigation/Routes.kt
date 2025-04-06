@@ -24,6 +24,7 @@ sealed class Routes(
     data object FollowerScreen: Routes(name = "Follower", route = "FollowerScreen")
     data object FollowingScreen: Routes(name = "Following", route = "FollowingScreen")
     data object EditProfileScreen: Routes(name = "EditProfile", route="EditProfileScreen")
+    data object EditLocationScreen: Routes(name = "EditLocation", route="EditLocationScreen") // New route
     data object AddPostScreen: Routes(iconOutlined = R.drawable.add_outlined, name = "AddPost", route = "AddPostScreen")
     data object AddPostDetailScreen : Routes(name = "AddPostDetail", route =  "AddPostDetailScreen")
     data object PostDetailScreen: Routes(name = "PostDetail", route = "PostDetailScreen/{postId}")
