@@ -3,6 +3,7 @@ package com.forrestgump.ig.ui.screens.search
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cloudinary.Cloudinary
 import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.data.models.User
 import com.google.firebase.firestore.FirebaseFirestore
@@ -14,7 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val cloudinary: Cloudinary,
 ) : ViewModel() {
 
     var uiState = MutableStateFlow(UiState())

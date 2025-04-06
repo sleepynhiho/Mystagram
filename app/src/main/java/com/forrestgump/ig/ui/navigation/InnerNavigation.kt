@@ -124,7 +124,9 @@ fun InnerNavigation(
             fadeOut(animationSpec = tween(350))
         }) {
             val uiState by searchViewModel.uiState.collectAsState()
-
+            LaunchedEffect(Unit) {
+                searchViewModel.loadAllData()
+            }
             SearchScreen(
                 uiState = uiState
             )
@@ -200,11 +202,9 @@ fun InnerNavigation(
             fadeOut(animationSpec = tween(350))
         }) {
             val uiState by viewModelProfile.uiState.collectAsState()
-
             LaunchedEffect(Unit) {
                 viewModelProfile.loadUserData()
             }
-
             MyProfileScreen(
                 uiState = uiState, navController = navHostController
             )
