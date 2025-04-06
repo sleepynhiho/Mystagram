@@ -60,7 +60,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -76,18 +75,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.forrestgump.ig.R
 import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.data.models.User
-import com.forrestgump.ig.utils.constants.Utils.onSurface
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -549,7 +547,11 @@ fun UserItem(user: User) {
     ) {
         // Profile picture
         Image(
-            painter = rememberAsyncImagePainter(model = user.profileImage),
+            painter = if (user.profileImage.startsWith("http://") || user.profileImage.startsWith("https://")) {
+                rememberAsyncImagePainter(model = user.profileImage)
+            } else {
+                painterResource(id = R.drawable.default_profile_image)
+            },
             contentDescription = "Profile picture",
             modifier = Modifier
                 .size(56.dp)
@@ -702,10 +704,11 @@ fun PostItem(post: Post) {
                 .padding(horizontal = 6.dp, vertical = 3.dp)
         ) {
             Text(
-                text = formattedDate,
-                color = Color.White,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Medium
+                text = post.timestamp?.let {
+                    SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(it)
+                } ?: "Unknown date",
+                color = Color.Gray,
+                fontSize = 12.sp
             )
         }
     }
