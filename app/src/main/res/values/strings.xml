@@ -115,4 +115,8 @@
     <string name="search_by_time">Search by time</string>
     <string name="no_acc_found">No account found</string>
     <string name="no_post_found">No post found</string>
+    <string name="no_user_found">No user found</string>
+    <string name="enter_location">Enter location</string>
+    <string name="enter_time">Enter time</string>
+
 </resources>

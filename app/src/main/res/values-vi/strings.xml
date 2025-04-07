@@ -113,4 +113,7 @@
     <string name="search_by_time">Tìm theo thời gian</string>
     <string name="no_acc_found">Không tìm thấy tài khoản nào</string>
     <string name="no_post_found">Không tìm thấy bài viết nào</string>
+    <string name="no_user_found">Không tìm thấy người dùng nào</string>
+    <string name="enter_location">Nhập vị trí</string>
+    <string name="enter_time">Nhập thời gian</string>
 </resources>

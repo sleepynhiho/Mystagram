@@ -52,6 +52,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -94,7 +96,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
-    uiState: UiState
+    uiState: UiState,
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedTab by remember { mutableStateOf("Users") }
@@ -102,26 +104,34 @@ fun SearchScreen(
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
 
-    // Filter states
+    // Fetch the current user from ProfileViewModel
+
+    // Consolidate filter states
     var userNameFilter by remember { mutableStateOf(true) }
     var userLocationFilter by remember { mutableStateOf(false) }
     var postContentFilter by remember { mutableStateOf(true) }
     var postTimeFilter by remember { mutableStateOf(false) }
 
+    var locationInput by remember { mutableStateOf("") }
+    var timeInput by remember { mutableStateOf("") }
+
     val tabs = listOf("Users", "Posts")
 
     // Filter users based on search criteria
     val filteredUsers = uiState.users.filter { user ->
-        val matchesName = if (userNameFilter) {
-            user.username.contains(searchQuery, ignoreCase = true) ||
-                    user.fullName.contains(searchQuery, ignoreCase = true)
-        } else true
+        user.userId // Exclude the current user
+        run {
+            val matchesName = if (userNameFilter) {
+                user.username.contains(searchQuery, ignoreCase = true) ||
+                        user.fullName.contains(searchQuery, ignoreCase = true)
+            } else true
 
-        val matchesLocation = if (userLocationFilter) {
-            user.location.contains(searchQuery, ignoreCase = true)
-        } else true
+            val matchesLocation = if (userLocationFilter) {
+                user.location.contains(locationInput, ignoreCase = true)
+            } else true
 
-        matchesName && matchesLocation
+            matchesName && matchesLocation
+        }
     }
 
     // Filter posts based on search criteria
@@ -131,7 +141,7 @@ fun SearchScreen(
         } else true
 
         val matchesTime = if (postTimeFilter) {
-            post.timestamp?.toString()?.contains("-05-") ?: false
+            post.timestamp?.toString()?.contains(timeInput) ?: false
         } else true
 
         matchesContent && matchesTime
@@ -270,6 +280,17 @@ fun SearchScreen(
                                 onCheckedChange = { userLocationFilter = it },
                                 icon = Icons.Outlined.LocationOn
                             )
+
+                            if (userLocationFilter) {
+                                OutlinedTextField(
+                                    value = locationInput,
+                                    onValueChange = { locationInput = it },
+                                    label = { Text(text = stringResource(id = R.string.enter_location)) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 8.dp)
+                                )
+                            }
                         } else {
                             FilterOption(
                                 title = stringResource(id = R.string.search_by_content),
@@ -284,6 +305,17 @@ fun SearchScreen(
                                 onCheckedChange = { postTimeFilter = it },
                                 icon = Icons.Outlined.CalendarToday
                             )
+
+                            if (postTimeFilter) {
+                                OutlinedTextField(
+                                    value = timeInput,
+                                    onValueChange = { timeInput = it },
+                                    label = { Text(text = stringResource(id = R.string.enter_time)) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 8.dp)
+                                )
+                            }
                         }
                     }
                 }
