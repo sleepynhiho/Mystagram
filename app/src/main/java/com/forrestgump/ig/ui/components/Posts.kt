@@ -23,6 +23,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.navigation.NavController
 import com.forrestgump.ig.ui.screens.home.components.EndOfFeedMessage
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -38,7 +39,8 @@ fun Posts(
     hasMore: Boolean,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
-    currentUserID: String
+    currentUserID: String,
+    navController: NavController,
 ) {
     // Tạo pull refresh state mới của Material
     val pullRefreshState = rememberPullRefreshState(
@@ -62,7 +64,8 @@ fun Posts(
                 PostItem(
                     post = post,
                     onCommentClicked = {},
-                    currentUserID = currentUserID
+                    currentUserID = currentUserID,
+                    navController = navController,
                 )
                 // Khi hiển thị post cuối cùng, gọi load thêm
                 if (index == posts.lastIndex) {

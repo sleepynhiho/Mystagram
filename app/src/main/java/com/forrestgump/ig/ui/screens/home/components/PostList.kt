@@ -14,11 +14,12 @@ fun PostList(
 ) {
     LazyColumn {
         itemsIndexed(posts) { index, post ->
-            PostItem(
-                post = post,
-                onCommentClicked = {},
-                currentUserID = currentUserID
-            )
+            // Comment lại vì hiện tại PostItem có truyền thêm tham số navController.
+//            PostItem(
+//                post = post,
+//                onCommentClicked = {},
+//                currentUserID = currentUserID
+//            )
             // Khi hiển thị bài viết cuối cùng, gọi load thêm
             if (index == posts.lastIndex) {
                 onLoadMore()

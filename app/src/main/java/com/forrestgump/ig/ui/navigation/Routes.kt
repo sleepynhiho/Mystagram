@@ -15,6 +15,7 @@ sealed class Routes(
     data object NotificationScreen: Routes(iconOutlined = R.drawable.heart_outlined, iconFilled = R.drawable.heart_filled, name = "Notification", route = "NotificationScreen")
     data object AddStoryScreen: Routes(name = "AddStory", route = "AddStoryScreen")
     data object MyProfileScreen: Routes(name = "MyProfile", route = "MyProfileScreen")
+    data object UserProfileScreen: Routes(name = "UserProfile", route = "UserProfileScreen/{userId}") // New route for viewing other users profiles
     data object SettingsScreen: Routes(name = "Settings", route = "SettingsScreen")
     data object ChatScreen: Routes(name = "Chat", route = "ChatScreen")
     data object ChatBoxScreen: Routes(name = "ChatBox", route = "ChatBoxScreen")
@@ -28,6 +29,7 @@ sealed class Routes(
     data object AddPostScreen: Routes(iconOutlined = R.drawable.add_outlined, name = "AddPost", route = "AddPostScreen")
     data object AddPostDetailScreen : Routes(name = "AddPostDetail", route =  "AddPostDetailScreen")
     data object PostDetailScreen: Routes(name = "PostDetail", route = "PostDetailScreen/{postId}")
+
     data object Items {
         val bottomNavItems = listOf(
             HomeScreen,

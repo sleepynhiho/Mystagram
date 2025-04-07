@@ -41,7 +41,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
@@ -59,6 +61,8 @@ import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.google.firebase.auth.FirebaseAuth
+import com.forrestgump.ig.ui.navigation.Routes
 
 
 @Composable
@@ -66,6 +70,7 @@ fun PostItem(
     post: Post,
     onCommentClicked: () -> Unit,
     currentUserID: String,
+    navController: NavController?,
     addPostViewModel: AddPostViewModel = hiltViewModel()
 ) {
     Log.d("PostItem", "Rendering post: ${post.postId}")
@@ -74,7 +79,7 @@ fun PostItem(
             .fillMaxWidth()
             .background(color = MainBackground)
     ) {
-        PostHeader(post)
+        PostHeader(post, navController)
         PostMedia(post)
         PostActions(
             post, onCommentClicked,
@@ -97,23 +102,53 @@ fun LottieAnimationView(assetName: String) {
 }
 
 @Composable
-fun PostHeader(post: Post) {
+fun PostHeader(post: Post, navController: NavController? = null) {
+    // Get the current user ID
+    val currentUserID = FirebaseAuth.getInstance().currentUser?.uid
+    
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AsyncImage(
-            model = post.profileImageUrl,
+
+        val painterImage = if (post.profileImageUrl.startsWith("http://") || post.profileImageUrl.startsWith("https://")) {
+            rememberAsyncImagePainter(model = post.profileImageUrl)
+        } else {
+            val resId = R.drawable.default_profile_img
+            painterResource(id = resId)
+        }
+//        // Ảnh đại diện
+//        Image(
+//            painter = painterImage,
+//            contentDescription = "Profile Image",
+//            contentScale = ContentScale.Crop,
+//            modifier = Modifier
+//                .size(80.dp)
+//                .fillMaxSize()
+//                .clip(CircleShape)
+//        )
+        Image(
+            painter = painterImage,
             contentDescription = "User Avatar",
             contentScale = ContentScale.Crop,
-            filterQuality = FilterQuality.None,
             modifier = Modifier
                 .size(40.dp)
                 .fillMaxSize()
                 .clip(CircleShape)
+                .clickable {
+                    // Check if the post belongs to the current user
+                    if (post.userId == currentUserID) {
+                        // Navigate to MyProfileScreen for the current user
+                        navController?.navigate(Routes.MyProfileScreen.route)
+                    } else {
+                        // Navigate to UserProfileScreen for other users
+                        navController?.navigate("UserProfileScreen/${post.userId}")
+                    }
+                }
         )
+
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = post.username,
@@ -430,34 +465,34 @@ private fun formatDate(date: Date): String {
 }
 
 
-@Preview
-@Composable
-fun PostItemPreview() {
-    // Ví dụ mock data cho preview.
-    PostItem(
-        post = Post(
-            postId = "1",
-            userId = "user_123",
-            username = "hcmusgang",
-            profileImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUyAfXfniYfSTZ7Z2HjW2COSyC8WTH3TgkGw&s",
-            mediaUrls = listOf(
-                "https://static.vecteezy.com/system/resources/thumbnails/046/366/986/small_2x/beautiful-white-water-lily-and-pink-water-lily-flowers-on-rock-in-mountain-river-photo.jpg",
-                "https://via.placeholder.com/300",
-                "https://picsum.photos/300/200"
-            ),
-            caption = "Hôm nay đi ăn kem nè!",
-            commentsCount = 5,
-            mimeType = "image/png",
-            timestamp = Date(),
-            reactions = mapOf(
-                "love" to List(43800) { "user_$it" }, // 43800 users reacted with "love"
-                "sad" to List(8000) { "user_$it" },   // 8000 users reacted with "sad"
-                "angry" to List(9000) { "user_$it" }  // 9000 users reacted with "angry"
-            ),
-        ),
-        onCommentClicked = {},
-        currentUserID = "a"
-    )
-}
+//@Preview
+//@Composable
+//fun PostItemPreview() {
+//    // Ví dụ mock data cho preview.
+//    PostItem(
+//        post = Post(
+//            postId = "1",
+//            userId = "user_123",
+//            username = "hcmusgang",
+//            profileImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUyAfXfniYfSTZ7Z2HjW2COSyC8WTH3TgkGw&s",
+//            mediaUrls = listOf(
+//                "https://static.vecteezy.com/system/resources/thumbnails/046/366/986/small_2x/beautiful-white-water-lily-and-pink-water-lily-flowers-on-rock-in-mountain-river-photo.jpg",
+//                "https://via.placeholder.com/300",
+//                "https://picsum.photos/300/200"
+//            ),
+//            caption = "Hôm nay đi ăn kem nè!",
+//            commentsCount = 5,
+//            mimeType = "image/png",
+//            timestamp = Date(),
+//            reactions = mapOf(
+//                "love" to List(43800) { "user_$it" }, // 43800 users reacted with "love"
+//                "sad" to List(8000) { "user_$it" },   // 8000 users reacted with "sad"
+//                "angry" to List(9000) { "user_$it" }  // 9000 users reacted with "angry"
+//            ),
+//        ),
+//        onCommentClicked = {},
+//        currentUserID = "a"
+//    )
+//}
 
 
