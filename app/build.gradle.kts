@@ -89,6 +89,11 @@ dependencies {
     implementation(libs.play.services.cast.framework)
     implementation(libs.androidx.animation.android)
     implementation(libs.androidx.animation.android)
+    implementation(fileTree(mapOf(
+        "dir" to "D:\\THIRD-YEAR_SEMESTER-2\\Mobile\\Project\\ZalopayLib",
+        "include" to listOf("*.aar", "*.jar"),
+        "exclude" to listOf("")
+    )))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

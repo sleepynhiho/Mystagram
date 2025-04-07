@@ -70,9 +70,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-
-
-
+import com.forrestgump.ig.ui.navigation.Routes
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,8 +85,9 @@ fun EditProfileScreen(
     var newFullName by remember { mutableStateOf(uiState.curUser.fullName) }
     var newUsername by remember { mutableStateOf(uiState.curUser.username) }
     var newBio by remember { mutableStateOf(uiState.curUser.bio) }
-//    var newStateOfPremium by remember { mutableStateOf(uiState.curUser.isPremium) }
-//    var newAccountPrivacy by remember { mutableStateOf(uiState.curUser.isPrivate) }
+    var newStateOfPremium by remember { mutableStateOf(uiState.curUser.isPremium) }
+    var newAccountPrivacy by remember { mutableStateOf(uiState.curUser.isPrivate) }
+    var newLocation by remember { mutableStateOf(uiState.curUser.location) }
     val focusManager = LocalFocusManager.current
     val selectedImageUri = remember { mutableStateOf<String?>(null) }
     val showChooseImageDialog = remember { mutableStateOf(false) }
@@ -139,7 +138,6 @@ fun EditProfileScreen(
     }
 
 
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -161,14 +159,15 @@ fun EditProfileScreen(
             Button(
                 onClick = {
                     focusManager.clearFocus() // Loại bỏ focus khi nhấn nút lưu
-                    Log.d("EditProfileScreen", "${newProfileImage}")
+                    Log.d("EditProfileScreen", uiState.curUser.location)
                     viewModel.updateUserProfile(
                         context = context,
                         newProfileImage = newProfileImage,
                         newFullName = newFullName,
                         newUsername = newUsername,
                         newBio = newBio,
-//                        newAccountPrivacy = newAccountPrivacy,
+                        newAccountPrivacy = newAccountPrivacy,
+                        newLocation = newLocation, // Pass the current location from state
                         onSuccess = {
                             // Sau khi cập nhật thành công, có thể navigate back hoặc show thông báo
                             navController.popBackStack()
@@ -334,7 +333,9 @@ fun EditProfileScreen(
                         .fillMaxWidth()
                         .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
                         .padding(12.dp)
-                        .clickable { /* TODO: Handle location click */ }
+                        .clickable {
+                            navController.navigate(Routes.EditLocationScreen.route)
+                        }
                 ) {
                     Text(
                         text = "Chỉnh sửa vị trí",

@@ -10,6 +10,8 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -17,7 +19,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -27,9 +31,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
-import androidx.navigation.navigation
 import com.forrestgump.ig.ui.screens.home.HomeScreen
 import com.forrestgump.ig.ui.screens.home.HomeViewModel
 import com.forrestgump.ig.ui.screens.profile.MyProfileScreen
@@ -44,6 +46,7 @@ import com.forrestgump.ig.data.models.Message
 import com.forrestgump.ig.data.models.MessageType
 import com.forrestgump.ig.data.models.Notification
 import com.forrestgump.ig.data.models.NotificationType
+import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.ui.screens.addPost.AddPostDetailScreen
 import com.forrestgump.ig.ui.screens.auth.LoginScreen
@@ -51,7 +54,6 @@ import com.forrestgump.ig.ui.screens.auth.SignupScreen
 import com.forrestgump.ig.ui.screens.addPost.AddPostScreen
 import com.forrestgump.ig.ui.screens.chat.NewChatScreen
 import com.forrestgump.ig.ui.screens.addPost.AddPostViewModel
-import com.forrestgump.ig.ui.screens.addStory.AddStoryViewModel
 import com.forrestgump.ig.ui.screens.profile.EditProfileScreen
 import com.forrestgump.ig.ui.screens.profile.FollowScreen
 import com.forrestgump.ig.ui.screens.profile.PostDetailScreen
@@ -59,7 +61,10 @@ import java.util.Date
 import com.forrestgump.ig.ui.screens.settings.SettingsScreen
 import com.forrestgump.ig.ui.screens.story.StoryViewModel
 import com.forrestgump.ig.ui.viewmodels.UserViewModel
-
+import com.forrestgump.ig.ui.screens.profile.EditLocationScreen
+import com.forrestgump.ig.ui.screens.userprofile.UserProfileScreen
+import com.forrestgump.ig.ui.screens.userprofile.UserProfileViewModel
+import com.google.firebase.firestore.FirebaseFirestore
 
 @UnstableApi
 @Composable
@@ -69,7 +74,8 @@ fun InnerNavigation(
     viewModelHome: HomeViewModel = hiltViewModel(),
     viewModelProfile: ProfileViewModel,
     userViewModel: UserViewModel,
-    storyViewModel: StoryViewModel
+    storyViewModel: StoryViewModel,
+    viewModelOtherUserProfile: UserProfileViewModel,
 ) {
     val currentUser by userViewModel.user.collectAsState()
     // Trong Activity hoặc các composable cha
@@ -112,7 +118,9 @@ fun InnerNavigation(
                     onStoryScreenClicked = viewModelHome::onStoryScreenClicked,
                     onChatScreenClicked = {
                         navHostController.navigate(Routes.ChatScreen.route)
-                    })
+                    },
+                    navController = navHostController,
+                )
             }
         }
 
@@ -539,14 +547,22 @@ fun InnerNavigation(
             }
         ) { navBackStackEntry ->
             val postId = navBackStackEntry.arguments?.getString("postId") ?: ""
-            // Lấy post từ ViewModel dựa trên postId
-            val post = viewModelProfile.getPostById(postId)
+            Log.d("PostDetail", "Looking for post with ID: $postId")
+
+            // Check in ViewModels first
+            val post1 = viewModelProfile.getPostById(postId)
+            val post2 = viewModelOtherUserProfile.getPostById(postId)
+            Log.d("InnerNavigation", "${post1?.postId}")
+            Log.d("InnerNavigation", "${post2?.postId}")
+
+            val post = post1 ?: post2
 
             post?.let {
                 currentUser?.let { it1 ->
                     PostDetailScreen(
                         post = it,
                         onBackPressed = { navHostController.popBackStack() },
+                        navController = navHostController,
                         currentUser = it1
                     )
                 }
@@ -559,7 +575,36 @@ fun InnerNavigation(
                     )
                 }
             }
+
         }
 
+        composable(route = Routes.EditLocationScreen.route) {
+            EditLocationScreen(
+                viewModel = viewModelProfile,
+                navController = navHostController
+            )
+        }
+
+        composable(
+            route = Routes.UserProfileScreen.route,
+            arguments = listOf(
+                navArgument("userId") { type = NavType.StringType }
+            ),
+            enterTransition = {
+                fadeIn(animationSpec = tween(350))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(350))
+            }
+        ) { navBackStackEntry ->
+            val userId = navBackStackEntry.arguments?.getString("userId") ?: ""
+            currentUser?.let { currentUser ->
+                UserProfileScreen(
+                    userId = userId,
+                    navController = navHostController,
+                    viewModel = viewModelOtherUserProfile
+                )
+            }
+        }
     }
 }

@@ -14,6 +14,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.navigation.NavController
 import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.ui.components.PostItem
@@ -24,6 +25,7 @@ import com.forrestgump.ig.utils.constants.Utils.MainBackground
 fun PostDetailScreen(
     post: Post,
     onBackPressed: () -> Unit,
+    navController: NavController,
     currentUser: User
 ) {
     Surface(
@@ -51,6 +53,7 @@ fun PostDetailScreen(
             PostItem(
                 post = post,
                 onCommentClicked = {},
+                navController = navController,
                 currentUser = currentUser
             )
         }

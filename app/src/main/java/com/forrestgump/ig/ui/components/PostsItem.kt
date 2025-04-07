@@ -45,7 +45,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
@@ -64,12 +66,15 @@ import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.google.firebase.auth.FirebaseAuth
+import com.forrestgump.ig.ui.navigation.Routes
 
 
 @Composable
 fun PostItem(
     post: Post,
     onCommentClicked: () -> Unit,
+    navController: NavController?,
     currentUser: User,
     addPostViewModel: AddPostViewModel = hiltViewModel()
 ) {
@@ -80,8 +85,7 @@ fun PostItem(
             .fillMaxWidth()
             .background(color = MainBackground)
     ) {
-
-        PostHeader(post)
+        PostHeader(post, navController)
         PostMedia(post)
         PostActions(post, onCommentClicked, addPostViewModel, currentUser)
         PostDetails(post)
@@ -100,23 +104,53 @@ fun LottieAnimationView(assetName: String) {
 }
 
 @Composable
-fun PostHeader(post: Post) {
+fun PostHeader(post: Post, navController: NavController? = null) {
+    // Get the current user ID
+    val currentUserID = FirebaseAuth.getInstance().currentUser?.uid
+    
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AsyncImage(
-            model = post.profileImageUrl,
+
+        val painterImage = if (post.profileImageUrl.startsWith("http://") || post.profileImageUrl.startsWith("https://")) {
+            rememberAsyncImagePainter(model = post.profileImageUrl)
+        } else {
+            val resId = R.drawable.default_profile_img
+            painterResource(id = resId)
+        }
+//        // Ảnh đại diện
+//        Image(
+//            painter = painterImage,
+//            contentDescription = "Profile Image",
+//            contentScale = ContentScale.Crop,
+//            modifier = Modifier
+//                .size(80.dp)
+//                .fillMaxSize()
+//                .clip(CircleShape)
+//        )
+        Image(
+            painter = painterImage,
             contentDescription = "User Avatar",
             contentScale = ContentScale.Crop,
-            filterQuality = FilterQuality.None,
             modifier = Modifier
                 .size(40.dp)
                 .fillMaxSize()
                 .clip(CircleShape)
+                .clickable {
+                    // Check if the post belongs to the current user
+                    if (post.userId == currentUserID) {
+                        // Navigate to MyProfileScreen for the current user
+                        navController?.navigate(Routes.MyProfileScreen.route)
+                    } else {
+                        // Navigate to UserProfileScreen for other users
+                        navController?.navigate("UserProfileScreen/${post.userId}")
+                    }
+                }
         )
+
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = post.username,
@@ -466,6 +500,7 @@ private fun formatDate(date: Date): String {
     val sdf = SimpleDateFormat("dd MMM yyyy HH:mm", Locale.getDefault())
     return sdf.format(date)
 }
+
 
 
 @Preview

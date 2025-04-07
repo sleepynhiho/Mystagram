@@ -15,11 +15,12 @@ fun PostList(
 ) {
     LazyColumn {
         itemsIndexed(posts) { index, post ->
-            PostItem(
-                post = post,
-                onCommentClicked = {},
-                currentUser = currentUser
-            )
+
+//             PostItem(
+//                 post = post,
+//                 onCommentClicked = {},
+//                 currentUser = currentUser
+//             )
             // Khi hiển thị bài viết cuối cùng, gọi load thêm
             if (index == posts.lastIndex) {
                 onLoadMore()

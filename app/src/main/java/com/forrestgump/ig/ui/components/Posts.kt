@@ -23,6 +23,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.navigation.NavController
 import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.ui.screens.home.components.EndOfFeedMessage
 
@@ -39,6 +40,7 @@ fun Posts(
     hasMore: Boolean,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
+    navController: NavController,
     currentUser: User,
     onCommentClicked: (Post) -> Unit
 ) {
@@ -63,6 +65,7 @@ fun Posts(
             itemsIndexed(posts) { index, post ->
                 PostItem(
                     post = post,
+                    navController = navController,
                     onCommentClicked = { onCommentClicked(post)},
                     currentUser = currentUser
                 )
