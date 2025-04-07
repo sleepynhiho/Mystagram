@@ -1,11 +1,20 @@
 package com.forrestgump.ig.data.repositories
 
+import androidx.annotation.OptIn
+import androidx.media3.common.util.Log
+import androidx.media3.common.util.UnstableApi
+import com.forrestgump.ig.data.models.Comment
 import com.forrestgump.ig.data.models.Post
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.SetOptions
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import javax.inject.Inject
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.tasks.await
 import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -44,4 +53,65 @@ class PostRepository @Inject constructor(
     fun resetPagination() {
         lastVisible = null
     }
+
+    @OptIn(UnstableApi::class)
+    suspend fun addComment(postId: String, comment: Comment) {
+        try {
+            // Lưu comment vào Firestore
+            val commentRef = firestore.collection("posts")
+                .document(postId)
+                .collection("comments")
+                .document()
+            commentRef.set(comment, SetOptions.merge()).await()
+
+            // Tăng số lượng comment cho bài viết
+            updateCommentCount(postId)
+        } catch (e: Exception) {
+            Log.e("PostRepository", "Error adding comment: ${e.message}")
+        }
+    }
+
+    @OptIn(UnstableApi::class)
+    suspend fun updateCommentCount(postId: String) {
+        try {
+            val postRef = firestore.collection("posts").document(postId)
+
+            firestore.runTransaction { transaction ->
+                val postSnapshot = transaction.get(postRef)
+
+                // Lấy số lượng comment hiện tại và tăng thêm 1
+                val currentCommentCount = postSnapshot.getLong("commentsCount")?.toInt() ?: 0
+                val newCommentCount = currentCommentCount + 1
+
+                // Cập nhật lại commentsCount trong bài viết
+                transaction.update(postRef, "commentsCount", newCommentCount)
+            }.await()
+        } catch (e: Exception) {
+            Log.e("PostRepository", "Error updating comment count: ${e.message}")
+        }
+    }
+
+
+    // Lấy comment từ Firestore
+    fun getComments(postId: String): Flow<List<Comment>> = callbackFlow {
+        val listenerRegistration = firestore.collection("posts")
+            .document(postId)
+            .collection("comments")
+            .orderBy("timestamp", Query.Direction.ASCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+
+                val comments = snapshot?.documents?.mapNotNull { it.toObject(Comment::class.java) } ?: emptyList()
+                trySend(comments)
+            }
+
+        awaitClose { listenerRegistration.remove() }
+    }
+
+
+
+
 }

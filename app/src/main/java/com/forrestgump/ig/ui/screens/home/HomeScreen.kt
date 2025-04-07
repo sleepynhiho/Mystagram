@@ -35,6 +35,11 @@ import com.forrestgump.ig.ui.components.Posts
 import com.forrestgump.ig.ui.components.StoryList
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.forrestgump.ig.data.models.User
+import com.forrestgump.ig.data.models.UserStory
+import com.forrestgump.ig.ui.components.CommentScreen
+import com.forrestgump.ig.ui.components.PostItem
+import com.forrestgump.ig.ui.screens.home.components.PostList
+import java.util.Date
 
 @UnstableApi
 @Composable
@@ -49,7 +54,9 @@ fun HomeScreen(
     navController: NavController,
 ) {
     var userStoryIndex by remember { mutableIntStateOf(0) }
-    var isMyStory by remember { mutableStateOf(true) }
+    val isMyStory by remember { mutableStateOf(true) }
+    var showCommentScreen by remember { mutableStateOf(false) }
+    var selectedPost by remember { mutableStateOf<Post?>(null) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -89,6 +96,11 @@ fun HomeScreen(
                     onRefresh = { viewModel.refreshPosts() },
                     onLoadMore = { viewModel.loadNextPosts() },
                     currentUserID = currentUser.userId,
+                    onCommentClicked = { post ->
+                        selectedPost = post
+                        showCommentScreen = true
+                    }
+                    currentUserID = currentUser.userId,
                     navController = navController,
                 )
             }
@@ -101,9 +113,18 @@ fun HomeScreen(
         visible = uiState.showStoryScreen,
         currentUser = currentUser,
         onDismiss = { onStoryScreenClicked(false, 0) },
-        userStories = { if(isMyStory) uiState.myStories else uiState.userStories },
+        userStories = { if (isMyStory) uiState.myStories else uiState.userStories },
         onUserStoryIndexChanged = { newIndex -> userStoryIndex = newIndex },
         userStoryIndex = userStoryIndex
     )
+
+    if (showCommentScreen && selectedPost != null) {
+        CommentScreen(
+            postId = selectedPost!!.postId,
+            currentUser = currentUser,
+            showCommentScreen = showCommentScreen,
+            onDismiss = { showCommentScreen = false }
+        )
+    }
 }
 

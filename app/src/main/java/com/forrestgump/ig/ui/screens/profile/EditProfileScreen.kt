@@ -138,6 +138,7 @@ fun EditProfileScreen(
     }
 
 
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -159,7 +160,7 @@ fun EditProfileScreen(
             Button(
                 onClick = {
                     focusManager.clearFocus() // Loại bỏ focus khi nhấn nút lưu
-                    Log.d("EditProfileScreen", uiState.curUser.location)
+                    Log.d("EditProfileScreen", "${newProfileImage}")
                     viewModel.updateUserProfile(
                         context = context,
                         newProfileImage = newProfileImage,

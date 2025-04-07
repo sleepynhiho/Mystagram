@@ -41,6 +41,8 @@ fun Posts(
     onLoadMore: () -> Unit,
     currentUserID: String,
     navController: NavController,
+    currentUserID: String,
+    onCommentClicked: (Post) -> Unit
 ) {
     // Tạo pull refresh state mới của Material
     val pullRefreshState = rememberPullRefreshState(
@@ -66,6 +68,8 @@ fun Posts(
                     onCommentClicked = {},
                     currentUserID = currentUserID,
                     navController = navController,
+                    onCommentClicked = { onCommentClicked(post)},
+                    currentUserID = currentUserID
                 )
                 // Khi hiển thị post cuối cùng, gọi load thêm
                 if (index == posts.lastIndex) {

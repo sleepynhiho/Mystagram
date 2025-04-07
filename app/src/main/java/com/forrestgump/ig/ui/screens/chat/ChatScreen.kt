@@ -4,8 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
@@ -19,10 +23,16 @@ import java.util.Date
 @Composable
 fun ChatScreen(
     currentUser: User,
-    chats: List<Chat>,
     navHostController: NavHostController,
-    onNewChatClicked: () -> Unit
+    onNewChatClicked: () -> Unit,
+    chatViewModel: ChatViewModel = hiltViewModel()
 ) {
+
+    LaunchedEffect(currentUser.userId) {
+        chatViewModel.getChatsForUser(currentUser.userId)
+    }
+    val chats by chatViewModel.chatsState.collectAsState()
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -58,7 +68,6 @@ fun ChatScreenPreview() {
 
     ChatScreen(
         currentUser = currentUser,
-        chats = dummyChats,
         navHostController = navController,
         onNewChatClicked = TODO(),
     )

@@ -19,6 +19,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -86,7 +89,7 @@ fun PostItem(
             addPostViewModel,
             currentUserID
         )
-        PostDetails(post)
+        PostDetails(post.postId)
     }
 }
 
@@ -172,7 +175,7 @@ fun PostMedia(post: Post) {
     // Phần media: hiển thị nhiều ảnh nếu có
     // Giả sử Post có thuộc tính mediaUrls: List<String>
     // Nếu không có thì dùng 1 ảnh duy nhất từ mediaUrl
-    val mediaUrls = if (post.mediaUrls.isNotEmpty()) post.mediaUrls else listOf(post.mediaUrls)
+    val mediaUrls = post.mediaUrls.ifEmpty { listOf(post.mediaUrls) }
     var showFullScreenImage by remember { mutableStateOf(false) }
     var currentImageIndex by remember { mutableStateOf(0) }
 
@@ -276,6 +279,12 @@ fun PostActions(post: Post, onCommentClicked: () -> Unit, addPostViewModel: AddP
         mutableStateOf(post.reactions.entries.find{it.value.contains(currentUserID)}?.key)
     }
 
+    val post by addPostViewModel.post.collectAsState()
+
+    LaunchedEffect(post?.postId) {
+        post?.postId?.let { addPostViewModel.observePost(it) }
+    }
+
     Box(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -292,7 +301,7 @@ fun PostActions(post: Post, onCommentClicked: () -> Unit, addPostViewModel: AddP
                     .pointerInput(Unit) {
                         detectTapGestures(
                             onPress = {
-                                job?.cancel() // Hủy coroutine cũ (nếu có)
+                                job?.cancel()
                                 job = coroutineScope.launch {
                                     delay(300)
                                     showReactions = true
@@ -304,12 +313,14 @@ fun PostActions(post: Post, onCommentClicked: () -> Unit, addPostViewModel: AddP
                                 Log.d("NHII", "onTap")
                                 selectedReaction?.let { it1 -> Log.d("NHII", it1) }
                                 val newReaction = if (selectedReaction == null) "love" else null
-                                addPostViewModel.updateReaction(
-                                    post.postId,
-                                    currentUserID,
-                                    selectedReaction,
-                                    newReaction
-                                )
+                                post?.let { it1 ->
+                                    addPostViewModel.updateReaction(
+                                        it1.postId,
+                                        currentUserID,
+                                        selectedReaction,
+                                        newReaction
+                                    )
+                                }
                                 selectedReaction = newReaction
                                 showReactions = false
                             }
@@ -342,6 +353,13 @@ fun PostActions(post: Post, onCommentClicked: () -> Unit, addPostViewModel: AddP
                     modifier = Modifier.size(28.dp)
                 )
             }
+            if ((post?.commentsCount ?: 0) > 0) {
+                Text(
+                    text = post?.commentsCount.toString(),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 14.sp
+                )
+            }
         }
 
         // Lựa chọn reactions
@@ -365,12 +383,14 @@ fun PostActions(post: Post, onCommentClicked: () -> Unit, addPostViewModel: AddP
                                 .size(35.dp)
                                 .clickable {
                                     val newReaction = if (selectedReaction == key) null else key
-                                    addPostViewModel.updateReaction(
-                                        post.postId,
-                                        currentUserID,
-                                        selectedReaction,
-                                        newReaction
-                                    )
+                                    post?.let {
+                                        addPostViewModel.updateReaction(
+                                            it.postId,
+                                            currentUserID,
+                                            selectedReaction,
+                                            newReaction
+                                        )
+                                    }
                                     selectedReaction = newReaction
                                     showReactions = false
                                 }
@@ -385,78 +405,86 @@ fun PostActions(post: Post, onCommentClicked: () -> Unit, addPostViewModel: AddP
 }
 
 @Composable
-fun PostDetails(post: Post) {
-    // Số reactions
-    // Chuyển đổi reactions thành Map<String, Int> (reactionType -> số lượng userId)
-    val reactionCounts = post.reactions.mapValues { it.value.size }
+fun PostDetails(postId: String, viewModel: AddPostViewModel = hiltViewModel()) {
+    val post by viewModel.post.collectAsState()
 
-    // Sắp xếp reactions theo số lượng từ cao đến thấp
-    val sortedReactions = reactionCounts.entries.sortedByDescending { it.value }
+    LaunchedEffect(postId) {
+        viewModel.observePost(postId)
+    }
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(start = 40.dp)
-    ) {
-        Box {
-            sortedReactions.take(3).forEachIndexed { index, (reaction, _) ->
-                reactionDrawables[reaction]?.let { drawableId ->
-                    Image(
-                        painter = painterResource(id = drawableId),
-                        contentDescription = reaction,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .zIndex(index.toFloat())
-                            .offset(x = (-15 * index).dp)
-                    )
+    post?.let { currentPost ->
+        // Số reactions
+        if (currentPost.reactions.isNotEmpty()) {
+            val reactionCounts = currentPost.reactions.mapValues { it.value.size }
+
+            val sortedReactions = reactionCounts.entries.sortedByDescending { it.value }
+
+            val paddingStart = when (sortedReactions.size) {
+                1 -> 15.dp  // 1 reaction, padding 10dp
+                2 -> 30.dp  // 2 reactions, padding 20dp
+                3 -> 40.dp  // 3 reactions, padding 30dp
+                else -> 40.dp  // Nhiều hơn 3 reactions, padding 40dp
+            }
+
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start,
+                modifier = Modifier.padding(start = paddingStart)
+            ) {
+                Box {
+                    sortedReactions.take(3).forEachIndexed { index, (reaction, _) ->
+                        reactionDrawables[reaction]?.let { drawableId ->
+                            Image(
+                                painter = painterResource(id = drawableId),
+                                contentDescription = reaction,
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .zIndex(index.toFloat())
+                                    .offset(x = (-15 * index).dp)
+                            )
+                        }
+                    }
                 }
+
+                Spacer(modifier = Modifier.width(4.dp))
+
+                // Hiển thị tổng số reactions
+                val totalReactions = reactionCounts.values.sum()
+                Text(
+                    text = "$totalReactions",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
             }
         }
 
-        Spacer(modifier = Modifier.width(4.dp))
-
-        // Hiển thị tổng số reactions
-        val totalReactions = reactionCounts.values.sum()
+        // Caption: hiển thị username và nội dung caption
         Text(
-            text = "$totalReactions",
+            text = buildAnnotatedString {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                    append(currentPost.username)
+                }
+                append(" ")
+                append(currentPost.caption)
+            },
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-    }
-
-
-    // Caption: hiển thị username và nội dung caption
-    Text(
-        text = buildAnnotatedString {
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                append(post.username)
-            }
-            append(" ")
-            append(post.caption)
-        },
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onBackground,
-        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-    )
-
-    // Số bình luận
-    if (post.commentsCount > 0) {
-        Text(
-            text = "Xem tất cả ${post.commentsCount} bình luận",
-            style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray),
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
         )
-    }
 
-    // Thời gian post
-    val timeString = post.timestamp?.let { formatDate(it) } ?: ""
-    if (timeString.isNotEmpty()) {
-        Text(
-            text = timeString,
-            style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray),
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-        )
+        // Thời gian post
+        val timeString = currentPost.timestamp?.let { formatDate(it) } ?: ""
+        if (timeString.isNotEmpty()) {
+            Text(
+                text = timeString,
+                style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray),
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+            )
+        }
     }
 }
+
 
 
 private fun formatDate(date: Date): String {

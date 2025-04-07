@@ -240,118 +240,6 @@ fun InnerNavigation(
             }
         }
 
-        val dummyChats = listOf(
-            Chat(
-                "chat1",
-                "user1",
-                "user2",
-                "Alice",
-                "Bob",
-                "https://randomuser.me/api/portraits/women/1.jpg",
-                "https://randomuser.me/api/portraits/men/1.jpg",
-                "Hello!",
-                MessageType.TEXT,
-                true,
-                false,
-                Date()
-            ),
-            Chat(
-                "chat2",
-                "user3",
-                "user4",
-                "Charlie",
-                "David",
-                "https://randomuser.me/api/portraits/men/2.jpg",
-                "https://randomuser.me/api/portraits/men/3.jpg",
-                "See you soon!",
-                MessageType.TEXT,
-                false,
-                true,
-                Date()
-            ),
-            Chat(
-                "chat3",
-                "user5",
-                "user6",
-                "Eve",
-                "Frank",
-                "https://randomuser.me/api/portraits/women/3.jpg",
-                "https://randomuser.me/api/portraits/men/4.jpg",
-                "Great photo!",
-                MessageType.IMAGE,
-                true,
-                true,
-                Date()
-            ),
-            Chat(
-                "chat4",
-                "user7",
-                "user8",
-                "Grace",
-                "Hank",
-                "https://randomuser.me/api/portraits/women/4.jpg",
-                "https://randomuser.me/api/portraits/men/5.jpg",
-                "Good morning!",
-                MessageType.TEXT,
-                true,
-                false,
-                Date()
-            ),
-            Chat(
-                "chat5",
-                "user9",
-                "user10",
-                "Ivy",
-                "Jack",
-                "https://randomuser.me/api/portraits/women/5.jpg",
-                "https://randomuser.me/api/portraits/men/6.jpg",
-                "How was your trip?",
-                MessageType.TEXT,
-                false,
-                true,
-                Date()
-            )
-        )
-
-        val dummyMessages = listOf(
-            Message("msg1", "user1", MessageType.TEXT, "Hello!", null, true, Date()),
-            Message(
-                "msg2",
-                "user2",
-                MessageType.IMAGE,
-                null,
-                "https://picsum.photos/200",
-                false,
-                Date()
-            ),
-            Message("msg3", "user1", MessageType.TEXT, "What's up?", null, true, Date()),
-            Message("msg4", "user2", MessageType.TEXT, "Not much, you?", null, false, Date()),
-            Message(
-                "msg5",
-                "user1",
-                MessageType.IMAGE,
-                null,
-                "https://picsum.photos/201",
-                true,
-                Date()
-            ),
-            Message("msg6", "user2", MessageType.TEXT, "Nice pic!", null, false, Date()),
-            Message("msg7", "user1", MessageType.TEXT, "Thanks!", null, true, Date()),
-            Message(
-                "msg8",
-                "user2",
-                MessageType.IMAGE,
-                null,
-                "https://picsum.photos/202",
-                false,
-                Date()
-            ),
-            Message("msg9", "user1", MessageType.TEXT, "Where was that?", null, true, Date()),
-            Message("msg10", "user2", MessageType.TEXT, "At the beach!", null, false, Date())
-        )
-
-
-
         composable(
             route = Routes.ChatScreen.route,
             enterTransition = {
@@ -370,7 +258,6 @@ fun InnerNavigation(
             currentUser?.let { it1 ->
                 ChatScreen(
                     currentUser = it1,
-                    chats = dummyChats,
                     navHostController = navHostController,
                     onNewChatClicked = { navHostController.navigate(Routes.NewChatScreen.route) }
                 )
@@ -396,121 +283,15 @@ fun InnerNavigation(
         ) { backStackEntry ->
             val chatId = backStackEntry.arguments?.getString("chatId") ?: return@composable
 
-            val chat = dummyChats.find { it.chatId == chatId } ?: return@composable
 
             currentUser?.let {
                 ChatBoxScreen(
                     currentUser = it,
-                    chat = chat,
-                    messages = dummyMessages,
+                    chatId = chatId,
                     navHostController = navHostController
                 )
             }
         }
-
-        val dummyUsers = listOf(
-            User(
-                userId = "1",
-                username = "john_doe",
-                fullName = "John Doe",
-                email = "john.doe@example.com",
-                profileImage = "https://randomuser.me/api/portraits/men/1.jpg",
-                bio = "Tech enthusiast. Love coding!",
-                followers = listOf("2", "3"),
-                following = listOf("4", "5")
-            ),
-            User(
-                userId = "2",
-                username = "emma_smith",
-                fullName = "Emma Smith",
-                email = "emma.smith@example.com",
-                profileImage = "https://randomuser.me/api/portraits/women/2.jpg",
-                bio = "Traveler & Photographer 📸",
-                followers = listOf("1"),
-                following = listOf("3", "6")
-            ),
-            User(
-                userId = "3",
-                username = "michael_j",
-                fullName = "Michael Johnson",
-                email = "michael.j@example.com",
-                profileImage = "https://randomuser.me/api/portraits/men/3.jpg",
-                bio = "AI & ML enthusiast 🤖",
-                followers = listOf("1", "2"),
-                following = listOf("7", "8")
-            ),
-            User(
-                userId = "4",
-                username = "sophia_w",
-                fullName = "Sophia Williams",
-                email = "sophia.w@example.com",
-                profileImage = "https://randomuser.me/api/portraits/women/4.jpg",
-                bio = "Writer & Blogger ✍️",
-                followers = listOf("5", "6"),
-                following = listOf("1", "2")
-            ),
-            User(
-                userId = "5",
-                username = "david_b",
-                fullName = "David Brown",
-                email = "david.b@example.com",
-                profileImage = "https://randomuser.me/api/portraits/men/5.jpg",
-                bio = "Software Engineer 💻",
-                followers = listOf("4"),
-                following = listOf("6", "7")
-            ),
-            User(
-                userId = "6",
-                username = "olivia_t",
-                fullName = "Olivia Taylor",
-                email = "olivia.t@example.com",
-                profileImage = "https://randomuser.me/api/portraits/women/6.jpg",
-                bio = "Music lover & Guitarist 🎸",
-                followers = listOf("2", "5"),
-                following = listOf("3", "8")
-            ),
-            User(
-                userId = "7",
-                username = "james_m",
-                fullName = "James Miller",
-                email = "james.m@example.com",
-                profileImage = "https://randomuser.me/api/portraits/men/7.jpg",
-                bio = "Foodie & Chef 🍕",
-                followers = listOf("1", "6"),
-                following = listOf("4", "9")
-            ),
-            User(
-                userId = "8",
-                username = "isabella_c",
-                fullName = "Isabella Clark",
-                email = "isabella.c@example.com",
-                profileImage = "https://randomuser.me/api/portraits/women/8.jpg",
-                bio = "Entrepreneur & Investor 💰",
-                followers = listOf("3", "7"),
-                following = listOf("5", "10")
-            ),
-            User(
-                userId = "9",
-                username = "ethan_w",
-                fullName = "Ethan White",
-                email = "ethan.w@example.com",
-                profileImage = "https://randomuser.me/api/portraits/men/9.jpg",
-                bio = "Fitness Coach & Trainer 🏋️",
-                followers = listOf("2", "5"),
-                following = listOf("1", "6")
-            ),
-            User(
-                userId = "10",
-                username = "mia_d",
-                fullName = "Mia Davis",
-                email = "mia.d@example.com",
-                profileImage = "https://randomuser.me/api/portraits/women/10.jpg",
-                bio = "Fashion Designer & Stylist 👗",
-                followers = listOf("4", "7"),
-                following = listOf("3", "9")
-            )
-        )
-
 
         composable(
             route = Routes.NewChatScreen.route,
@@ -531,7 +312,6 @@ fun InnerNavigation(
                 NewChatScreen(
                     currentUser = it1,
                     navHostController = navHostController,
-                    users = dummyUsers
                 )
             }
         }
