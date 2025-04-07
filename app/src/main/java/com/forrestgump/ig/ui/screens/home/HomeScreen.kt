@@ -21,15 +21,12 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import androidx.paging.LoadState
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.forrestgump.ig.ui.screens.home.components.TopNavBar
 import com.forrestgump.ig.ui.screens.story.StoryScreen
 import com.forrestgump.ig.ui.components.Loading
 import com.forrestgump.ig.ui.components.Posts
 import com.forrestgump.ig.ui.components.StoryList
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
-import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.ui.components.CommentScreen

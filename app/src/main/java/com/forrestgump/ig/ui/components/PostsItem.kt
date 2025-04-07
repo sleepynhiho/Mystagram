@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.airbnb.lottie.compose.LottieAnimation
@@ -529,7 +530,8 @@ fun PostItemPreview() {
             ),
         ),
         onCommentClicked = {},
-        currentUser = User()
+        currentUser = User(),
+        navController = rememberNavController(),
     )
 }
 

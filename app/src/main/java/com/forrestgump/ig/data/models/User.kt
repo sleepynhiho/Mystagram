@@ -16,5 +16,7 @@ data class User(
     var followers: List<String> = emptyList(),  // Danh sách follower's userId
     var following: List<String> = emptyList(),   // Danh sách following's userId
     var location: String = "",
-    var fcmToken: String = ""                   // Token nhận thông báo từ FCM
+    var fcmToken: String = "",                  // Token nhận thông báo từ FCM
+    var isPremium: Boolean = false,
+    var isPrivate: Boolean = false
 ) : Parcelable
