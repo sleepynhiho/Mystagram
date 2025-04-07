@@ -31,7 +31,6 @@ import com.forrestgump.ig.ui.components.StoryList
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.data.models.Post
-import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.ui.components.CommentScreen
 
 

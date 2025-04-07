@@ -488,34 +488,4 @@ private fun formatDate(date: Date): String {
 
 
 
-@Preview
-@Composable
-fun PostItemPreview() {
-    // Ví dụ mock data cho preview.
-    PostItem(
-        post = Post(
-            postId = "1",
-            userId = "user_123",
-            username = "hcmusgang",
-            profileImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUyAfXfniYfSTZ7Z2HjW2COSyC8WTH3TgkGw&s",
-            mediaUrls = listOf(
-                "https://static.vecteezy.com/system/resources/thumbnails/046/366/986/small_2x/beautiful-white-water-lily-and-pink-water-lily-flowers-on-rock-in-mountain-river-photo.jpg",
-                "https://via.placeholder.com/300",
-                "https://picsum.photos/300/200"
-            ),
-            caption = "Hôm nay đi ăn kem nè!",
-            commentsCount = 5,
-            mimeType = "image/png",
-            timestamp = Date(),
-            reactions = mapOf(
-                "love" to List(43800) { "user_$it" }, // 43800 users reacted with "love"
-                "sad" to List(8000) { "user_$it" },   // 8000 users reacted with "sad"
-                "angry" to List(9000) { "user_$it" }  // 9000 users reacted with "angry"
-            ),
-        ),
-        onCommentClicked = {},
-        currentUser = User()
-    )
-}
-
 
