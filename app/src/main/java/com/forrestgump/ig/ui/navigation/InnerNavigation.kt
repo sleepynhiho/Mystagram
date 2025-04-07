@@ -137,7 +137,7 @@ fun InnerNavigation(
                 senderProfileImage = "https://randomuser.me/api/portraits/women/1.jpg",
                 postId = "post_789",
                 isRead = false,
-                type = NotificationType.LIKE,
+                type = NotificationType.REACT,
                 timestamp = Date()
             ), Notification(
                 notificationId = "2",
@@ -187,9 +187,12 @@ fun InnerNavigation(
             fadeOut(animationSpec = tween(350))
         }) {
 
-            NotificationScreen(
-                notifications = dummyNotifications, navHostController = navHostController
-            )
+            currentUser?.let { it1 ->
+                NotificationScreen(
+                    navHostController = navHostController,
+                    currentUserId = it1.userId
+                )
+            }
         }
 
         composable(route = Routes.MyProfileScreen.route, enterTransition = {
@@ -544,7 +547,7 @@ fun InnerNavigation(
                     PostDetailScreen(
                         post = it,
                         onBackPressed = { navHostController.popBackStack() },
-                        currentUserID = it1.userId
+                        currentUser = it1
                     )
                 }
             } ?: run {

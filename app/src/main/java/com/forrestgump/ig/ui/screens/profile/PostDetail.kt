@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.forrestgump.ig.data.models.Post
+import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.ui.components.PostItem
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 
@@ -23,7 +24,7 @@ import com.forrestgump.ig.utils.constants.Utils.MainBackground
 fun PostDetailScreen(
     post: Post,
     onBackPressed: () -> Unit,
-    currentUserID: String
+    currentUser: User
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -50,7 +51,7 @@ fun PostDetailScreen(
             PostItem(
                 post = post,
                 onCommentClicked = {},
-                currentUserID = currentUserID
+                currentUser = currentUser
             )
         }
     }

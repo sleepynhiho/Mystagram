@@ -24,4 +24,9 @@
     <string name="search_placeholder">Search</string>
     <string name="chat_placeholder">Message...</string>
     <string name="comment_header">Comments</string>
+    <string name="react_noti"> reacted to your post. </string>
+    <string name="comment_noti">" commented on your post. "</string>
+    <string name="follow_noti">" started following you. "</string>
+    <string name="follow_req_noti">" requested to follow you.  "</string>
+    <string name="follow_accepted_noti">" accepted your follow request. "</string>
 </resources>

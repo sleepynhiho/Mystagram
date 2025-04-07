@@ -51,6 +51,7 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.R
+import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.ui.screens.addPost.AddPostViewModel
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -68,23 +69,21 @@ import kotlinx.coroutines.launch
 fun PostItem(
     post: Post,
     onCommentClicked: () -> Unit,
-    currentUserID: String,
+    currentUser: User,
     addPostViewModel: AddPostViewModel = hiltViewModel()
 ) {
     Log.d("PostItem", "Rendering post: ${post.postId}")
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(color = MainBackground)
     ) {
+
         PostHeader(post)
         PostMedia(post)
-        PostActions(
-            post, onCommentClicked,
-            addPostViewModel,
-            currentUserID
-        )
-        PostDetails(post.postId)
+        PostActions(post, onCommentClicked, addPostViewModel, currentUser)
+        PostDetails(post)
     }
 }
 
@@ -236,18 +235,17 @@ val reactionDrawables = mapOf(
 )
 
 @Composable
-fun PostActions(post: Post, onCommentClicked: () -> Unit, addPostViewModel: AddPostViewModel, currentUserID: String) {
+fun PostActions(
+    post: Post,
+    onCommentClicked: () -> Unit,
+    addPostViewModel: AddPostViewModel,
+    currentUser: User,
+) {
     var showReactions by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     var job by remember { mutableStateOf<Job?>(null) }
     var selectedReaction by remember {
-        mutableStateOf(post.reactions.entries.find{it.value.contains(currentUserID)}?.key)
-    }
-
-    val post by addPostViewModel.post.collectAsState()
-
-    LaunchedEffect(post?.postId) {
-        post?.postId?.let { addPostViewModel.observePost(it) }
+        mutableStateOf(post.reactions.entries.find { it.value.contains(currentUser.userId) }?.key)
     }
 
     Box(
@@ -278,10 +276,10 @@ fun PostActions(post: Post, onCommentClicked: () -> Unit, addPostViewModel: AddP
                                 Log.d("NHII", "onTap")
                                 selectedReaction?.let { it1 -> Log.d("NHII", it1) }
                                 val newReaction = if (selectedReaction == null) "love" else null
-                                post?.let { it1 ->
+                                post.let { it1 ->
                                     addPostViewModel.updateReaction(
-                                        it1.postId,
-                                        currentUserID,
+                                        it1,
+                                        currentUser,
                                         selectedReaction,
                                         newReaction
                                     )
@@ -309,6 +307,17 @@ fun PostActions(post: Post, onCommentClicked: () -> Unit, addPostViewModel: AddP
                 }
             }
 
+            Spacer(modifier = Modifier.width(5.dp))
+
+            if (post.reactions.entries.isNotEmpty()) {
+                Text(
+                    text = post.reactions.entries.size.toString(),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
 
             IconButton(onClick = onCommentClicked) {
                 Icon(
@@ -318,11 +327,14 @@ fun PostActions(post: Post, onCommentClicked: () -> Unit, addPostViewModel: AddP
                     modifier = Modifier.size(28.dp)
                 )
             }
-            if ((post?.commentsCount ?: 0) > 0) {
+            Spacer(modifier = Modifier.width(2.dp))
+
+            if ((post.commentsCount) > 0) {
                 Text(
-                    text = post?.commentsCount.toString(),
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 14.sp
+                    text = post.commentsCount.toString(),
+                    color = Color.Black,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
@@ -348,10 +360,10 @@ fun PostActions(post: Post, onCommentClicked: () -> Unit, addPostViewModel: AddP
                                 .size(35.dp)
                                 .clickable {
                                     val newReaction = if (selectedReaction == key) null else key
-                                    post?.let {
+                                    post.let {
                                         addPostViewModel.updateReaction(
-                                            it.postId,
-                                            currentUserID,
+                                            post,
+                                            currentUser,
                                             selectedReaction,
                                             newReaction
                                         )
@@ -370,86 +382,77 @@ fun PostActions(post: Post, onCommentClicked: () -> Unit, addPostViewModel: AddP
 }
 
 @Composable
-fun PostDetails(postId: String, viewModel: AddPostViewModel = hiltViewModel()) {
-    val post by viewModel.post.collectAsState()
+fun PostDetails(post: Post) {
+    // Số reactions
+    if (post.reactions.isNotEmpty()) {
+        val reactionCounts = post.reactions.mapValues { it.value.size }
 
-    LaunchedEffect(postId) {
-        viewModel.observePost(postId)
-    }
+        val sortedReactions = reactionCounts.entries.sortedByDescending { it.value }
 
-    post?.let { currentPost ->
-        // Số reactions
-        if (currentPost.reactions.isNotEmpty()) {
-            val reactionCounts = currentPost.reactions.mapValues { it.value.size }
-
-            val sortedReactions = reactionCounts.entries.sortedByDescending { it.value }
-
-            val paddingStart = when (sortedReactions.size) {
-                1 -> 15.dp  // 1 reaction, padding 10dp
-                2 -> 30.dp  // 2 reactions, padding 20dp
-                3 -> 40.dp  // 3 reactions, padding 30dp
-                else -> 40.dp  // Nhiều hơn 3 reactions, padding 40dp
-            }
-
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start,
-                modifier = Modifier.padding(start = paddingStart)
-            ) {
-                Box {
-                    sortedReactions.take(3).forEachIndexed { index, (reaction, _) ->
-                        reactionDrawables[reaction]?.let { drawableId ->
-                            Image(
-                                painter = painterResource(id = drawableId),
-                                contentDescription = reaction,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .zIndex(index.toFloat())
-                                    .offset(x = (-15 * index).dp)
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(4.dp))
-
-                // Hiển thị tổng số reactions
-                val totalReactions = reactionCounts.values.sum()
-                Text(
-                    text = "$totalReactions",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-            }
+        val paddingStart = when (sortedReactions.size) {
+            1 -> 15.dp  // 1 reaction, padding 10dp
+            2 -> 30.dp  // 2 reactions, padding 20dp
+            3 -> 40.dp  // 3 reactions, padding 30dp
+            else -> 40.dp  // Nhiều hơn 3 reactions, padding 40dp
         }
 
-        // Caption: hiển thị username và nội dung caption
-        Text(
-            text = buildAnnotatedString {
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                    append(currentPost.username)
-                }
-                append(" ")
-                append(currentPost.caption)
-            },
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-        )
 
-        // Thời gian post
-        val timeString = currentPost.timestamp?.let { formatDate(it) } ?: ""
-        if (timeString.isNotEmpty()) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start,
+            modifier = Modifier.padding(start = paddingStart)
+        ) {
+            Box {
+                sortedReactions.take(3).forEachIndexed { index, (reaction, _) ->
+                    reactionDrawables[reaction]?.let { drawableId ->
+                        Image(
+                            painter = painterResource(id = drawableId),
+                            contentDescription = reaction,
+                            modifier = Modifier
+                                .size(20.dp)
+                                .zIndex(index.toFloat())
+                                .offset(x = (-15 * index).dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.width(4.dp))
+
+            // Hiển thị tổng số reactions
+            val totalReactions = reactionCounts.values.sum()
             Text(
-                text = timeString,
-                style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray),
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                text = "$totalReactions",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
     }
-}
 
+    // Caption: hiển thị username và nội dung caption
+    Text(
+        text = buildAnnotatedString {
+            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                append(post.username)
+            }
+            append(" ")
+            append(post.caption)
+        },
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onBackground,
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+    )
+
+    // Thời gian post
+    val timeString = post.timestamp?.let { formatDate(it) } ?: ""
+    if (timeString.isNotEmpty()) {
+        Text(
+            text = timeString,
+            style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+        )
+    }
+}
 
 
 private fun formatDate(date: Date): String {
@@ -484,7 +487,7 @@ fun PostItemPreview() {
             ),
         ),
         onCommentClicked = {},
-        currentUserID = "a"
+        currentUser = User()
     )
 }
 

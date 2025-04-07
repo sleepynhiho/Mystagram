@@ -7,7 +7,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cloudinary.Cloudinary
 import com.forrestgump.ig.BuildConfig
+import com.forrestgump.ig.data.models.Notification
+import com.forrestgump.ig.data.models.NotificationType
 import com.forrestgump.ig.data.models.Post
+import com.forrestgump.ig.data.models.User
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +20,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -108,10 +112,10 @@ class AddPostViewModel @Inject constructor(
         }
     }
 
-    fun updateReaction(postId: String, currentUserId: String, previousReaction: String?, newReaction: String?) {
+    fun updateReaction(post: Post, currentUser: User, previousReaction: String?, newReaction: String?) {
         viewModelScope.launch {
             try {
-                val postRef = firestore.collection("posts").document(postId)
+                val postRef = firestore.collection("posts").document(post.postId)
 
                 firestore.runTransaction { transaction ->
                     val snapshot = transaction.get(postRef)
@@ -123,46 +127,51 @@ class AddPostViewModel @Inject constructor(
                     // Xóa reaction cũ (nếu có)
                     previousReaction?.let { oldReaction ->
                         val users = updatedReactions[oldReaction]?.toMutableList() ?: mutableListOf()
-                        users.remove(currentUserId)
+                        users.remove(currentUser.userId)
                         if (users.isEmpty()) updatedReactions.remove(oldReaction) else updatedReactions[oldReaction] = users
                     }
 
                     // Thêm reaction mới (nếu có)
                     newReaction?.let { newReact ->
                         val users = updatedReactions[newReact]?.toMutableList() ?: mutableListOf()
-                        if (!users.contains(currentUserId)) {
-                            users.add(currentUserId)
+                        if (!users.contains(currentUser.userId)) {
+                            users.add(currentUser.userId)
                             updatedReactions[newReact] = users
                         }
                     }
 
+                    Log.d("NHII", "UPDATED REACTIONS: $updatedReactions")
+
+                    // Cập nhật reactions vào Firestore
                     transaction.update(postRef, "reactions", updatedReactions)
+
+                    val postOwnerId = post.userId
+
+                    if (updatedReactions.isNotEmpty() && postOwnerId != currentUser.userId) {
+                        postOwnerId.let { ownerId ->
+                            val notification = Notification(
+                                notificationId = UUID.randomUUID().toString(),
+                                receiverId = ownerId, // Người nhận notification là chủ bài viết
+                                senderId = currentUser.userId, // Người gửi là người thực hiện reaction
+                                senderUsername = currentUser.username,
+                                senderProfileImage = currentUser.profileImage,
+                                postId = post.postId,
+                                isRead = false,
+                                type = NotificationType.REACT,
+                                timestamp = null
+                            )
+
+                            // Lưu notification vào Firestore
+                            transaction.set(
+                                firestore.collection("notifications")
+                                    .document(notification.notificationId), notification
+                            )
+                        }
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("UpdateReaction", "Error updating reaction", e)
             }
         }
     }
-
-    private val _post = MutableStateFlow<Post?>(null)
-    val post: StateFlow<Post?> = _post
-
-
-    fun observePost(postId: String) {
-        firestore.collection("posts")
-            .document(postId)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    Log.e("PostViewModel", "Error fetching post data", error)
-                    return@addSnapshotListener
-                }
-
-                snapshot?.toObject(Post::class.java)?.let { updatedPost ->
-                    _post.value = updatedPost
-                }
-            }
-    }
-
-
-
 }

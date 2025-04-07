@@ -40,10 +40,11 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
+import com.forrestgump.ig.data.models.Post
 
 @Composable
 fun CommentScreen(
-    postId: String,
+    post: Post,
     currentUser: User,
     showCommentScreen: Boolean,
     onDismiss: () -> Unit,
@@ -110,7 +111,7 @@ fun CommentScreen(
                                 .weight(1f)
                                 .padding(bottom = 8.dp),
                             viewModel = viewModel,
-                            postId = postId,
+                            postId = post.postId,
                         )
 
                         CommentBottomBar(
@@ -119,11 +120,9 @@ fun CommentScreen(
                             onCommentChange = { commentText = it },
                             onSendCommentClicked = {
                                 viewModel.sendComment(
-                                    postId = postId,
-                                    userId = currentUser.userId,
+                                    post = post,
                                     commentText = commentText,
-                                    username = currentUser.username,
-                                    profileImage = currentUser.profileImage
+                                    currentUser = currentUser
                                 )
                                 commentText = ""
                             }
@@ -144,7 +143,6 @@ fun CommentBottomBar(
     onCommentChange: (String) -> Unit,
     onSendCommentClicked: () -> Unit
 ) {
-    // Kiểm tra nếu commentText chỉ chứa khoảng trắng hoặc rỗng thì nút gửi sẽ bị vô hiệu hóa
     val isSendButtonEnabled = commentText.trim().isNotEmpty()
 
     Log.d("NHII", "issendbutton $isSendButtonEnabled")
@@ -325,7 +323,7 @@ fun CommentScreenPreview() {
         profileImage = "https://randomuser.me/api/portraits/women/1.jpg"
     )
     CommentScreen(
-        postId = "1",
+        post = Post(),
         currentUser = currentUser,
         showCommentScreen = true,
         onDismiss = {}
