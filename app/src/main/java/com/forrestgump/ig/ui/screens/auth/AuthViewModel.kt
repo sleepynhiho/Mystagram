@@ -6,6 +6,7 @@ import com.forrestgump.ig.data.models.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -16,7 +17,6 @@ class AuthViewModel @Inject constructor(
     private val firestore: FirebaseFirestore,
 ) : ViewModel() {
 
-    // Khởi tạo FirebaseAuth instance
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
     var uiState = MutableStateFlow(UiState())
@@ -34,12 +34,15 @@ class AuthViewModel @Inject constructor(
         uiState.value = uiState.value.copy(password = newPassword)
     }
 
-    // Hàm đăng nhập
     fun login(email: String, password: String, onResult: (Boolean, String?) -> Unit) {
         viewModelScope.launch {
             auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
+                        val user = auth.currentUser
+                        user?.uid?.let { userId ->
+                            saveFCMTokenToFirestore(userId)
+                        }
                         onResult(true, null)
                     } else {
                         onResult(false, task.exception?.message)
@@ -48,7 +51,6 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    // Hàm đăng ký
     fun signup(
         email: String,
         password: String,
@@ -59,7 +61,6 @@ class AuthViewModel @Inject constructor(
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        // Sau khi đăng ký thành công, cập nhật displayName của người dùng
                         val user = auth.currentUser
                         val profileUpdates = UserProfileChangeRequest.Builder()
                             .setDisplayName(username)
@@ -75,6 +76,7 @@ class AuthViewModel @Inject constructor(
                                     )
                                     firestore.collection("users").document(user.uid).set(userData)
                                         .addOnSuccessListener {
+                                            saveFCMTokenToFirestore(user.uid)
                                             onResult(true, null)
                                         }
                                         .addOnFailureListener { e ->
@@ -91,7 +93,20 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    // Hàm quên mật khẩu
+    private fun saveFCMTokenToFirestore(userId: String) {
+        FirebaseMessaging.getInstance().token
+            .addOnCompleteListener { task ->
+                if (!task.isSuccessful) return@addOnCompleteListener
+                val token = task.result
+
+                FirebaseFirestore.getInstance().collection("users")
+                    .document(userId)
+                    .update("fcmToken", token)
+                    .addOnSuccessListener { println("FCM Token saved for $userId") }
+                    .addOnFailureListener { e -> println("Error saving FCM Token: $e") }
+            }
+    }
+
     fun forgotPassword(email: String, onResult: (Boolean, String?) -> Unit) {
         viewModelScope.launch {
             auth.sendPasswordResetEmail(email)
