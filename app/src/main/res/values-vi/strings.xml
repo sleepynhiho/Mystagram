@@ -116,4 +116,6 @@
     <string name="no_user_found">Không tìm thấy người dùng nào</string>
     <string name="enter_location">Nhập vị trí</string>
     <string name="enter_time">Nhập thời gian</string>
+    <string name="from_time">Từ</string>
+    <string name="to_time">Đến</string>
 </resources>

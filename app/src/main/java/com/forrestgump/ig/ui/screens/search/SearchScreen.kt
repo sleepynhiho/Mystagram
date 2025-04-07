@@ -114,6 +114,8 @@ fun SearchScreen(
 
     var locationInput by remember { mutableStateOf("") }
     var timeInput by remember { mutableStateOf("") }
+    var fromTimeInput by remember { mutableStateOf("") }
+    var toTimeInput by remember { mutableStateOf("") }
 
     val tabs = listOf("Users", "Posts")
 
@@ -307,14 +309,23 @@ fun SearchScreen(
                             )
 
                             if (postTimeFilter) {
-                                OutlinedTextField(
-                                    value = timeInput,
-                                    onValueChange = { timeInput = it },
-                                    label = { Text(text = stringResource(id = R.string.enter_time)) },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 8.dp)
-                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    OutlinedTextField(
+                                        value = fromTimeInput,
+                                        onValueChange = { fromTimeInput = it },
+                                        label = { Text(text = stringResource(id = R.string.from_time)) },
+                                        modifier = Modifier.weight(1f).padding(end = 4.dp)
+                                    )
+                                    OutlinedTextField(
+                                        value = toTimeInput,
+                                        onValueChange = { toTimeInput = it },
+                                        label = { Text(text = stringResource(id = R.string.to_time)) },
+                                        modifier = Modifier.weight(1f).padding(start = 4.dp)
+                                    )
+                                }
                             }
                         }
                     }

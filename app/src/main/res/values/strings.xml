@@ -118,5 +118,6 @@
     <string name="no_user_found">No user found</string>
     <string name="enter_location">Enter location</string>
     <string name="enter_time">Enter time</string>
-
+    <string name="from_time">From</string>
+    <string name="to_time">To</string>
 </resources>
