@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -241,128 +242,47 @@ fun PostActions(
     addPostViewModel: AddPostViewModel,
     currentUser: User,
 ) {
-    var showReactions by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
-    var job by remember { mutableStateOf<Job?>(null) }
-    var selectedReaction by remember {
-        mutableStateOf(post.reactions.entries.find { it.value.contains(currentUser.userId) }?.key)
-    }
+    key(post.postId) {
+        var showReactions by remember { mutableStateOf(false) }
+        val coroutineScope = rememberCoroutineScope()
+        var job by remember { mutableStateOf<Job?>(null) }
 
-    Box(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(35.dp)
-                    .clickable { showReactions = false }
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            onPress = {
-                                job?.cancel()
-                                job = coroutineScope.launch {
-                                    delay(300)
-                                    showReactions = true
-                                }
-                                tryAwaitRelease()
-                                job?.cancel() // Hủy job nếu thả tay trước 300ms
-                            },
-                            onTap = {
-                                Log.d("NHII", "onTap")
-                                selectedReaction?.let { it1 -> Log.d("NHII", it1) }
-                                val newReaction = if (selectedReaction == null) "love" else null
-                                post.let { it1 ->
-                                    addPostViewModel.updateReaction(
-                                        it1,
-                                        currentUser,
-                                        selectedReaction,
-                                        newReaction
-                                    )
-                                }
-                                selectedReaction = newReaction
-                                showReactions = false
-                            }
-                        )
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                if (selectedReaction == null) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.heart_outlined),
-                        contentDescription = "love",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(32.dp)
-                    )
-                } else {
-                    Image(
-                        painter = painterResource(id = reactionDrawables[selectedReaction]!!),
-                        contentDescription = "react",
-                        modifier = Modifier.size(30.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(5.dp))
-
-            if (post.reactions.entries.isNotEmpty()) {
-                Text(
-                    text = post.reactions.entries.size.toString(),
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-
-
-            IconButton(onClick = onCommentClicked) {
-                Icon(
-                    painter = painterResource(id = R.drawable.comment),
-                    contentDescription = "Comment",
-                    tint = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.size(28.dp)
-                )
-            }
-            Spacer(modifier = Modifier.width(2.dp))
-
-            if ((post.commentsCount) > 0) {
-                Text(
-                    text = post.commentsCount.toString(),
-                    color = Color.Black,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
+        var selectedReaction by remember {
+            mutableStateOf(post.reactions.entries.find { it.value.contains(currentUser.userId) }?.key)
         }
 
-        // Lựa chọn reactions
-        Column {
-            AnimatedVisibility(
-                visible = showReactions,
-                enter = fadeIn(animationSpec = tween(300)) + scaleIn(initialScale = 0.8f),
-                exit = fadeOut(animationSpec = tween(200)) + scaleOut(targetScale = 0.8f)
+
+        Box(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
+                Box(
                     modifier = Modifier
-                        .padding(start = 10.dp)
-                        .shadow(2.dp, shape = RoundedCornerShape(20.dp))
-                        .background(MainBackground, shape = RoundedCornerShape(20.dp))
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    reactions.forEach { (key, asset) ->
-                        Box(
-                            modifier = Modifier
-                                .size(35.dp)
-                                .clickable {
-                                    val newReaction = if (selectedReaction == key) null else key
-                                    post.let {
+                        .size(35.dp)
+                        .clickable { showReactions = false }
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onPress = {
+                                    job?.cancel()
+                                    job = coroutineScope.launch {
+                                        delay(300)
+                                        showReactions = true
+                                    }
+                                    tryAwaitRelease()
+                                    job?.cancel() // Hủy job nếu thả tay trước 300ms
+                                },
+                                onTap = {
+                                    Log.d("NHII", "onTap")
+                                    selectedReaction?.let { it1 -> Log.d("NHII", it1) }
+                                    val newReaction = if (selectedReaction == null) "love" else null
+                                    post.let { it1 ->
                                         addPostViewModel.updateReaction(
-                                            post,
+                                            it1,
                                             currentUser,
                                             selectedReaction,
                                             newReaction
@@ -371,8 +291,95 @@ fun PostActions(
                                     selectedReaction = newReaction
                                     showReactions = false
                                 }
-                        ) {
-                            LottieAnimationView(assetName = asset)
+                            )
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    selectedReaction?.let { Log.d("NHII reaction", it) }
+                    Log.d("NHII POST: ", post.caption)
+                    if (selectedReaction == null) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.heart_outlined),
+                            contentDescription = "love",
+                            tint = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(id = reactionDrawables[selectedReaction]!!),
+                            contentDescription = "react",
+                            modifier = Modifier.size(30.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(5.dp))
+
+                if (post.reactions.entries.isNotEmpty()) {
+                    Text(
+                        text = post.reactions.entries.size.toString(),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+
+                IconButton(onClick = onCommentClicked) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.comment),
+                        contentDescription = "Comment",
+                        tint = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(2.dp))
+
+                if ((post.commentsCount) > 0) {
+                    Text(
+                        text = post.commentsCount.toString(),
+                        color = Color.Black,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
+            // Lựa chọn reactions
+            Column {
+                AnimatedVisibility(
+                    visible = showReactions,
+                    enter = fadeIn(animationSpec = tween(300)) + scaleIn(initialScale = 0.8f),
+                    exit = fadeOut(animationSpec = tween(200)) + scaleOut(targetScale = 0.8f)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .padding(start = 10.dp)
+                            .shadow(2.dp, shape = RoundedCornerShape(20.dp))
+                            .background(MainBackground, shape = RoundedCornerShape(20.dp))
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        reactions.forEach { (key, asset) ->
+                            Box(
+                                modifier = Modifier
+                                    .size(35.dp)
+                                    .clickable {
+                                        val newReaction = if (selectedReaction == key) null else key
+                                        post.let {
+                                            addPostViewModel.updateReaction(
+                                                post,
+                                                currentUser,
+                                                selectedReaction,
+                                                newReaction
+                                            )
+                                        }
+                                        selectedReaction = newReaction
+                                        showReactions = false
+                                    }
+                            ) {
+                                LottieAnimationView(assetName = asset)
+                            }
                         }
                     }
                 }

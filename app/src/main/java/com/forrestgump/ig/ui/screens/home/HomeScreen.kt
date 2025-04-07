@@ -18,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import com.forrestgump.ig.ui.screens.home.components.TopNavBar
 import com.forrestgump.ig.ui.screens.story.StoryScreen
@@ -42,13 +43,18 @@ fun HomeScreen(
     onChatScreenClicked: () -> Unit,
 ) {
     var userStoryIndex by remember { mutableIntStateOf(0) }
-    val isMyStory by remember { mutableStateOf(true) }
+    var isMyStory by remember { mutableStateOf(true) }
     var showCommentScreen by remember { mutableStateOf(false) }
     var selectedPost by remember { mutableStateOf<Post?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.observePosts()
+//        viewModel.observeStories(currentUser.userId)
     }
+
+    Log.d("NHII home mystory:", uiState.myStories.toString())
+    Log.d("NHII home otherstory:", uiState.userStories.toString())
+
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -70,7 +76,9 @@ fun HomeScreen(
                             currentUser = currentUser,
                             onAddStoryClicked = onAddStoryClicked,
                             onViewStoryClicked = { index, myStory ->
-                                onStoryScreenClicked(true, index)
+                                userStoryIndex = index
+                                onStoryScreenClicked(true, userStoryIndex)
+                                isMyStory = myStory
                             },
                             userStories = uiState.userStories,
                             myStories = uiState.myStories
