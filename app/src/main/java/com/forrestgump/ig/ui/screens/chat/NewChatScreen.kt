@@ -5,8 +5,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.forrestgump.ig.data.models.User
@@ -18,9 +24,20 @@ import com.forrestgump.ig.utils.constants.Utils.MainBackground
 @Composable
 fun NewChatScreen(
     currentUser: User,
-    users: List<User>,
-    navHostController: NavHostController
+    navHostController: NavHostController,
+    chatViewModel: ChatViewModel = hiltViewModel()
 ) {
+    // fix: change logic to following users
+    val users by chatViewModel.users.observeAsState(emptyList())
+
+    LaunchedEffect(currentUser.userId) {
+        chatViewModel.getChatsForUser(currentUser.userId)
+    }
+    val chats by chatViewModel.chatsState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        chatViewModel.loadUsers()
+    }
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -32,8 +49,9 @@ fun NewChatScreen(
         NewChatList(
             innerPadding = innerPadding,
             navHostController = navHostController,
-            myUsername = currentUser.username,
-            users = users
+            users = users,
+            currentUser = currentUser,
+            filterChats = chats
         )
     }
 }
@@ -48,26 +66,11 @@ fun NewChatScreenPreview() {
         profileImage = "https://randomuser.me/api/portraits/women/1.jpg"
     )
 
-    // Sample users list with 10 real images
-    val sampleUsers = listOf(
-        User(userId = "2", username = "Bob", profileImage = "https://randomuser.me/api/portraits/men/2.jpg"),
-        User(userId = "3", username = "Charlie", profileImage = "https://randomuser.me/api/portraits/men/3.jpg"),
-        User(userId = "4", username = "David", profileImage = "https://randomuser.me/api/portraits/men/4.jpg"),
-        User(userId = "5", username = "Emma", profileImage = "https://randomuser.me/api/portraits/women/5.jpg"),
-        User(userId = "6", username = "Sophia", profileImage = "https://randomuser.me/api/portraits/women/6.jpg"),
-        User(userId = "7", username = "Michael", profileImage = "https://randomuser.me/api/portraits/men/7.jpg"),
-        User(userId = "8", username = "Olivia", profileImage = "https://randomuser.me/api/portraits/women/8.jpg"),
-        User(userId = "9", username = "Daniel", profileImage = "https://randomuser.me/api/portraits/men/9.jpg"),
-        User(userId = "10", username = "Liam", profileImage = "https://randomuser.me/api/portraits/men/10.jpg"),
-        User(userId = "11", username = "Ava", profileImage = "https://randomuser.me/api/portraits/women/11.jpg")
-    )
-
     // Fake NavController for preview
     val fakeNavController = rememberNavController()
 
     NewChatScreen(
         currentUser = currentUser,
-        users = sampleUsers,
         navHostController = fakeNavController
     )
 }

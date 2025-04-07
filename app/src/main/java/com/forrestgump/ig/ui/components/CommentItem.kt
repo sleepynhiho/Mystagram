@@ -71,8 +71,8 @@ fun CommentItem(comment: Comment) {
                     text = comment.username,
                     style = TextStyle(
                         color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 19.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
                 )
 
@@ -80,11 +80,11 @@ fun CommentItem(comment: Comment) {
 
                 // Story's timestamp
                 comment.timestamp?.let {
-                    androidx.compose.material3.Text(
+                    Text(
                         text = it.formatAsElapsedTime(),
                         style = TextStyle(
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                            fontSize = 19.sp,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Normal
                         ),
                     )
@@ -95,7 +95,7 @@ fun CommentItem(comment: Comment) {
                 text = comment.text,
                 style = TextStyle(
                     color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 19.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Normal
                 )
             )
@@ -110,7 +110,6 @@ fun CommentItemPreview() {
     CommentItem(
         comment = Comment(
             commentId = "cmt123",
-            postId = "post456",
             userId = "userA",
             username = "alice",
             profileImage = "https://example.com/alice.jpg",

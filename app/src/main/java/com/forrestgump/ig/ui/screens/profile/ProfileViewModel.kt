@@ -49,8 +49,8 @@ class ProfileViewModel @Inject constructor(
                             // followers và following được lưu là List<String> trong document
                             followers = document.get("followers") as? List<String> ?: emptyList(),
                             following = document.get("following") as? List<String> ?: emptyList(),
-                            isPrivate = document.getBoolean("private") ?: false,
-                            isPremium = document.getBoolean("premium") ?: false
+//                            isPrivate = document.getBoolean("private") ?: false,
+//                            isPremium = document.getBoolean("premium") ?: false
                         )
                         uiState.update { currentState ->
                             currentState.copy(isLoading = false, curUser = updatedUser)
@@ -123,6 +123,7 @@ class ProfileViewModel @Inject constructor(
         newUsername: String,
         newBio: String,
         newAccountPrivacy: Boolean,
+        newLocation: String? = null, // Add location parameter
         onSuccess: () -> Unit = {},
         onFailure: (Exception) -> Unit = {}
     ) {
@@ -133,21 +134,33 @@ class ProfileViewModel @Inject constructor(
                 fullName = newFullName,
                 username = newUsername,
                 isPrivate = newAccountPrivacy,
-                bio = newBio
+                bio = newBio,
+                location = newLocation ?: currentUser.location // Update location if provided
             )
             // Cập nhật uiState ngay trên local
             uiState.update { it.copy(curUser = updatedUser) }
+
+
+            // Create a map for updates
+            val updates = mutableMapOf(
+                "profileImage" to imageUrl,
+                "fullName" to newFullName,
+                "username" to newUsername,
+                "bio" to newBio,
+                "private" to newAccountPrivacy
+            )
+
+            // Add location to updates if provided
+            if (newLocation != null) {
+                updates["location"] = newLocation
+            }
+            Log.d("ProfileViewModel", "New Location: $newLocation")
+
             // Tham chiếu đến document của user
             val userDocRef = firestore.collection("users").document(currentUser.userId)
-            userDocRef.update(
-                mapOf(
-                    "profileImage" to imageUrl,
-                    "fullName" to newFullName,
-                    "username" to newUsername,
-                    "bio" to newBio,
-                    "private" to newAccountPrivacy
-                )
-            ).addOnSuccessListener {
+            userDocRef.update(updates as Map<String, Any>)
+                .addOnSuccessListener {
+
                 // Sau khi cập nhật user, tiến hành cập nhật ảnh đại diện trong các bài post
                 firestore.collection("posts")
                     .whereEqualTo("userId", currentUser.userId)
@@ -203,6 +216,16 @@ class ProfileViewModel @Inject constructor(
             }
         }
 
+    }
+
+    fun updateLocalUserLocation(newLocation: String) {
+        val currentUser = uiState.value.curUser
+        val updatedUser = currentUser.copy(
+            location = newLocation
+        )
+        // Update local state only
+        uiState.update { it.copy(curUser = updatedUser) }
+        Log.d("ProfileViewModel", "updateLocalUserLocation: ${uiState.value.curUser.location}")
     }
 
     private fun clearUiState() {

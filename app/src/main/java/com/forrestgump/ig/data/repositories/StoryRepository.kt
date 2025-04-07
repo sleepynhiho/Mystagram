@@ -9,8 +9,12 @@ import com.forrestgump.ig.data.models.Story
 import com.forrestgump.ig.data.models.UserStory
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -21,7 +25,11 @@ class StoryRepository @Inject constructor(
     private val cloudinary: Cloudinary
 ) {
 
-    suspend fun uploadStoryImage(imageUri: Uri, username: String, context: Context): Result<String> {
+    suspend fun uploadStoryImage(
+        imageUri: Uri,
+        username: String,
+        context: Context
+    ): Result<String> {
         return try {
             val inputStream = context.contentResolver.openInputStream(imageUri)
                 ?: return Result.failure(Exception("Không thể đọc ảnh"))
@@ -65,6 +73,10 @@ class StoryRepository @Inject constructor(
                     val username = userDoc.getString("username") ?: "Unknown"
                     val profileImage = userDoc.getString("profileImage") ?: R.drawable.default_profile_image.toString()
 
+                    if (profileImage != null) {
+                        Log.d("NHII GET USER STORIES", profileImage)
+                    }
+
                     firestore.collection("stories").document(userId)
                         .collection("stories")
                         .orderBy("timestamp", Query.Direction.DESCENDING)
@@ -74,14 +86,18 @@ class StoryRepository @Inject constructor(
                                 doc.toObject(Story::class.java)?.copy(storyId = doc.id)
                             } ?: emptyList()
 
-                            userStoriesList.add(
+                            profileImage?.let {
                                 UserStory(
                                     userId = userId,
                                     username = username,
-                                    profileImage = profileImage,
+                                    profileImage = it,
                                     stories = storyList
                                 )
-                            )
+                            }?.let {
+                                userStoriesList.add(
+                                    it
+                                )
+                            }
                         }
                 }
 
@@ -93,4 +109,44 @@ class StoryRepository @Inject constructor(
                 callback(emptyList())
             }
     }
+
+    fun observeMyStories(userId: String): Flow<List<UserStory>> = callbackFlow {
+        val listener: ListenerRegistration = firestore.collection("stories")
+            .whereEqualTo("userId", userId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+
+                val stories = snapshot?.documents?.mapNotNull {
+                    it.toObject(UserStory::class.java)
+                }
+
+                trySend(stories ?: emptyList())
+            }
+
+        awaitClose { listener.remove() }
+    }
+
+    fun observeOtherStories(userId: String): Flow<List<UserStory>> = callbackFlow {
+        val listener: ListenerRegistration = firestore.collection("stories")
+            .whereNotEqualTo("userId", userId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+
+                val stories = snapshot?.documents?.mapNotNull {
+                    it.toObject(UserStory::class.java)
+                }
+
+                trySend(stories ?: emptyList())
+            }
+
+        awaitClose { listener.remove() }
+    }
+
+
 }

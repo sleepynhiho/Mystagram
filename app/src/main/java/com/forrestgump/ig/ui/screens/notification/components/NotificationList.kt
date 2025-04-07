@@ -102,11 +102,11 @@ fun getNotificationMessage(notification: Notification): AnnotatedString {
         }
         append(
             when (notification.type) {
-                NotificationType.LIKE -> " " + stringResource(id = R.string.notification_like)
-                NotificationType.COMMENT -> " " + stringResource(id = R.string.notification_comment)
-                NotificationType.FOLLOW -> " " + stringResource(id = R.string.notification_follow)
-                NotificationType.FOLLOW_REQUEST -> " " + stringResource(id = R.string.notification_follow_request)
-                NotificationType.FOLLOW_ACCEPTED -> " " + stringResource(id = R.string.notification_follow_accepted)
+                NotificationType.REACT -> stringResource(R.string.react_noti)
+                NotificationType.COMMENT -> stringResource(R.string.comment_noti)
+                NotificationType.FOLLOW -> stringResource(R.string.follow_noti)
+                NotificationType.FOLLOW_REQUEST -> stringResource(R.string.follow_req_noti)
+                NotificationType.FOLLOW_ACCEPTED -> stringResource(R.string.follow_accepted_noti)
             }
         )
 
@@ -170,7 +170,7 @@ fun NotificationListPreview() {
             Notification(
                 senderUsername = "jane_doe",
                 senderProfileImage = R.drawable.default_profile_image.toString(),
-                type = NotificationType.LIKE
+                type = NotificationType.REACT
             ),
             Notification(
                 senderUsername = "john_doe",

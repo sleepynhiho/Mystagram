@@ -2,8 +2,11 @@ package com.forrestgump.ig.ui.screens.addStory
 
 import android.content.Context
 import android.net.Uri
+import androidx.annotation.OptIn
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.util.Log
+import androidx.media3.common.util.UnstableApi
 import com.cloudinary.Cloudinary
 import com.forrestgump.ig.R
 import com.forrestgump.ig.data.models.Story
@@ -28,8 +31,9 @@ class AddStoryViewModel @Inject constructor(
     private val cloudinary: Cloudinary,
 ) : ViewModel() {
 
+    @OptIn(UnstableApi::class)
     fun uploadStoryImage(
-        user: User?,
+        currentUser: User,
         imageUri: Uri,
         context: Context,
         onSuccess: () -> Unit,
@@ -37,16 +41,11 @@ class AddStoryViewModel @Inject constructor(
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                if (user == null) {
-                    withContext(Dispatchers.Main) {
-                        onError("Người dùng chưa đăng nhập")
-                    }
-                    return@launch
-                }
 
-                val userId = user.userId
-                val username = user.username
-                val profileImage = user.profileImage
+                val userId = currentUser.userId
+                val username = currentUser.username
+                val profileImage = currentUser.profileImage
+                Log.d("NHII PROFILE IMG: ", profileImage)
 
                 val inputStream = context.contentResolver.openInputStream(imageUri)
                     ?: throw IllegalArgumentException("Không thể đọc ảnh")

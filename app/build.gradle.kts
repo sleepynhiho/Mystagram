@@ -89,6 +89,11 @@ dependencies {
     implementation(libs.play.services.cast.framework)
     implementation(libs.androidx.animation.android)
     implementation(libs.androidx.animation.android)
+    implementation(fileTree(mapOf(
+        "dir" to "D:\\THIRD-YEAR_SEMESTER-2\\Mobile\\Project\\ZalopayLib",
+        "include" to listOf("*.aar", "*.jar"),
+        "exclude" to listOf("")
+    )))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -148,4 +153,5 @@ dependencies {
     implementation(libs.androidx.ui.v178)
     implementation(libs.androidx.material3.window.size.class1)
     implementation(libs.accompanist.systemuicontroller)
+    implementation(libs.firebase.messaging.ktx)
 }

@@ -101,4 +101,16 @@ class HomeViewModel @Inject constructor(
             )
         }
     }
+
+    fun observePosts() {
+        postRepository.observePosts { posts ->
+            uiState.update { currentState ->
+                currentState.copy(
+                    posts = posts,
+                    isLoading = false,
+                    isRefreshing = false
+                )
+            }
+        }
+    }
 }
