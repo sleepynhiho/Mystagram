@@ -43,7 +43,7 @@ class ProfileViewModel @Inject constructor(
                             userId = userId,
                             fullName = document.getString("fullName") ?: "",
                             username = document.getString("username") ?: "",
-                            profileImage = document.getString("profileImage") ?: "@drawable/default_profile_image",
+                            profileImage = document.getString("profileImage") ?: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlRM2-AldpZgaraCXCnO5loktGi0wGiNPydQ&s",
                             bio = document.getString("bio") ?: "No Bio yet",
                             location = document.getString("location") ?: "",
                             // followers và following được lưu là List<String> trong document

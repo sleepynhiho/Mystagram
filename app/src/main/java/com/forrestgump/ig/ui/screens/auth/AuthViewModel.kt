@@ -71,7 +71,7 @@ class AuthViewModel @Inject constructor(
                                         userId = user.uid,
                                         email = email,
                                         username = username,
-                                        profileImage = "@drawable/default_profile_image",
+                                        profileImage = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlRM2-AldpZgaraCXCnO5loktGi0wGiNPydQ&s",
                                     )
                                     firestore.collection("users").document(user.uid).set(userData)
                                         .addOnSuccessListener {

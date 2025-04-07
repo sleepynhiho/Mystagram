@@ -815,9 +815,11 @@ fun InnerNavigation(
             }
         ) { navBackStackEntry ->
             val userId = navBackStackEntry.arguments?.getString("userId") ?: ""
+            LaunchedEffect(userId) {
+                viewModelOtherUserProfile.loadUserData(userId)
+            }
             currentUser?.let { currentUser ->
                 UserProfileScreen(
-                    userId = userId,
                     navController = navHostController,
                     viewModel = viewModelOtherUserProfile
                 )

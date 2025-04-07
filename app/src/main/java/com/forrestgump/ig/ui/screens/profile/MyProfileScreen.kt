@@ -72,9 +72,6 @@ fun MyProfileScreen(
                     navController = navController
                 )
 
-                // (Tuỳ chọn) Khu vực Story Highlights, v.v. (Ở Instagram thường có một hàng story highlight)
-//                StoryHighlightsSection()
-
                 // Khu vực nút "Chỉnh sửa" và "Chia sẻ"
                 ProfileActionButtons(navController = navController)
                 Spacer(modifier = Modifier.height(16.dp))
@@ -117,15 +114,9 @@ fun ProfileInfoSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            val painterImage = if (profileImage.startsWith("http://") || profileImage.startsWith("https://")) {
-                rememberAsyncImagePainter(model = profileImage)
-            } else {
-                val resId = R.drawable.default_profile_img
-                painterResource(id = resId)
-            }
             // Ảnh đại diện
-            Image(
-                painter = painterImage,
+            AsyncImage(
+                model = profileImage,
                 contentDescription = "Profile Image",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
