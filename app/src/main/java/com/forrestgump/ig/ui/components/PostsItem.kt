@@ -77,7 +77,7 @@ fun PostItem(
     onCommentClicked: () -> Unit,
     navController: NavController?,
     currentUser: User,
-    addPostViewModel: AddPostViewModel = hiltViewModel()
+    postViewModel: PostViewModel = hiltViewModel()
 ) {
     Log.d("PostItem", "Rendering post: ${post.postId}")
 
@@ -88,7 +88,7 @@ fun PostItem(
     ) {
         PostHeader(post, navController)
         PostMedia(post)
-        PostActions(post, onCommentClicked, addPostViewModel, currentUser)
+        PostActions(post, onCommentClicked, postViewModel, currentUser)
         PostDetails(post)
     }
 }
@@ -108,7 +108,7 @@ fun LottieAnimationView(assetName: String) {
 fun PostHeader(post: Post, navController: NavController? = null) {
     // Get the current user ID
     val currentUserID = FirebaseAuth.getInstance().currentUser?.uid
-    
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -274,7 +274,7 @@ val reactionDrawables = mapOf(
 fun PostActions(
     post: Post,
     onCommentClicked: () -> Unit,
-    addPostViewModel: AddPostViewModel,
+    postViewModel: PostViewModel,
     currentUser: User,
 ) {
     key(post.postId) {
@@ -316,7 +316,7 @@ fun PostActions(
                                     selectedReaction?.let { it1 -> Log.d("NHII", it1) }
                                     val newReaction = if (selectedReaction == null) "love" else null
                                     post.let { it1 ->
-                                        addPostViewModel.updateReaction(
+                                        postViewModel.updateReaction(
                                             it1,
                                             currentUser,
                                             selectedReaction,
@@ -402,7 +402,7 @@ fun PostActions(
                                     .clickable {
                                         val newReaction = if (selectedReaction == key) null else key
                                         post.let {
-                                            addPostViewModel.updateReaction(
+                                            postViewModel.updateReaction(
                                                 post,
                                                 currentUser,
                                                 selectedReaction,

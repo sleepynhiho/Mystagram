@@ -72,7 +72,10 @@ class StoryRepository @Inject constructor(
                     val userId = userDoc.id
                     val username = userDoc.getString("username") ?: "Unknown"
                     val profileImage = userDoc.getString("profileImage")
-                        ?: R.drawable.default_profile_img.toString()
+
+                    if (profileImage != null) {
+                        Log.d("NHII GET USER STORIES", profileImage)
+                    }
 
                     firestore.collection("stories").document(userId)
                         .collection("stories")
@@ -83,14 +86,18 @@ class StoryRepository @Inject constructor(
                                 doc.toObject(Story::class.java)?.copy(storyId = doc.id)
                             } ?: emptyList()
 
-                            userStoriesList.add(
+                            profileImage?.let {
                                 UserStory(
                                     userId = userId,
                                     username = username,
-                                    profileImage = profileImage,
+                                    profileImage = it,
                                     stories = storyList
                                 )
-                            )
+                            }?.let {
+                                userStoriesList.add(
+                                    it
+                                )
+                            }
                         }
                 }
 

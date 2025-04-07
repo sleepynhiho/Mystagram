@@ -248,7 +248,7 @@ fun CommentTopBar() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(50.dp)
+            .height(60.dp)
             .background(MainBackground)
             .drawBehind {
                 val strokeWidth = 1.dp.toPx()
@@ -267,7 +267,7 @@ fun CommentTopBar() {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxHeight()
-                .padding(10.dp)
+                .padding(15.dp)
         ) {
             Box(
                 modifier = Modifier
@@ -279,7 +279,7 @@ fun CommentTopBar() {
             Text(
                 text = stringResource(R.string.comment_header),
                 fontWeight = FontWeight.Bold,
-                fontSize = 14.sp
+                fontSize = 16.sp
             )
         }
     }

@@ -1,8 +1,11 @@
 package com.forrestgump.ig.ui.components
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.forrestgump.ig.data.models.Comment
+import com.forrestgump.ig.data.models.Notification
+import com.forrestgump.ig.data.models.NotificationType
 import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.data.repositories.PostRepository
@@ -61,6 +64,27 @@ class PostViewModel @Inject constructor(
 //        }
 //    }
 
+    fun updateReaction(post: Post, currentUser: User, previousReaction: String?, newReaction: String?) {
+        viewModelScope.launch {
+            try {
+                postRepository.updateReaction(post, currentUser, previousReaction, newReaction)
+                observePost(post.postId)
+            } catch (e: Exception) {
+                Log.e("UpdateReaction", "Error updating reaction", e)
+            }
+        }
+    }
 
+    private val _currentPost = MutableStateFlow<Post?>(null)
+    val currentPost: StateFlow<Post?> = _currentPost
+    private var postJob: Job? = null
 
+    private fun observePost(postId: String) {
+        postJob?.cancel()
+        postJob = viewModelScope.launch {
+            postRepository.getPostById(postId).collect { post ->
+                _currentPost.value = post
+            }
+        }
+    }
 }
