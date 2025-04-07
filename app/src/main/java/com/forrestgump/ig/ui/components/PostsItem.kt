@@ -19,7 +19,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -39,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -50,6 +54,7 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.R
+import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.ui.screens.addPost.AddPostViewModel
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -69,11 +74,12 @@ import com.forrestgump.ig.ui.navigation.Routes
 fun PostItem(
     post: Post,
     onCommentClicked: () -> Unit,
-    currentUserID: String,
     navController: NavController?,
+    currentUser: User,
     addPostViewModel: AddPostViewModel = hiltViewModel()
 ) {
     Log.d("PostItem", "Rendering post: ${post.postId}")
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -81,11 +87,7 @@ fun PostItem(
     ) {
         PostHeader(post, navController)
         PostMedia(post)
-        PostActions(
-            post, onCommentClicked,
-            addPostViewModel,
-            currentUserID
-        )
+        PostActions(post, onCommentClicked, addPostViewModel, currentUser)
         PostDetails(post)
     }
 }
@@ -172,7 +174,7 @@ fun PostMedia(post: Post) {
     // Phần media: hiển thị nhiều ảnh nếu có
     // Giả sử Post có thuộc tính mediaUrls: List<String>
     // Nếu không có thì dùng 1 ảnh duy nhất từ mediaUrl
-    val mediaUrls = if (post.mediaUrls.isNotEmpty()) post.mediaUrls else listOf(post.mediaUrls)
+    val mediaUrls = post.mediaUrls.ifEmpty { listOf(post.mediaUrls) }
     var showFullScreenImage by remember { mutableStateOf(false) }
     var currentImageIndex by remember { mutableStateOf(0) }
 
@@ -268,114 +270,150 @@ val reactionDrawables = mapOf(
 )
 
 @Composable
-fun PostActions(post: Post, onCommentClicked: () -> Unit, addPostViewModel: AddPostViewModel, currentUserID: String) {
-    var showReactions by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
-    var job by remember { mutableStateOf<Job?>(null) }
-    var selectedReaction by remember {
-        mutableStateOf(post.reactions.entries.find{it.value.contains(currentUserID)}?.key)
-    }
+fun PostActions(
+    post: Post,
+    onCommentClicked: () -> Unit,
+    addPostViewModel: AddPostViewModel,
+    currentUser: User,
+) {
+    key(post.postId) {
+        var showReactions by remember { mutableStateOf(false) }
+        val coroutineScope = rememberCoroutineScope()
+        var job by remember { mutableStateOf<Job?>(null) }
 
-    Box(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
+        var selectedReaction by remember {
+            mutableStateOf(post.reactions.entries.find { it.value.contains(currentUser.userId) }?.key)
+        }
+
+
+        Box(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Box(
+            Row(
                 modifier = Modifier
-                    .size(35.dp)
-                    .clickable { showReactions = false }
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            onPress = {
-                                job?.cancel() // Hủy coroutine cũ (nếu có)
-                                job = coroutineScope.launch {
-                                    delay(300)
-                                    showReactions = true
-                                }
-                                tryAwaitRelease()
-                                job?.cancel() // Hủy job nếu thả tay trước 300ms
-                            },
-                            onTap = {
-                                Log.d("NHII", "onTap")
-                                selectedReaction?.let { it1 -> Log.d("NHII", it1) }
-                                val newReaction = if (selectedReaction == null) "love" else null
-                                addPostViewModel.updateReaction(
-                                    post.postId,
-                                    currentUserID,
-                                    selectedReaction,
-                                    newReaction
-                                )
-                                selectedReaction = newReaction
-                                showReactions = false
-                            }
-                        )
-                    },
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                if (selectedReaction == null) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.heart_outlined),
-                        contentDescription = "love",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(32.dp)
+                Box(
+                    modifier = Modifier
+                        .size(35.dp)
+                        .clickable { showReactions = false }
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onPress = {
+                                    job?.cancel()
+                                    job = coroutineScope.launch {
+                                        delay(300)
+                                        showReactions = true
+                                    }
+                                    tryAwaitRelease()
+                                    job?.cancel() // Hủy job nếu thả tay trước 300ms
+                                },
+                                onTap = {
+                                    Log.d("NHII", "onTap")
+                                    selectedReaction?.let { it1 -> Log.d("NHII", it1) }
+                                    val newReaction = if (selectedReaction == null) "love" else null
+                                    post.let { it1 ->
+                                        addPostViewModel.updateReaction(
+                                            it1,
+                                            currentUser,
+                                            selectedReaction,
+                                            newReaction
+                                        )
+                                    }
+                                    selectedReaction = newReaction
+                                    showReactions = false
+                                }
+                            )
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    selectedReaction?.let { Log.d("NHII reaction", it) }
+                    Log.d("NHII POST: ", post.caption)
+                    if (selectedReaction == null) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.heart_outlined),
+                            contentDescription = "love",
+                            tint = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(id = reactionDrawables[selectedReaction]!!),
+                            contentDescription = "react",
+                            modifier = Modifier.size(30.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(5.dp))
+
+                if (post.reactions.entries.isNotEmpty()) {
+                    Text(
+                        text = post.reactions.entries.size.toString(),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
-                } else {
-                    Image(
-                        painter = painterResource(id = reactionDrawables[selectedReaction]!!),
-                        contentDescription = "react",
-                        modifier = Modifier.size(30.dp)
+                }
+
+
+                IconButton(onClick = onCommentClicked) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.comment),
+                        contentDescription = "Comment",
+                        tint = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(2.dp))
+
+                if ((post.commentsCount) > 0) {
+                    Text(
+                        text = post.commentsCount.toString(),
+                        color = Color.Black,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
             }
 
-
-            IconButton(onClick = onCommentClicked) {
-                Icon(
-                    painter = painterResource(id = R.drawable.comment),
-                    contentDescription = "Comment",
-                    tint = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.size(28.dp)
-                )
-            }
-        }
-
-        // Lựa chọn reactions
-        Column {
-            AnimatedVisibility(
-                visible = showReactions,
-                enter = fadeIn(animationSpec = tween(300)) + scaleIn(initialScale = 0.8f),
-                exit = fadeOut(animationSpec = tween(200)) + scaleOut(targetScale = 0.8f)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .padding(start = 10.dp)
-                        .shadow(2.dp, shape = RoundedCornerShape(20.dp))
-                        .background(MainBackground, shape = RoundedCornerShape(20.dp))
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+            // Lựa chọn reactions
+            Column {
+                AnimatedVisibility(
+                    visible = showReactions,
+                    enter = fadeIn(animationSpec = tween(300)) + scaleIn(initialScale = 0.8f),
+                    exit = fadeOut(animationSpec = tween(200)) + scaleOut(targetScale = 0.8f)
                 ) {
-                    reactions.forEach { (key, asset) ->
-                        Box(
-                            modifier = Modifier
-                                .size(35.dp)
-                                .clickable {
-                                    val newReaction = if (selectedReaction == key) null else key
-                                    addPostViewModel.updateReaction(
-                                        post.postId,
-                                        currentUserID,
-                                        selectedReaction,
-                                        newReaction
-                                    )
-                                    selectedReaction = newReaction
-                                    showReactions = false
-                                }
-                        ) {
-                            LottieAnimationView(assetName = asset)
+                    Row(
+                        modifier = Modifier
+                            .padding(start = 10.dp)
+                            .shadow(2.dp, shape = RoundedCornerShape(20.dp))
+                            .background(MainBackground, shape = RoundedCornerShape(20.dp))
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        reactions.forEach { (key, asset) ->
+                            Box(
+                                modifier = Modifier
+                                    .size(35.dp)
+                                    .clickable {
+                                        val newReaction = if (selectedReaction == key) null else key
+                                        post.let {
+                                            addPostViewModel.updateReaction(
+                                                post,
+                                                currentUser,
+                                                selectedReaction,
+                                                newReaction
+                                            )
+                                        }
+                                        selectedReaction = newReaction
+                                        showReactions = false
+                                    }
+                            ) {
+                                LottieAnimationView(assetName = asset)
+                            }
                         }
                     }
                 }
@@ -387,42 +425,50 @@ fun PostActions(post: Post, onCommentClicked: () -> Unit, addPostViewModel: AddP
 @Composable
 fun PostDetails(post: Post) {
     // Số reactions
-    // Chuyển đổi reactions thành Map<String, Int> (reactionType -> số lượng userId)
-    val reactionCounts = post.reactions.mapValues { it.value.size }
+    if (post.reactions.isNotEmpty()) {
+        val reactionCounts = post.reactions.mapValues { it.value.size }
 
-    // Sắp xếp reactions theo số lượng từ cao đến thấp
-    val sortedReactions = reactionCounts.entries.sortedByDescending { it.value }
+        val sortedReactions = reactionCounts.entries.sortedByDescending { it.value }
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(start = 40.dp)
-    ) {
-        Box {
-            sortedReactions.take(3).forEachIndexed { index, (reaction, _) ->
-                reactionDrawables[reaction]?.let { drawableId ->
-                    Image(
-                        painter = painterResource(id = drawableId),
-                        contentDescription = reaction,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .zIndex(index.toFloat())
-                            .offset(x = (-15 * index).dp)
-                    )
-                }
-            }
+        val paddingStart = when (sortedReactions.size) {
+            1 -> 15.dp  // 1 reaction, padding 10dp
+            2 -> 30.dp  // 2 reactions, padding 20dp
+            3 -> 40.dp  // 3 reactions, padding 30dp
+            else -> 40.dp  // Nhiều hơn 3 reactions, padding 40dp
         }
 
-        Spacer(modifier = Modifier.width(4.dp))
 
-        // Hiển thị tổng số reactions
-        val totalReactions = reactionCounts.values.sum()
-        Text(
-            text = "$totalReactions",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start,
+            modifier = Modifier.padding(start = paddingStart)
+        ) {
+            Box {
+                sortedReactions.take(3).forEachIndexed { index, (reaction, _) ->
+                    reactionDrawables[reaction]?.let { drawableId ->
+                        Image(
+                            painter = painterResource(id = drawableId),
+                            contentDescription = reaction,
+                            modifier = Modifier
+                                .size(20.dp)
+                                .zIndex(index.toFloat())
+                                .offset(x = (-15 * index).dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.width(4.dp))
+
+            // Hiển thị tổng số reactions
+            val totalReactions = reactionCounts.values.sum()
+            Text(
+                text = "$totalReactions",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
     }
-
 
     // Caption: hiển thị username và nội dung caption
     Text(
@@ -437,15 +483,6 @@ fun PostDetails(post: Post) {
         color = MaterialTheme.colorScheme.onBackground,
         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
     )
-
-    // Số bình luận
-    if (post.commentsCount > 0) {
-        Text(
-            text = "Xem tất cả ${post.commentsCount} bình luận",
-            style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray),
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-        )
-    }
 
     // Thời gian post
     val timeString = post.timestamp?.let { formatDate(it) } ?: ""
@@ -465,34 +502,35 @@ private fun formatDate(date: Date): String {
 }
 
 
-//@Preview
-//@Composable
-//fun PostItemPreview() {
-//    // Ví dụ mock data cho preview.
-//    PostItem(
-//        post = Post(
-//            postId = "1",
-//            userId = "user_123",
-//            username = "hcmusgang",
-//            profileImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUyAfXfniYfSTZ7Z2HjW2COSyC8WTH3TgkGw&s",
-//            mediaUrls = listOf(
-//                "https://static.vecteezy.com/system/resources/thumbnails/046/366/986/small_2x/beautiful-white-water-lily-and-pink-water-lily-flowers-on-rock-in-mountain-river-photo.jpg",
-//                "https://via.placeholder.com/300",
-//                "https://picsum.photos/300/200"
-//            ),
-//            caption = "Hôm nay đi ăn kem nè!",
-//            commentsCount = 5,
-//            mimeType = "image/png",
-//            timestamp = Date(),
-//            reactions = mapOf(
-//                "love" to List(43800) { "user_$it" }, // 43800 users reacted with "love"
-//                "sad" to List(8000) { "user_$it" },   // 8000 users reacted with "sad"
-//                "angry" to List(9000) { "user_$it" }  // 9000 users reacted with "angry"
-//            ),
-//        ),
-//        onCommentClicked = {},
-//        currentUserID = "a"
-//    )
-//}
+
+@Preview
+@Composable
+fun PostItemPreview() {
+    // Ví dụ mock data cho preview.
+    PostItem(
+        post = Post(
+            postId = "1",
+            userId = "user_123",
+            username = "hcmusgang",
+            profileImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUyAfXfniYfSTZ7Z2HjW2COSyC8WTH3TgkGw&s",
+            mediaUrls = listOf(
+                "https://static.vecteezy.com/system/resources/thumbnails/046/366/986/small_2x/beautiful-white-water-lily-and-pink-water-lily-flowers-on-rock-in-mountain-river-photo.jpg",
+                "https://via.placeholder.com/300",
+                "https://picsum.photos/300/200"
+            ),
+            caption = "Hôm nay đi ăn kem nè!",
+            commentsCount = 5,
+            mimeType = "image/png",
+            timestamp = Date(),
+            reactions = mapOf(
+                "love" to List(43800) { "user_$it" }, // 43800 users reacted with "love"
+                "sad" to List(8000) { "user_$it" },   // 8000 users reacted with "sad"
+                "angry" to List(9000) { "user_$it" }  // 9000 users reacted with "angry"
+            ),
+        ),
+        onCommentClicked = {},
+        currentUser = User()
+    )
+}
 
 

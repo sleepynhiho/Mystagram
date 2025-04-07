@@ -64,7 +64,7 @@ fun UserStoryCard(
         label = "storyCardAnimation"
     )
 
-    val isAllStoryViewed = userStory.stories.last().views.contains(currentUser.username)
+    val isAllStoryViewed = userStory.stories.lastOrNull()?.views?.contains(currentUser.username)
     Box(
         modifier = Modifier
             .padding(horizontal = 10.dp)
@@ -100,7 +100,7 @@ fun UserStoryCard(
                             brush = Brush.linearGradient(
                                 start = Offset(x = 0.0f, y = 50.0f),
                                 end = Offset(x = 200.0f, y = 250.0f),
-                                colors = if (isAllStoryViewed) {
+                                colors = if (isAllStoryViewed == true) {
                                     listOf(
                                         Color.DarkGray,
                                         Color.DarkGray
@@ -118,7 +118,7 @@ fun UserStoryCard(
                                 }
                             ),
                             shape = CircleShape,
-                            width = if (isAllStoryViewed) 1.dp else 2.dp
+                            width = if (isAllStoryViewed == true) 1.dp else 2.dp
                         )
                         .border(width = 5.dp, color = MainBackground, shape = CircleShape),
                     color = Color.LightGray

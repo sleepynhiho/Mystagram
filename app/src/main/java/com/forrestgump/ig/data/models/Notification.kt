@@ -20,7 +20,7 @@ data class Notification(
 
     @get:PropertyName("type")
     @set:PropertyName("type")
-    var type: NotificationType = NotificationType.LIKE,
+    var type: NotificationType = NotificationType.REACT,
 
     @ServerTimestamp
     var timestamp: Date? = null          // Thời gian thông báo

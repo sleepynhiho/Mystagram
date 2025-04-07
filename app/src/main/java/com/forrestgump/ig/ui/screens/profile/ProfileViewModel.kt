@@ -49,8 +49,8 @@ class ProfileViewModel @Inject constructor(
                             // followers và following được lưu là List<String> trong document
                             followers = document.get("followers") as? List<String> ?: emptyList(),
                             following = document.get("following") as? List<String> ?: emptyList(),
-                            isPrivate = document.getBoolean("private") ?: false,
-                            isPremium = document.getBoolean("premium") ?: false
+//                            isPrivate = document.getBoolean("private") ?: false,
+//                            isPremium = document.getBoolean("premium") ?: false
                         )
                         uiState.update { currentState ->
                             currentState.copy(isLoading = false, curUser = updatedUser)
@@ -160,6 +160,7 @@ class ProfileViewModel @Inject constructor(
             val userDocRef = firestore.collection("users").document(currentUser.userId)
             userDocRef.update(updates as Map<String, Any>)
                 .addOnSuccessListener {
+
                 // Sau khi cập nhật user, tiến hành cập nhật ảnh đại diện trong các bài post
                 firestore.collection("posts")
                     .whereEqualTo("userId", currentUser.userId)

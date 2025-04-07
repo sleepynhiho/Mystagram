@@ -280,11 +280,11 @@ fun EditProfileScreen(
                         .padding(12.dp)
                         .clickable { /* TODO: Handle premium click */ }
                 ) {
-                    Text(
-                        text = if (newStateOfPremium) "Hủy gói premium" else "Chuyển thành tài khoản premium",
-                        color = Color.Black,
-                        fontSize = 16.sp
-                    )
+//                    Text(
+//                        text = if (newStateOfPremium) "Hủy gói premium" else "Chuyển thành tài khoản premium",
+//                        color = Color.Black,
+//                        fontSize = 16.sp
+//                    )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -311,16 +311,16 @@ fun EditProfileScreen(
                             Spacer(modifier = Modifier.width(16.dp))
                             Text(text = "Account privacy", color = Color.Black, fontSize = 15.sp)
                         }
-                        Switch(
-                            checked = newAccountPrivacy,
-                            onCheckedChange = { newValue -> newAccountPrivacy = newValue },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = Color.Gray,
-                                uncheckedThumbColor = Color.White,
-                                uncheckedTrackColor = Color.DarkGray
-                            )
-                        )
+//                        Switch(
+//                            checked = newAccountPrivacy,
+//                            onCheckedChange = { newValue -> newAccountPrivacy = newValue },
+//                            colors = SwitchDefaults.colors(
+//                                checkedThumbColor = Color.White,
+//                                checkedTrackColor = Color.Gray,
+//                                uncheckedThumbColor = Color.White,
+//                                uncheckedTrackColor = Color.DarkGray
+//                            )
+//                        )
                     }
                 }
 
