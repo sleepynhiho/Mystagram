@@ -134,7 +134,7 @@ fun UserProfileInfoSection(
         ) {
             // Profile image
             AsyncImage(
-                model = profileImage.ifEmpty { R.drawable.default_profile_img },
+                model = profileImage.ifEmpty { R.drawable.default_profile_image },
                 contentDescription = "Profile Image",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
