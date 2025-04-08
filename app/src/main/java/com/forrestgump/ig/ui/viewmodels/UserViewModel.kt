@@ -44,7 +44,7 @@ class UserViewModel @Inject constructor() : ViewModel() {
                             username = firebaseUser.displayName ?: "Unknown",
                             fullName = firebaseUser.displayName ?: "User",
                             email = firebaseUser.email ?: "",
-                            profileImage = firebaseUser.photoUrl?.toString() ?: R.drawable.default_profile_img.toString(),
+                            profileImage = firebaseUser.photoUrl?.toString() ?: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlRM2-AldpZgaraCXCnO5loktGi0wGiNPydQ&s",
                             bio = "",
                             followers = emptyList(),
                             following = emptyList()

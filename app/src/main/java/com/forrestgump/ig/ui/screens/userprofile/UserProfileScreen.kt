@@ -37,15 +37,11 @@ import com.forrestgump.ig.utils.constants.Utils.MainBackground
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserProfileScreen(
-    userId: String,
     navController: NavController,
     viewModel: UserProfileViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(userId) {
-        viewModel.loadUserData(userId)
-    }
 
     if (uiState.isLoading) {
         Loading()
@@ -137,14 +133,8 @@ fun UserProfileInfoSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Profile image
-            val painterImage = if (profileImage.startsWith("http://") || profileImage.startsWith("https://")) {
-                rememberAsyncImagePainter(model = profileImage)
-            } else {
-                painterResource(id = R.drawable.default_profile_img)
-            }
-
-            Image(
-                painter = painterImage,
+            AsyncImage(
+                model = profileImage.ifEmpty { R.drawable.default_profile_image },
                 contentDescription = "Profile Image",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

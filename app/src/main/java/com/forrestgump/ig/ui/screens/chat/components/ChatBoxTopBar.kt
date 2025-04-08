@@ -50,7 +50,7 @@ fun ChatBoxTopBar(
         modifier = Modifier
             .fillMaxWidth()
             .height(65.dp)
-            .background(color = MainBackground),
+            .background(color = MaterialTheme.colorScheme.background),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -112,8 +112,8 @@ fun ChatBoxTopBarPreview() {
             chatId = "chat_123",
             user1Username = "_menf",
             user2Username = "john_doe",
-            user1ProfileImage = R.drawable.default_profile_img.toString(),
-            user2ProfileImage = R.drawable.default_profile_img.toString(),
+            user1ProfileImage = R.drawable.default_profile_image.toString(),
+            user2ProfileImage = R.drawable.default_profile_image.toString(),
             lastMessage = "Hey, what's up?",
         ),
         myUserId = "_menf"

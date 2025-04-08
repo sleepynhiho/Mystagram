@@ -38,7 +38,7 @@ fun CommentItem(comment: Comment) {
             .fillMaxWidth()
             .heightIn(min = 72.dp)
             .padding(10.dp)
-            .background(MainBackground)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Surface(
             modifier = Modifier.size(30.dp),

@@ -60,7 +60,7 @@ fun HomeScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MainBackground
+        color = MaterialTheme.colorScheme.background
     ) {
         uiState.isLoading = false
         if (!uiState.isLoading) {

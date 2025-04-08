@@ -34,7 +34,7 @@ fun StoryList(
                     )
                 } else {
                     AddStoryCard(
-                        myProfileImage = (currentUser.profileImage.ifEmpty { R.drawable.default_profile_img }).toString(),
+                        myProfileImage = (currentUser.profileImage.ifEmpty { R.drawable.default_profile_image }).toString(),
                         onClick = onAddStoryClicked
                     )
                 }

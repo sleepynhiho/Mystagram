@@ -58,7 +58,7 @@ fun BottomNavBar(
                 )
             }
             .height(48.dp),
-        color = MainBackground,
+        color = MaterialTheme.colorScheme.background,
     ) {
         Row(
             modifier = Modifier
@@ -94,7 +94,7 @@ fun BottomNavBarItem(
     onClick: (Routes) -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val image = myProfileImage.ifEmpty { R.drawable.default_profile_img }
+    val image = myProfileImage.ifEmpty { R.drawable.default_profile_image }
     if (!isMyProfileScreen) {
         Box(
             modifier = Modifier.clickable(

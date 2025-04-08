@@ -61,6 +61,8 @@ import java.util.Date
 import com.forrestgump.ig.ui.screens.settings.SettingsScreen
 import com.forrestgump.ig.ui.screens.story.StoryViewModel
 import com.forrestgump.ig.ui.viewmodels.UserViewModel
+import com.forrestgump.ig.ui.screens.search.SearchViewModel
+
 import com.forrestgump.ig.ui.screens.profile.EditLocationScreen
 import com.forrestgump.ig.ui.screens.userprofile.UserProfileScreen
 import com.forrestgump.ig.ui.screens.userprofile.UserProfileViewModel
@@ -75,7 +77,8 @@ fun InnerNavigation(
     viewModelProfile: ProfileViewModel,
     userViewModel: UserViewModel,
     storyViewModel: StoryViewModel,
-    viewModelOtherUserProfile: UserProfileViewModel,
+    searchViewModel: SearchViewModel,
+    viewModelOtherUserProfile: UserProfileViewModel
 ) {
     val currentUser by userViewModel.user.collectAsState()
     // Trong Activity hoặc các composable cha
@@ -129,10 +132,12 @@ fun InnerNavigation(
         }, exitTransition = {
             fadeOut(animationSpec = tween(350))
         }) {
-            val uiState by viewModelProfile.uiState.collectAsState()
-
+            val uiState by searchViewModel.uiState.collectAsState()
+            LaunchedEffect(Unit) {
+                searchViewModel.loadAllData()
+            }
             SearchScreen(
-                uiState = uiState,
+                uiState = uiState
             )
         }
 
@@ -209,11 +214,9 @@ fun InnerNavigation(
             fadeOut(animationSpec = tween(350))
         }) {
             val uiState by viewModelProfile.uiState.collectAsState()
-
-            LaunchedEffect (Unit) {
+            LaunchedEffect(Unit) {
                 viewModelProfile.loadUserData()
             }
-
             MyProfileScreen(
                 uiState = uiState, navController = navHostController
             )
@@ -272,18 +275,11 @@ fun InnerNavigation(
             route = "${Routes.ChatBoxScreen.route}/{chatId}",
             arguments = listOf(navArgument("chatId") { type = NavType.StringType }),
             enterTransition = {
-                slideInHorizontally(
-                    animationSpec = tween(),
-                    initialOffsetX = { it }
-                )
+                slideInHorizontally(animationSpec = tween(), initialOffsetX = { it })
             },
             exitTransition = {
-                slideOutHorizontally(
-                    animationSpec = tween(),
-                    targetOffsetX = { it }
-                )
-            }
-        ) { backStackEntry ->
+                slideOutHorizontally(animationSpec = tween(), targetOffsetX = { it })
+            }) { backStackEntry ->
             val chatId = backStackEntry.arguments?.getString("chatId") ?: return@composable
 
 
@@ -524,7 +520,8 @@ fun InnerNavigation(
         composable(route = Routes.AddPostScreen.route) {
             AddPostScreen(
                 navHostController = navHostController,
-                addPostViewModel = viewModelOfAddPost)
+                addPostViewModel = viewModelOfAddPost
+            )
         }
 
         composable(route = Routes.AddPostDetailScreen.route) {
@@ -598,9 +595,11 @@ fun InnerNavigation(
             }
         ) { navBackStackEntry ->
             val userId = navBackStackEntry.arguments?.getString("userId") ?: ""
+            LaunchedEffect(userId) {
+                viewModelOtherUserProfile.loadUserData(userId)
+            }
             currentUser?.let { currentUser ->
                 UserProfileScreen(
-                    userId = userId,
                     navController = navHostController,
                     viewModel = viewModelOtherUserProfile
                 )

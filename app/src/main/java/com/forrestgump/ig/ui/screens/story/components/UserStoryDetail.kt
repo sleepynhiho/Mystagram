@@ -233,11 +233,11 @@ private fun UserStoryDetailPreview() {
     UserStoryDetail(
         userStory = UserStory(
             username = "johndoe",
-            profileImage = R.drawable.default_profile_img.toString(),
+            profileImage = R.drawable.default_profile_image.toString(),
             stories = listOf(
                 Story(
                     timestamp = Date(),
-                    media = R.drawable.default_profile_img.toString(),
+                    media = R.drawable.default_profile_image.toString(),
                     mimeType = "image/jpg",
                 ),
                 Story(

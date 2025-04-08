@@ -84,7 +84,7 @@ fun PostItem(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = MainBackground)
+            .background(color = MaterialTheme.colorScheme.background)
     ) {
         PostHeader(post, navController)
         PostMedia(post)
@@ -116,24 +116,9 @@ fun PostHeader(post: Post, navController: NavController? = null) {
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        val painterImage = if (post.profileImageUrl.startsWith("http://") || post.profileImageUrl.startsWith("https://")) {
-            rememberAsyncImagePainter(model = post.profileImageUrl)
-        } else {
-            val resId = R.drawable.default_profile_img
-            painterResource(id = resId)
-        }
-//        // Ảnh đại diện
-//        Image(
-//            painter = painterImage,
-//            contentDescription = "Profile Image",
-//            contentScale = ContentScale.Crop,
-//            modifier = Modifier
-//                .size(80.dp)
-//                .fillMaxSize()
-//                .clip(CircleShape)
-//        )
-        Image(
-            painter = painterImage,
+
+        AsyncImage(
+            model = post.profileImageUrl,
             contentDescription = "User Avatar",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -503,7 +488,6 @@ private fun formatDate(date: Date): String {
 }
 
 
-
 @Preview
 @Composable
 fun PostItemPreview() {
@@ -534,5 +518,4 @@ fun PostItemPreview() {
         navController = rememberNavController(),
     )
 }
-
 

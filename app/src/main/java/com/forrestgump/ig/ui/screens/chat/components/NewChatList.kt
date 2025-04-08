@@ -66,7 +66,7 @@ fun NewChatList(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
-            .background(MainBackground)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Row(
             modifier = Modifier
@@ -128,7 +128,7 @@ fun NewChatList(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(color = MainBackground)
+                .background(color = MaterialTheme.colorScheme.background)
                 .padding(horizontal = 10.dp)
         ) {
             item { NewChatHeader() }
@@ -154,7 +154,7 @@ fun NewChatHeader() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = MainBackground)
+            .background(color = MaterialTheme.colorScheme.background)
             .height(40.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
@@ -183,7 +183,7 @@ fun NewChatListItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = MainBackground)
+            .background(color = MaterialTheme.colorScheme.background)
             .height(72.dp)
             .clickable {
                 if (chat != null) {

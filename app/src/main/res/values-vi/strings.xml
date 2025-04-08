@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mystagram</string>
+    <string name="profile_image">Ảnh đại diện</string>
+    <string name="add_story">Thêm tin</string>
+    <string name="your_story">Tin của bạn</string>
+    <string name="story_placeholder">Tin của %1$s</string>
+    <string name="app_logo">Logo Mystagram</string>
+    <string name="messages">Tin nhắn trực tiếp</string>
+    <string name="user_story">Tin của %1$s</string>
+    <string name="views">lượt xem</string>
+    <string name="hello_blank_fragment">Xin chào fragment trống</string>
+    <string name="back_home">Quay về trang chủ</string>
+    <string name="add_new_message">Thêm tin nhắn mới</string>
+    <string name="messages_header">Tin nhắn</string>
+    <string name="close_story">Đóng tin</string>
+    <string name="upload_image">Tải ảnh lên trong tin nhắn</string>
+    <string name="send_message">Gửi tin nhắn</string>
+    <string name="notification_header">Mới nhất</string>
+    <string name="new_chat">Tin nhắn mới</string>
+    <string name="new_chat_header">Gợi ý</string>
+    <string name="search_new_chat">Đến:</string>
+    <string name="search_placeholder">Tìm kiếm</string>
+    <string name="login">Đăng nhập</string>
+    <string name="email">Email</string>
+    <string name="password">Mật khẩu</string>
+    <string name="forgot_password">Quên mật khẩu?</string>
+    <string name="create_account">Tạo tài khoản mới</string>
+    <string name="language_default">Tiếng Việt</string>
+    <string name="language_dropdown">Chọn ngôn ngữ</string>
+    <string name="english_language">English (US)</string>
+    <string name="vietnamese_language">Tiếng Việt</string>
+    <string name="error_message">Lỗi: %1$s</string>
+    <string name="login_with_google">Đăng nhập với Google</string>
+    <string name="login_with_facebook">Đăng nhập với Facebook</string>
+    <string name="create_new_account">Tạo tài khoản mới</string>
+    <string name="meta_logo">Logo Meta</string>
+    <string name="google_logo_desc">Logo Google</string>
+    <string name="facebook_logo_desc">Logo Facebook</string>
+    <string name="signup_title">Đăng ký tài khoản</string>
+    <string name="signup_description">Nhập tên người dùng, email và mật khẩu để tạo tài khoản.</string>
+    <string name="username">Tên người dùng</string>
+    <string name="confirm_password">Xác nhận mật khẩu</string>
+    <string name="successful_registration">Đăng ký thành công</string>
+    <string name="password_mismatch">Mật khẩu không khớp</string>
+    <string name="register">Đăng ký</string>
+    <string name="already_have_account">Tôi đã có tài khoản</string>
+    <string name="back">Quay lại</string>
+    <string name="settings_title">Cài đặt và hoạt động</string>
+
+    <!-- Sections -->
+    <string name="section_how_you_use">Cách bạn sử dụng Instagram</string>
+    <string name="section_who_can_see">Ai có thể xem nội dung của bạn</string>
+    <string name="section_what_you_see">Những gì bạn thấy</string>
+    <string name="section_your_app_media">Ứng dụng và phương tiện của bạn</string>
+    <string name="section_orders_fundraisers">Đơn hàng và quyên góp</string>
+    <string name="section_login">Đăng nhập</string>
+
+    <!-- Settings items -->
+    <string name="saved">Đã lưu</string>
+    <string name="notifications">Thông báo</string>
+    <string name="account_privacy">Quyền riêng tư tài khoản</string>
+    <string name="privates">Riêng tư</string>
+    <string name="close_friends">Bạn bè thân thiết</string>
+    <string name="blocked">Đã chặn</string>
+    <string name="favorites">Yêu thích</string>
+    <string name="muted_accounts">Tài khoản bị tắt tiếng</string>
+    <string name="multi_language">Đa ngôn ngữ</string>
+    <string name="dark_mode">Chế độ tối</string>
+    <string name="account_status">Trạng thái tài khoản</string>
+    <string name="premium">Cao cấp</string>
+    <string name="basic">Cơ bản</string>
+    <string name="orders_payments">Đơn hàng và thanh toán</string>
+    <string name="add_account">Thêm tài khoản</string>
+    <string name="log_out">Đăng xuất</string>
+
+    <!-- Language Dialog -->
+    <string name="choose_language">Chọn ngôn ngữ</string>
+    <string name="new_post">Bài viết mới</string>
+    <string name="no_select_photo">Chưa chọn ảnh</string>
+    <string name="choose_multiple_photos">Chọn nhiều</string>
+    <string name="next">Tiếp</string>
+
+    <string name="notification_like">đã thích bài viết của bạn.</string>
+    <string name="notification_comment">đã nhắc đến bạn trong một bình luận.</string>
+    <string name="notification_follow">đã bắt đầu theo dõi bạn.</string>
+    <string name="notification_follow_request">đã gửi yêu cầu theo dõi bạn.</string>
+    <string name="notification_follow_accepted">đã chấp nhận yêu cầu theo dõi của bạn.</string>
+
+    <string name="reactions">cảm xúc</string>
+    <string name="view_all">Xem tất cả</string>
+    <string name="comments">bình luận</string>
+
+    <string name="edit_profile">Chỉnh sửa trang cá nhân</string>
+    <string name="posts">Bài viết</string>
+    <string name="followers">Người theo dõi</string>
+    <string name="following">Đang theo dõi</string>
+
+    <string name="dark_mode_system">Hệ thống</string>
+    <string name="dark_mode_light">Sáng</string>
+    <string name="dark_mode_dark">Tối</string>
+    <string name="enter_email_password_reset">Nhập email của bạn để nhận liên kết đặt lại mật khẩu</string>
+    <string name="email_reset_sent">Email đặt lại mật khẩu đã được gửi</string>
+    <string name="cancel">Hủy</string>
+    <string name="confirm">Xác nhận</string>
+    <string name="sent_request">Gửi yêu cầu</string>
+    <string name="email_has_not_been_registered">Email chưa được đăng ký</string>
+    <string name="error_when_checking_email">Lỗi khi kiểm tra email</string>
+    <string name="search_filters">Bộ lọc tìm kiếm</string>
+    <string name="search_by_name">Tìm theo tên</string>
+    <string name="search_by_location">Tìm theo vị trí</string>
+    <string name="search_by_content">Tìm theo nội dung</string>
+    <string name="search_by_time">Tìm theo thời gian</string>
+    <string name="no_acc_found">Không tìm thấy tài khoản nào</string>
+    <string name="no_post_found">Không tìm thấy bài viết nào</string>
+    <string name="no_user_found">Không tìm thấy người dùng nào</string>
+    <string name="enter_location">Nhập vị trí</string>
+    <string name="enter_time">Nhập thời gian</string>
+    <string name="from_time">Từ</string>
+    <string name="to_time">Đến</string>
+</resources>

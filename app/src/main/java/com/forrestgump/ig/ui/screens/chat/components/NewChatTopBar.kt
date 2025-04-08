@@ -41,7 +41,7 @@ fun NewChatTopBar(
         modifier = Modifier
             .fillMaxWidth()
             .height(65.dp)
-            .background(color = MainBackground),
+            .background(color = MaterialTheme.colorScheme.background),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {

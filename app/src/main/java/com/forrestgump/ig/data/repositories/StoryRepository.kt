@@ -71,7 +71,7 @@ class StoryRepository @Inject constructor(
                 val tasks = userDocuments.map { userDoc ->
                     val userId = userDoc.id
                     val username = userDoc.getString("username") ?: "Unknown"
-                    val profileImage = userDoc.getString("profileImage")
+                    val profileImage = userDoc.getString("profileImage") ?: R.drawable.default_profile_image.toString()
 
                     if (profileImage != null) {
                         Log.d("NHII GET USER STORIES", profileImage)
