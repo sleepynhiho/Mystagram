@@ -49,7 +49,7 @@ fun MyProfileScreen(
     if (!uiState.isLoading) {
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = MainBackground // Hoặc Color.Black, tuỳ bạn
+            color = MaterialTheme.colorScheme.background // Hoặc Color.Black, tuỳ bạn
         ) {
             Column {
                 // Thanh top bar
@@ -113,7 +113,12 @@ fun ProfileInfoSection(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
+            val painterImage = if (profileImage.startsWith("http://") || profileImage.startsWith("https://")) {
+                rememberAsyncImagePainter(model = profileImage)
+            } else {
+                val resId = R.drawable.default_profile_image
+                painterResource(id = resId)
+            }
             // Ảnh đại diện
             AsyncImage(
                 model = profileImage,

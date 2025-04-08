@@ -120,7 +120,7 @@ fun UserStoryCard(
                             shape = CircleShape,
                             width = if (isAllStoryViewed == true) 1.dp else 2.dp
                         )
-                        .border(width = 5.dp, color = MainBackground, shape = CircleShape),
+                        .border(width = 5.dp, color = MaterialTheme.colorScheme.background, shape = CircleShape),
                     color = Color.LightGray
                 ) {
                     AsyncImage(

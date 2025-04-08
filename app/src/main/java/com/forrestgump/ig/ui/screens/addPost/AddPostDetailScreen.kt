@@ -60,6 +60,8 @@ fun AddPostDetailScreen(
     val pagerState = rememberPagerState(initialPage = 0) { selectedImages.size }
     val focusManager = LocalFocusManager.current
 
+    var isLoading by remember { mutableStateOf(false) }
+
     Column(modifier = Modifier
         .fillMaxSize()
         .clickable { focusManager.clearFocus() }
@@ -243,7 +245,7 @@ fun AddPostDetailScreen(
                     return@Button
                 }
 
-                // Gọi hàm upload post sử dụng Cloudinary (hoặc Firebase Storage nếu thay đổi)
+                isLoading = true // Bắt đầu loading
                 addPostViewModel.uploadPostToFirebase(
                     context = context,
                     caption = caption,
@@ -251,12 +253,14 @@ fun AddPostDetailScreen(
                     username = currentUser.username,
                     profileImageUrl = currentUser.profileImage,
                     onSuccess = {
+                        isLoading = false // Kết thúc loading
                         Toast.makeText(context, "Đăng bài thành công", Toast.LENGTH_SHORT).show()
                         navHostController.navigate(Routes.HomeScreen.route) {
                             popUpTo(Routes.HomeScreen.route) { inclusive = true }
                         }
                     },
                     onFailure = { exception ->
+                        isLoading = false // Kết thúc loading
                         Toast.makeText(context, "Lỗi: ${exception.message}", Toast.LENGTH_SHORT).show()
                     }
                 )
@@ -267,9 +271,18 @@ fun AddPostDetailScreen(
                 .padding(16.dp)
                 .height(48.dp),
             shape = RoundedCornerShape(4.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00BCD4))
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00BCD4)),
+            enabled = !isLoading // Vô hiệu hóa nút khi đang loading
         ) {
-            Text("Chia sẻ", color = Color.White)
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = Color.White,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text("Chia sẻ", color = Color.White)
+            }
         }
     }
 }

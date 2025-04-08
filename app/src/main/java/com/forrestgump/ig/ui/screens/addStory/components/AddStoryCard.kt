@@ -65,7 +65,7 @@ fun AddStoryCard(
             ) {
                 AsyncImage(
                     modifier = Modifier.fillMaxSize(),
-                    model = myProfileImage.ifEmpty { R.drawable.default_profile_img },
+                    model = myProfileImage.ifEmpty { R.drawable.default_profile_image },
                     contentScale = ContentScale.Crop,
                     filterQuality = FilterQuality.None,
                     contentDescription = stringResource(id = R.string.profile_image)

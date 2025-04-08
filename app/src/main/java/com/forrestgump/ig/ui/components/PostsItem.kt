@@ -84,7 +84,7 @@ fun PostItem(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = MainBackground)
+            .background(color = MaterialTheme.colorScheme.background)
     ) {
         PostHeader(post, navController)
         PostMedia(post)

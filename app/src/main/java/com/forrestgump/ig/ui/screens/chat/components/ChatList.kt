@@ -53,7 +53,7 @@ fun ChatList(
         contentPadding = innerPadding,
         modifier = Modifier
             .fillMaxSize()
-            .background(color = MainBackground)
+            .background(color = MaterialTheme.colorScheme.background)
             .padding(horizontal = 10.dp),
         content = {
             item { ChatHeader() }
@@ -69,7 +69,7 @@ fun ChatHeader() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = MainBackground)
+            .background(color = MaterialTheme.colorScheme.background)
             .height(40.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
@@ -99,7 +99,7 @@ fun ChatListItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = MainBackground)
+            .background(color = MaterialTheme.colorScheme.background)
             .height(72.dp)
             .clickable {
                 navHostController.navigate("ChatBoxScreen/${chat.chatId}")

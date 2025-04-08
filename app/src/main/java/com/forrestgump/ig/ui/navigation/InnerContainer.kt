@@ -1,5 +1,6 @@
 package com.forrestgump.ig.ui.navigation
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -13,6 +14,7 @@ import com.forrestgump.ig.ui.components.BottomNavBar
 import com.forrestgump.ig.ui.screens.profile.ProfileViewModel
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.forrestgump.ig.ui.screens.home.HomeViewModel
+import com.forrestgump.ig.ui.screens.search.SearchViewModel
 import com.forrestgump.ig.ui.screens.story.StoryViewModel
 import com.forrestgump.ig.ui.screens.userprofile.UserProfileViewModel
 import com.forrestgump.ig.ui.viewmodels.UserViewModel
@@ -24,7 +26,8 @@ fun InnerContainer(
     viewModelHome: HomeViewModel = hiltViewModel(),
     viewModelUser: UserViewModel = hiltViewModel(),
     viewModelStory: StoryViewModel = hiltViewModel(),
-    viewModelOtherUserProfile: UserProfileViewModel = hiltViewModel(),
+    viewModelSearch: SearchViewModel = hiltViewModel(),
+    viewModelOtherUserProfile: UserProfileViewModel = hiltViewModel()
 ) {
     val navHostController = rememberNavController()
     val navBackStackEntry by navHostController.currentBackStackEntryAsState()
@@ -43,7 +46,7 @@ fun InnerContainer(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = MainBackground,
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             if (showBottomNavBar) {
                 BottomNavBar(
@@ -60,7 +63,8 @@ fun InnerContainer(
                 userViewModel = viewModelUser,
                 viewModelHome = viewModelHome,
                 storyViewModel = viewModelStory,
-                viewModelOtherUserProfile = viewModelOtherUserProfile,
+                searchViewModel = viewModelSearch,
+                viewModelOtherUserProfile = viewModelOtherUserProfile
             )
         }
     )

@@ -1,6 +1,10 @@
 package com.forrestgump.ig.utils.constants
 
+import android.app.Activity
+import android.content.Context
 import java.util.Date
+import android.content.res.Configuration
+import java.util.Locale
 
 fun Date.formatAsElapsedTime(): String {
     val elapsedTime = System.currentTimeMillis() - this.time
@@ -19,4 +23,38 @@ fun Date.formatAsElapsedTime(): String {
         elapsedTime < yearMillis -> "${elapsedTime / dayMillis}d"
         else -> "${elapsedTime / yearMillis}y"
     }
+}
+
+fun changeAppLanguage(context: Context, languageCode: String, shouldRecreate: Boolean = true) {
+    val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+    val currentLang = prefs.getString("language_code", "en") ?: "en"
+
+    // Nếu ngôn ngữ không thay đổi, không làm gì cả
+    if (currentLang == languageCode) return
+
+    // Lưu ngôn ngữ mới
+    prefs.edit().putString("language_code", languageCode).apply()
+
+    // Cập nhật locale
+    val locale = Locale(languageCode)
+    Locale.setDefault(locale)
+
+    val resources = context.resources
+    val config = Configuration(resources.configuration)
+    config.setLocale(locale)
+
+    context.resources.updateConfiguration(config, resources.displayMetrics)
+
+    // Chỉ gọi recreate nếu cần (tránh vòng lặp khi khởi động app)
+    if (context is Activity && shouldRecreate) {
+        context.recreate()
+    }
+}
+
+
+
+
+fun saveLanguagePreference(context: Context, languageCode: String) {
+    val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+    prefs.edit().putString("language_code", languageCode).apply()
 }

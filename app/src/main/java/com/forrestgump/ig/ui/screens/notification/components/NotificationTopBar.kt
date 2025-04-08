@@ -31,14 +31,14 @@ import com.forrestgump.ig.utils.constants.Utils.MainBackground
 
 @Composable
 fun NotificationTopBar(
-    navHostController: NavHostController
+    navHostController: NavHostController,
 ) {
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(65.dp)
-            .background(color = MainBackground),
+            .background(color = MaterialTheme.colorScheme.background),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -64,7 +64,7 @@ fun NotificationTopBar(
             Spacer(modifier = Modifier.width(20.dp))
 
             Text(
-                text = "Notifications",
+                text = stringResource(id = R.string.notifications),
                 style = TextStyle(
                     fontSize = 21.sp,
                     fontWeight = FontWeight.Bold,

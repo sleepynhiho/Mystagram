@@ -46,13 +46,13 @@ import com.forrestgump.ig.utils.constants.formatAsElapsedTime
 fun NotificationList(
     notifications: List<Notification>,
     innerPadding: PaddingValues,
-    navHostController: NavHostController
+    navHostController: NavHostController,
 ) {
     LazyColumn(
         contentPadding = innerPadding,
         modifier = Modifier
             .fillMaxSize()
-            .background(color = MainBackground),
+            .background(color = MaterialTheme.colorScheme.background),
         content = {
             item { NotificationHeader() }
             items(notifications) { notification ->
@@ -70,7 +70,7 @@ fun NotificationHeader() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = MainBackground)
+            .background(color = MaterialTheme.colorScheme.background)
             .height(40.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
@@ -110,15 +110,15 @@ fun getNotificationMessage(notification: Notification): AnnotatedString {
             }
         )
 
-       withStyle(
-           style = SpanStyle(
-               fontSize = 14.sp,
-               fontWeight = FontWeight.Normal,
-               color = Color(0xFF737373)
-           )
-       ) {
-           notification.timestamp?.let { append(it.formatAsElapsedTime()) }
-       }
+        withStyle(
+            style = SpanStyle(
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal,
+                color = Color(0xFF737373)
+            )
+        ) {
+            notification.timestamp?.let { append(it.formatAsElapsedTime()) }
+        }
     }
 }
 
@@ -130,7 +130,7 @@ fun NotificationListItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = MainBackground)
+            .background(color = MaterialTheme.colorScheme.background)
             .height(72.dp)
             .clickable {
 //                navHostController.navigate("ChatBoxScreen/${chat.chatId}")
@@ -169,12 +169,12 @@ fun NotificationListPreview() {
         notifications = listOf(
             Notification(
                 senderUsername = "jane_doe",
-                senderProfileImage = R.drawable.default_profile_img.toString(),
+                senderProfileImage = R.drawable.default_profile_image.toString(),
                 type = NotificationType.REACT
             ),
             Notification(
                 senderUsername = "john_doe",
-                senderProfileImage = R.drawable.default_profile_img.toString(),
+                senderProfileImage = R.drawable.default_profile_image.toString(),
                 type = NotificationType.FOLLOW
             )
         ),
