@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.airbnb.lottie.compose.LottieAnimation
@@ -76,7 +77,7 @@ fun PostItem(
     onCommentClicked: () -> Unit,
     navController: NavController?,
     currentUser: User,
-    addPostViewModel: AddPostViewModel = hiltViewModel()
+    postViewModel: PostViewModel = hiltViewModel()
 ) {
     Log.d("PostItem", "Rendering post: ${post.postId}")
 
@@ -87,7 +88,7 @@ fun PostItem(
     ) {
         PostHeader(post, navController)
         PostMedia(post)
-        PostActions(post, onCommentClicked, addPostViewModel, currentUser)
+        PostActions(post, onCommentClicked, postViewModel, currentUser)
         PostDetails(post)
     }
 }
@@ -107,7 +108,7 @@ fun LottieAnimationView(assetName: String) {
 fun PostHeader(post: Post, navController: NavController? = null) {
     // Get the current user ID
     val currentUserID = FirebaseAuth.getInstance().currentUser?.uid
-    
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -258,7 +259,7 @@ val reactionDrawables = mapOf(
 fun PostActions(
     post: Post,
     onCommentClicked: () -> Unit,
-    addPostViewModel: AddPostViewModel,
+    postViewModel: PostViewModel,
     currentUser: User,
 ) {
     key(post.postId) {
@@ -300,7 +301,7 @@ fun PostActions(
                                     selectedReaction?.let { it1 -> Log.d("NHII", it1) }
                                     val newReaction = if (selectedReaction == null) "love" else null
                                     post.let { it1 ->
-                                        addPostViewModel.updateReaction(
+                                        postViewModel.updateReaction(
                                             it1,
                                             currentUser,
                                             selectedReaction,
@@ -386,7 +387,7 @@ fun PostActions(
                                     .clickable {
                                         val newReaction = if (selectedReaction == key) null else key
                                         post.let {
-                                            addPostViewModel.updateReaction(
+                                            postViewModel.updateReaction(
                                                 post,
                                                 currentUser,
                                                 selectedReaction,
@@ -487,5 +488,34 @@ private fun formatDate(date: Date): String {
 }
 
 
-
+@Preview
+@Composable
+fun PostItemPreview() {
+    // Ví dụ mock data cho preview.
+    PostItem(
+        post = Post(
+            postId = "1",
+            userId = "user_123",
+            username = "hcmusgang",
+            profileImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUyAfXfniYfSTZ7Z2HjW2COSyC8WTH3TgkGw&s",
+            mediaUrls = listOf(
+                "https://static.vecteezy.com/system/resources/thumbnails/046/366/986/small_2x/beautiful-white-water-lily-and-pink-water-lily-flowers-on-rock-in-mountain-river-photo.jpg",
+                "https://via.placeholder.com/300",
+                "https://picsum.photos/300/200"
+            ),
+            caption = "Hôm nay đi ăn kem nè!",
+            commentsCount = 5,
+            mimeType = "image/png",
+            timestamp = Date(),
+            reactions = mapOf(
+                "love" to List(43800) { "user_$it" }, // 43800 users reacted with "love"
+                "sad" to List(8000) { "user_$it" },   // 8000 users reacted with "sad"
+                "angry" to List(9000) { "user_$it" }  // 9000 users reacted with "angry"
+            ),
+        ),
+        onCommentClicked = {},
+        currentUser = User(),
+        navController = rememberNavController(),
+    )
+}
 

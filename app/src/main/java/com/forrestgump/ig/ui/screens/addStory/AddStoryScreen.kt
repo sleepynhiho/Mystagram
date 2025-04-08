@@ -243,6 +243,7 @@ fun AddStoryScreen(
                                 // Gọi suspend function trong coroutine
                                 withContext(Dispatchers.IO) {
                                     viewModel.uploadStoryImage(
+                                        currentUser = currentUser,
                                         imageUri = tempUri,
                                         onSuccess = {
                                             scope.launch(Dispatchers.Main) { // Quay về Main Thread để update UI
@@ -267,7 +268,6 @@ fun AddStoryScreen(
                                             }
                                         },
                                         context = context,
-                                        user = currentUser
                                     )
                                 }
                             } catch (e: Exception) {

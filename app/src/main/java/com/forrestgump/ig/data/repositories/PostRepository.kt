@@ -165,5 +165,71 @@ class PostRepository @Inject constructor(
             }
     }
 
+    fun updateReaction(
+        post: Post,
+        currentUser: User,
+        previousReaction: String?,
+        newReaction: String?
+    ) {
+        val postRef = firestore.collection("posts").document(post.postId)
+
+        firestore.runTransaction { transaction ->
+            val snapshot = transaction.get(postRef)
+
+            val reactions = snapshot["reactions"] as? Map<String, List<String>> ?: emptyMap()
+            val updatedReactions = reactions.toMutableMap()
+
+            previousReaction?.let { oldReaction ->
+                val users = updatedReactions[oldReaction]?.toMutableList() ?: mutableListOf()
+                users.remove(currentUser.userId)
+                if (users.isEmpty()) updatedReactions.remove(oldReaction) else updatedReactions[oldReaction] = users
+            }
+
+            newReaction?.let { newReact ->
+                val users = updatedReactions[newReact]?.toMutableList() ?: mutableListOf()
+                if (!users.contains(currentUser.userId)) {
+                    users.add(currentUser.userId)
+                    updatedReactions[newReact] = users
+                }
+            }
+
+            transaction.update(postRef, "reactions", updatedReactions)
+
+            if (updatedReactions.isNotEmpty() && post.userId != currentUser.userId) {
+                val notification = Notification(
+                    notificationId = UUID.randomUUID().toString(),
+                    receiverId = post.userId,
+                    senderId = currentUser.userId,
+                    senderUsername = currentUser.username,
+                    senderProfileImage = currentUser.profileImage,
+                    postId = post.postId,
+                    isRead = false,
+                    type = NotificationType.REACT,
+                    timestamp = null
+                )
+
+                transaction.set(
+                    firestore.collection("notifications").document(notification.notificationId),
+                    notification
+                )
+            }
+        }
+    }
+
+    fun getPostById(postId: String): Flow<Post?> = callbackFlow {
+        val docRef = firestore.collection("posts").document(postId)
+        val listener = docRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                close(error)
+                return@addSnapshotListener
+            }
+            val post = snapshot?.toObject(Post::class.java)
+            trySend(post)
+        }
+        awaitClose { listener.remove() }
+    }
+
+
+
 
 }

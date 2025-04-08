@@ -160,8 +160,8 @@ exports.sendNotificationOnAction = functions.firestore
     // Define notification messages based on the type of action
     switch (type) {
         case "COMMENT":
-            notificationTitle = `${notificationData.senderUsername} 
-      commented on your post`;
+            // eslint-disable-next-line max-len
+            notificationTitle = `${notificationData.senderUsername} commented on your post`;
             notificationBody = notificationData.content || "You have a new comment!";
             break;
         case "REACT":
