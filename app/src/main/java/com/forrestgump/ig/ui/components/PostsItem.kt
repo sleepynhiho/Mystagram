@@ -271,7 +271,6 @@ fun PostActions(
             mutableStateOf(post.reactions.entries.find { it.value.contains(currentUser.userId) }?.key)
         }
 
-
         Box(
             modifier = Modifier.fillMaxWidth()
         ) {
