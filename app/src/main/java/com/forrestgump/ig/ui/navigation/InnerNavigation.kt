@@ -66,6 +66,7 @@ import com.forrestgump.ig.ui.screens.search.SearchViewModel
 import com.forrestgump.ig.ui.screens.profile.EditLocationScreen
 import com.forrestgump.ig.ui.screens.userprofile.UserProfileScreen
 import com.forrestgump.ig.ui.screens.userprofile.UserProfileViewModel
+import com.forrestgump.ig.ui.screens.checkout.CheckoutScreen
 import com.google.firebase.firestore.FirebaseFirestore
 
 @UnstableApi
@@ -604,6 +605,25 @@ fun InnerNavigation(
                     viewModel = viewModelOtherUserProfile
                 )
             }
+        }
+
+        composable(
+            route = Routes.CheckoutScreen.route,
+            enterTransition = {
+                fadeIn(animationSpec = tween(350))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(350))
+            }
+        ) {
+            CheckoutScreen(
+                viewModel = viewModelProfile,
+                onBackClick = { navHostController.popBackStack() },
+                onCheckoutComplete = {
+                    // Update the user's premium status if needed
+                    navHostController.popBackStack()
+                }
+            )
         }
     }
 }

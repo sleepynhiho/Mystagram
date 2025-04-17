@@ -29,6 +29,7 @@ sealed class Routes(
     data object AddPostScreen: Routes(iconOutlined = R.drawable.add_outlined, name = "AddPost", route = "AddPostScreen")
     data object AddPostDetailScreen : Routes(name = "AddPostDetail", route =  "AddPostDetailScreen")
     data object PostDetailScreen: Routes(name = "PostDetail", route = "PostDetailScreen/{postId}")
+    data object CheckoutScreen: Routes(name = "Checkout", route = "CheckoutScreen")
 
     data object Items {
         val bottomNavItems = listOf(

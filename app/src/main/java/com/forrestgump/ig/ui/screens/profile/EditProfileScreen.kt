@@ -61,8 +61,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.content.ContextCompat
+import com.forrestgump.ig.ui.navigation.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -268,13 +270,39 @@ fun EditProfileScreen(
                         .fillMaxWidth()
                         .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
                         .padding(12.dp)
-                        .clickable { /* TODO: Handle premium click */ }
+                        .clickable {
+                            navController.navigate(Routes.CheckoutScreen.route)
+                        }
                 ) {
-                    Text(
-                        text = if (newStateOfPremium) "Hủy gói premium" else "Chuyển thành tài khoản premium",
-                        color = Color.Black,
-                        fontSize = 16.sp
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (newStateOfPremium) "Hủy gói premium" else "Nâng cấp tài khoản premium",
+                            color = Color.Black,
+                            fontSize = 16.sp
+                        )
+
+                        if (newStateOfPremium) {
+                            Box(
+                                modifier = Modifier
+                                    .background(
+                                        color = Color(0xFF4CAF50),
+                                        shape = RoundedCornerShape(12.dp)
+                                    )
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = "Premium",
+                                    color = Color.White,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -323,7 +351,7 @@ fun EditProfileScreen(
                         .fillMaxWidth()
                         .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
                         .padding(12.dp)
-                        .clickable { /* TODO: Handle location click */ }
+                        .clickable { navController.navigate(Routes.EditLocationScreen.route) }
                 ) {
                     Text(
                         text = "Chỉnh sửa vị trí",

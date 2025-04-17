@@ -42,7 +42,8 @@ class UserProfileViewModel @Inject constructor(
                             followers = document.get("followers") as? List<String> ?: emptyList(),
                             following = document.get("following") as? List<String> ?: emptyList(),
                             isPrivate = document.getBoolean("private") ?: false,
-                            isPremium = document.getBoolean("premium") ?: false
+                            isPremium = document.getBoolean("premium") ?: false,
+                            premiumDate = document.getTimestamp("premiumDate")?.toDate()
                         )
 
                         // Now load the target user's data
@@ -72,7 +73,8 @@ class UserProfileViewModel @Inject constructor(
                         followers = document.get("followers") as? List<String> ?: emptyList(),
                         following = document.get("following") as? List<String> ?: emptyList(),
                         isPrivate = document.getBoolean("private") ?: false,
-                        isPremium = document.getBoolean("premium") ?: false
+                        isPremium = document.getBoolean("premium") ?: false,
+                        premiumDate = document.getTimestamp("premiumDate")?.toDate()
                     )
 
                     val isCurrentUserFollowingThisUser = currentUser.following.contains(userId)

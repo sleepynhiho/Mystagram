@@ -18,6 +18,9 @@ val cloudinaryCloudName = localProperties.getProperty("cloudinary.cloud_name") ?
 val cloudinaryApiKey = localProperties.getProperty("cloudinary.api_key") ?: ""
 val cloudinaryApiSecret = localProperties.getProperty("cloudinary.api_secret") ?: ""
 val cloudinaryUploadPreset = localProperties.getProperty("cloudinary.upload_preset") ?: ""
+val stripeUrl = localProperties.getProperty("STRIPE_URL") ?: ""
+val stripePublicKey = localProperties.getProperty("STRIPE_PUBLIC_KEY") ?: ""
+
 android {
     namespace = "com.forrestgump.ig"
     compileSdk = 35
@@ -34,6 +37,8 @@ android {
         buildConfigField("String", "CLOUDINARY_API_KEY", "\"$cloudinaryApiKey\"")
         buildConfigField("String", "CLOUDINARY_API_SECRET", "\"$cloudinaryApiSecret\"")
         buildConfigField("String", "CLOUDINARY_UPLOAD_PRESET", "\"$cloudinaryUploadPreset\"")
+        buildConfigField("String", "STRIPE_URL", "\"$stripeUrl\"")
+        buildConfigField("String", "STRIPE_PUBLIC_KEY", "\"$stripePublicKey\"")
 
     }
 
@@ -89,11 +94,6 @@ dependencies {
     implementation(libs.play.services.cast.framework)
     implementation(libs.androidx.animation.android)
     implementation(libs.androidx.animation.android)
-    implementation(fileTree(mapOf(
-        "dir" to "D:\\THIRD-YEAR_SEMESTER-2\\Mobile\\Project\\ZalopayLib",
-        "include" to listOf("*.aar", "*.jar"),
-        "exclude" to listOf("")
-    )))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -154,4 +154,12 @@ dependencies {
     implementation(libs.androidx.material3.window.size.class1)
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.firebase.messaging.ktx)
+
+    //Stripe
+    implementation("com.stripe:stripe-android:21.4.1")
+
+    //Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.google.code.gson:gson:2.10.1")
 }

@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -49,8 +50,10 @@ class ProfileViewModel @Inject constructor(
                             // followers và following được lưu là List<String> trong document
                             followers = document.get("followers") as? List<String> ?: emptyList(),
                             following = document.get("following") as? List<String> ?: emptyList(),
-//                            isPrivate = document.getBoolean("private") ?: false,
-//                            isPremium = document.getBoolean("premium") ?: false
+                            isPrivate = document.getBoolean("private") ?: false,
+                            isPremium = document.getBoolean("premium") ?: false,
+                            premiumDate = document.getTimestamp("premiumDate")?.toDate()
+
                         )
                         uiState.update { currentState ->
                             currentState.copy(isLoading = false, curUser = updatedUser)
@@ -226,6 +229,48 @@ class ProfileViewModel @Inject constructor(
         // Update local state only
         uiState.update { it.copy(curUser = updatedUser) }
         Log.d("ProfileViewModel", "updateLocalUserLocation: ${uiState.value.curUser.location}")
+    }
+
+    // Add this method to ProfileViewModel class
+    fun updatePremiumStatus(
+        isPremium: Boolean,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        val currentUser = uiState.value.curUser
+        val premiumDate = if (isPremium) Date() else null
+
+        // Update local state
+        val updatedUser = currentUser.copy(
+            isPremium = isPremium,
+            premiumDate = premiumDate
+        )
+        uiState.update { it.copy(curUser = updatedUser) }
+
+        // Update Firestore
+        val updates = mapOf(
+            "premium" to isPremium,
+            "premiumDate" to premiumDate
+        )
+
+        firestore.collection("users").document(currentUser.userId)
+            .update(updates as Map<String, Any?>)
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { exception ->
+                // Revert local state on failure
+                uiState.update { it.copy(curUser = currentUser) }
+                onFailure(exception)
+            }
+    }
+
+    // Add this method to check and update premium status on app start
+    fun checkPremiumExpiration() {
+        val currentUser = uiState.value.curUser
+        if (currentUser.isPremium && currentUser.isPremiumExpired()) {
+            updatePremiumStatus(false)
+        }
     }
 
     private fun clearUiState() {
