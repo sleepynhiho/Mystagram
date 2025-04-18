@@ -143,6 +143,16 @@ fun PostHeader(post: Post, navController: NavController? = null) {
             color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
         )
+        // Add the "Được tài trợ" text for sponsored posts
+        if (post.isSponsored) {
+            Text(
+                text = "Được tài trợ",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
+
         Spacer(modifier = Modifier.weight(1f))
         IconButton(onClick = { /* TODO: xử lý sự kiện more */ }) {
             Icon(
@@ -151,6 +161,7 @@ fun PostHeader(post: Post, navController: NavController? = null) {
                 tint = MaterialTheme.colorScheme.onBackground
             )
         }
+
     }
 }
 

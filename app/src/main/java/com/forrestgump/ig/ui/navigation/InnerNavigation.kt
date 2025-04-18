@@ -67,6 +67,8 @@ import com.forrestgump.ig.ui.screens.profile.EditLocationScreen
 import com.forrestgump.ig.ui.screens.userprofile.UserProfileScreen
 import com.forrestgump.ig.ui.screens.userprofile.UserProfileViewModel
 import com.forrestgump.ig.ui.screens.checkout.CheckoutScreen
+import com.forrestgump.ig.ui.screens.profile.FollowViewModel
+import com.forrestgump.ig.ui.screens.profile.PostOptionsViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 
 @UnstableApi
@@ -79,7 +81,9 @@ fun InnerNavigation(
     userViewModel: UserViewModel,
     storyViewModel: StoryViewModel,
     searchViewModel: SearchViewModel,
-    viewModelOtherUserProfile: UserProfileViewModel
+    viewModelOtherUserProfile: UserProfileViewModel,
+    viewModelFollow: FollowViewModel,
+    optionsViewModel: PostOptionsViewModel,
 ) {
     val currentUser by userViewModel.user.collectAsState()
     // Trong Activity hoặc các composable cha
@@ -358,149 +362,60 @@ fun InnerNavigation(
             )
         }
 
+        // Update FollowerScreen route
         composable(
             route = Routes.FollowerScreen.route,
             enterTransition = { fadeIn(animationSpec = tween(350)) },
             exitTransition = { fadeOut(animationSpec = tween(350)) }
         ) {
-            // Sử dụng remember để tạo danh sách có khả năng thay đổi
-            val dummyUsersState = remember {
-                mutableStateListOf(
-                    User(
-                        userId = "1",
-                        username = "johnDoe",
-                        fullName = "John Doe",
-                        email = "john.doe@example.com",
-                        profileImage = "https://dtntbinhlong.edu.vn/wp-content/uploads/2024/10/anh-boy-pho-0904i1P.jpg",
-                        bio = "Passionate about backend development.",
-                        followers = listOf("janeDoe", "samSmith"),
-                        following = listOf("aliceWonder")
-                    ),
-                    User(
-                        userId = "2",
-                        username = "janeDoe",
-                        fullName = "Jane Doe",
-                        email = "jane.doe@example.com",
-                        profileImage = "https://gockienthuc.edu.vn/wp-content/uploads/2024/07/222-hinh-anh-avatar-ff-dep-chat-ngat-ai-cung-tram-tro_6690e71f7de2e.webp",
-                        bio = "Frontend enthusiast and UI/UX lover.",
-                        followers = listOf("johnDoe"),
-                        following = listOf("samSmith", "aliceWonder")
-                    ),
-                    User(
-                        userId = "3",
-                        username = "samSmith",
-                        fullName = "Sam Smith",
-                        email = "sam.smith@example.com",
-                        profileImage = "https://www.vietnamworks.com/hrinsider/wp-content/uploads/2023/12/anh-den-ngau.jpeg",
-                        bio = "Loves to work on scalable backend systems.",
-                        followers = listOf("johnDoe", "aliceWonder"),
-                        following = listOf("janeDoe")
-                    ),
-                    User(
-                        userId = "4",
-                        username = "aliceWonder",
-                        fullName = "Alice Wonderland",
-                        email = "alice.wonder@example.com",
-                        profileImage = "https://jbagy.me/wp-content/uploads/2025/03/anh-dai-dien-zalo-dep-1.jpg",
-                        bio = "Exploring the world of software engineering.",
-                        followers = listOf("bobBuilder", "charlieBrown"),
-                        following = listOf("johnDoe", "janeDoe")
-                    ),
-                    User(
-                        userId = "5",
-                        username = "bobBuilder",
-                        fullName = "Bob Builder",
-                        email = "bob.builder@example.com",
-                        profileImage = "https://moc247.com/wp-content/uploads/2023/12/loa-mat-voi-101-hinh-anh-avatar-meo-cute-dang-yeu-dep-mat_2.jpg",
-                        bio = "Constructing code one brick at a time.",
-                        followers = listOf("aliceWonder"),
-                        following = listOf("davidKing")
-                    )
-                )
-            }
-
             FollowScreen(
                 navController = navHostController,
-                userName = "__td.tung",
-                followers = dummyUsersState,
-                onBack = { navHostController.navigate(Routes.MyProfileScreen.route) },
-                onDeleteFollower = { user ->
-                    // Xóa user khỏi danh sách bằng cách sử dụng remove
-                    dummyUsersState.remove(user)
-                },
-                headerText = "Người theo dõi"
+                viewModel = viewModelFollow,
+                isFollower = true
             )
         }
 
+        // Update FollowingScreen route
         composable(
             route = Routes.FollowingScreen.route,
             enterTransition = { fadeIn(animationSpec = tween(350)) },
             exitTransition = { fadeOut(animationSpec = tween(350)) }
         ) {
-            val dummyFollowingState = remember {
-                mutableStateListOf(
-                    User(
-                        userId = "1",
-                        username = "nghingoithoi",
-                        fullName = "John Doe",
-                        email = "john.doe@example.com",
-                        profileImage = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQosdzHHSRWcqMHKkg27MixI72P_edEXIDXIg&s",
-                        bio = "Passionate about backend development.",
-                        followers = listOf("janeDoe", "samSmith"),
-                        following = listOf("aliceWonder")
-                    ),
-                    User(
-                        userId = "2",
-                        username = "canhocthem",
-                        fullName = "Jane Doe",
-                        email = "jane.doe@example.com",
-                        profileImage = "https://saigonbanme.vn/wp-content/uploads/2024/12/bo-99-anh-avatar-dep-cho-con-gai-ngau-chat-nhat-viet-nam-4.jpg",
-                        bio = "Frontend enthusiast and UI/UX lover.",
-                        followers = listOf("johnDoe"),
-                        following = listOf("samSmith", "aliceWonder")
-                    ),
-                    User(
-                        userId = "3",
-                        username = "cungtamduoc",
-                        fullName = "Sam Smith",
-                        email = "sam.smith@example.com",
-                        profileImage = "https://hinhnenpowerpoint.org/wp-content/uploads/2025/01/anh-avatar-capybara-3-2.jpg",
-                        bio = "Loves to work on scalable backend systems.",
-                        followers = listOf("johnDoe", "aliceWonder"),
-                        following = listOf("janeDoe")
-                    ),
-                    User(
-                        userId = "4",
-                        username = "Vuaphaithoi",
-                        fullName = "Alice Wonderland",
-                        email = "alice.wonder@example.com",
-                        profileImage = "https://anhdephd.vn/wp-content/uploads/2022/10/hinh-anh-avatar-minion.jpg",
-                        bio = "Exploring the world of software engineering.",
-                        followers = listOf("bobBuilder", "charlieBrown"),
-                        following = listOf("johnDoe", "janeDoe")
-                    ),
-                    User(
-                        userId = "5",
-                        username = "takeiteasy",
-                        fullName = "Bob Builder",
-                        email = "bob.builder@example.com",
-                        profileImage = "https://tft.edu.vn/public/upload/2024/12/avatar-qua-bo-cute-01.webp",
-                        bio = "Constructing code one brick at a time.",
-                        followers = listOf("aliceWonder"),
-                        following = listOf("davidKing")
-                    )
-                )
-            }
-
             FollowScreen(
                 navController = navHostController,
-                userName = "__td.tung", // Tên người dùng vẫn được truyền
-                followers = dummyFollowingState, // Dữ liệu following
-                headerText = "Đang theo dõi",     // Nhãn hiển thị khác
-                onBack = { navHostController.navigate(Routes.MyProfileScreen.route) },
-                onDeleteFollower = { user ->
-                    dummyFollowingState.remove(user)
-                }
+                viewModel = viewModelFollow,
+                isFollower = false
+            )
+        }
+
+        // Add routes for viewing other user's followers/following
+        composable(
+            route = Routes.UserFollowerScreen.route,
+            arguments = listOf(navArgument("userId") { type = NavType.StringType }),
+            enterTransition = { fadeIn(animationSpec = tween(350)) },
+            exitTransition = { fadeOut(animationSpec = tween(350)) }
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            FollowScreen(
+                navController = navHostController,
+                viewModel = viewModelFollow,
+                isFollower = true,
+                targetUserId = userId
+            )
+        }
+
+        composable(
+            route = Routes.UserFollowingScreen.route,
+            arguments = listOf(navArgument("userId") { type = NavType.StringType }),
+            enterTransition = { fadeIn(animationSpec = tween(350)) },
+            exitTransition = { fadeOut(animationSpec = tween(350)) }
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            FollowScreen(
+                navController = navHostController,
+                viewModel = viewModelFollow,
+                isFollower = false,
+                targetUserId = userId
             )
         }
 
@@ -545,7 +460,10 @@ fun InnerNavigation(
             }
         ) { navBackStackEntry ->
             val postId = navBackStackEntry.arguments?.getString("postId") ?: ""
-            Log.d("PostDetail", "Looking for post with ID: $postId")
+            LaunchedEffect(Unit) {
+                // Force refresh data when entering post detail
+                viewModelProfile.loadUserData()
+            }
 
             // Check in ViewModels first
             val post1 = viewModelProfile.getPostById(postId)
@@ -561,7 +479,9 @@ fun InnerNavigation(
                         post = it,
                         onBackPressed = { navHostController.popBackStack() },
                         navController = navHostController,
-                        currentUser = it1
+                        currentUser = it1,
+                        userViewModel = userViewModel, // Thêm dòng này,
+                        optionsViewModel = optionsViewModel,
                     )
                 }
             } ?: run {
@@ -597,7 +517,7 @@ fun InnerNavigation(
         ) { navBackStackEntry ->
             val userId = navBackStackEntry.arguments?.getString("userId") ?: ""
             LaunchedEffect(userId) {
-                viewModelOtherUserProfile.loadUserData(userId)
+                viewModelOtherUserProfile.loadUserData(userId, forceReload = false)
             }
             currentUser?.let { currentUser ->
                 UserProfileScreen(

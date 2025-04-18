@@ -2,6 +2,8 @@ package com.forrestgump.ig.ui.screens.checkout
 
 import android.app.Activity
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image

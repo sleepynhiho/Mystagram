@@ -79,7 +79,8 @@ fun UserProfileScreen(
                     isPrivate = uiState.user.isPrivate,
                     isFollowing = uiState.isCurrentUserFollowingThisUser,
                     navController = navController,
-                    canViewFollowers = !uiState.user.isPrivate || uiState.isCurrentUserFollowingThisUser
+                    canViewFollowers = !uiState.user.isPrivate || uiState.isCurrentUserFollowingThisUser,
+                    userId = uiState.user.userId
                 )
 
                 // Action buttons
@@ -121,7 +122,8 @@ fun UserProfileInfoSection(
     isPrivate: Boolean,
     isFollowing: Boolean,
     navController: NavController,
-    canViewFollowers: Boolean
+    canViewFollowers: Boolean,
+    userId: String // Add userId parameter
 ) {
     Column(
         modifier = Modifier
@@ -152,7 +154,7 @@ fun UserProfileInfoSection(
             if (canViewFollowers) {
                 Box(
                     modifier = Modifier.clickable {
-                        navController.navigate("FollowerScreen")
+                        navController.navigate("UserFollowerScreen/${userId}")
                     }
                 ) {
                     ProfileStatItem(number = followers, label = "Người theo dõi")
@@ -161,7 +163,7 @@ fun UserProfileInfoSection(
 
                 Box(
                     modifier = Modifier.clickable {
-                        navController.navigate("FollowingScreen")
+                        navController.navigate("UserFollowingScreen/${userId}")
                     }
                 ) {
                     ProfileStatItem(number = following, label = "Đang theo dõi")

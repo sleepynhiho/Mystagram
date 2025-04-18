@@ -23,7 +23,12 @@ class UserProfileViewModel @Inject constructor(
         private set
     val uiState: StateFlow<UserProfileUiState> = _uiState
 
-    fun loadUserData(userId: String) {
+    fun loadUserData(userId: String, forceReload: Boolean = false) {
+        // Nếu đã load và không yêu cầu force reload, không làm gì
+        if (!forceReload && _uiState.value.user.userId == userId && !_uiState.value.isLoading) {
+            return
+        }
+
         _uiState.update { it.copy(isLoading = true) }
 
         // Load the current user first

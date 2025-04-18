@@ -18,7 +18,7 @@ data class Post(
     var reactions: Map<String, List<String>> = emptyMap(), // reactionType -> list of userIds
     var commentsCount: Int = 0,            // Số lượng bình luận
     var mimeType: String = "",             // Kiểu file (image/video)
-
+    var isSponsored: Boolean = false,  // Added to mark posts as sponsored in the UI
     @ServerTimestamp
     var timestamp: Date? = null            // Thời gian tạo bài viết
 ) : Parcelable

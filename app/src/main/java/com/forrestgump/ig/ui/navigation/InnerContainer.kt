@@ -14,6 +14,8 @@ import com.forrestgump.ig.ui.components.BottomNavBar
 import com.forrestgump.ig.ui.screens.profile.ProfileViewModel
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.forrestgump.ig.ui.screens.home.HomeViewModel
+import com.forrestgump.ig.ui.screens.profile.FollowViewModel
+import com.forrestgump.ig.ui.screens.profile.PostOptionsViewModel
 import com.forrestgump.ig.ui.screens.search.SearchViewModel
 import com.forrestgump.ig.ui.screens.story.StoryViewModel
 import com.forrestgump.ig.ui.screens.userprofile.UserProfileViewModel
@@ -27,7 +29,9 @@ fun InnerContainer(
     viewModelUser: UserViewModel = hiltViewModel(),
     viewModelStory: StoryViewModel = hiltViewModel(),
     viewModelSearch: SearchViewModel = hiltViewModel(),
-    viewModelOtherUserProfile: UserProfileViewModel = hiltViewModel()
+    viewModelOtherUserProfile: UserProfileViewModel = hiltViewModel(),
+    viewModelFollow: FollowViewModel = hiltViewModel(), // Add this line
+    optionsViewModel: PostOptionsViewModel = hiltViewModel(),
 ) {
     val navHostController = rememberNavController()
     val navBackStackEntry by navHostController.currentBackStackEntryAsState()
@@ -64,7 +68,9 @@ fun InnerContainer(
                 viewModelHome = viewModelHome,
                 storyViewModel = viewModelStory,
                 searchViewModel = viewModelSearch,
-                viewModelOtherUserProfile = viewModelOtherUserProfile
+                viewModelOtherUserProfile = viewModelOtherUserProfile,
+                viewModelFollow = viewModelFollow,
+                optionsViewModel = optionsViewModel,
             )
         }
     )
