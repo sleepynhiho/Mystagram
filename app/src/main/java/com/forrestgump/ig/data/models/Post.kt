@@ -19,6 +19,7 @@ data class Post(
     var commentsCount: Int = 0,            // Số lượng bình luận
     var mimeType: String = "",             // Kiểu file (image/video)
     var isSponsored: Boolean = false,  // Added to mark posts as sponsored in the UI
+    var location: String = "",             // Location of the post
     @ServerTimestamp
     var timestamp: Date? = null            // Thời gian tạo bài viết
 ) : Parcelable

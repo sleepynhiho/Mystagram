@@ -35,6 +35,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.data.models.User
+import com.forrestgump.ig.ui.components.CommentScreen
 import com.forrestgump.ig.ui.components.PostItem
 import com.forrestgump.ig.ui.navigation.Routes
 import com.forrestgump.ig.ui.viewmodels.UserViewModel
@@ -54,6 +55,7 @@ fun PostDetailScreen(
     val optionsUiState by optionsViewModel.uiState.collectAsState()
     var showPremiumDialog by remember { mutableStateOf(false) }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    var showCommentScreen by remember { mutableStateOf(false) }
     val user by userViewModel.user.collectAsState()
 
     // Check if it's the current user's post and if it's promoted
@@ -154,7 +156,9 @@ fun PostDetailScreen(
 
             PostItem(
                 post = post,
-                onCommentClicked = {},
+                onCommentClicked = {
+                    showCommentScreen = true
+                },
                 navController = navController,
                 currentUser = currentUser
             )
@@ -243,6 +247,14 @@ fun PostDetailScreen(
                     Text("Hủy")
                 }
             }
+        )
+    }
+    if (showCommentScreen) {
+        CommentScreen(
+            post = post,
+            currentUser = currentUser,
+            showCommentScreen = showCommentScreen,
+            onDismiss = { showCommentScreen = false }
         )
     }
 }

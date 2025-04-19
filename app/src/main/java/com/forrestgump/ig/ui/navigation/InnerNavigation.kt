@@ -43,6 +43,7 @@ import com.forrestgump.ig.ui.screens.auth.SignupScreen
 import com.forrestgump.ig.ui.screens.addPost.AddPostScreen
 import com.forrestgump.ig.ui.screens.chat.NewChatScreen
 import com.forrestgump.ig.ui.screens.addPost.AddPostViewModel
+import com.forrestgump.ig.ui.screens.addPost.SelectLocationScreen
 import com.forrestgump.ig.ui.screens.profile.EditProfileScreen
 import com.forrestgump.ig.ui.screens.profile.FollowScreen
 import com.forrestgump.ig.ui.screens.profile.PostDetailScreen
@@ -532,6 +533,13 @@ fun InnerNavigation(
                     // Update the user's premium status if needed
                     navHostController.popBackStack()
                 }
+            )
+        }
+
+        composable(route = Routes.SelectLocationScreen.route) {
+            SelectLocationScreen(
+                viewModel = viewModelOfAddPost,
+                navController = navHostController
             )
         }
     }

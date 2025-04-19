@@ -50,7 +50,7 @@ fun AddPostDetailScreen(
     val context = LocalContext.current
 
     // State cho caption: ban đầu hiển thị placeholder, khi nhấn chuyển thành TextField
-    var caption by remember { mutableStateOf("") }
+    val caption = addPostViewModel.postCaption.collectAsState().value
     var isEditingCaption by remember { mutableStateOf(false) }
 
     // Lấy danh sách ảnh từ ViewModel
@@ -145,7 +145,7 @@ fun AddPostDetailScreen(
         ) {
             TextField(
                 value = caption,
-                onValueChange = { caption = it },
+                onValueChange = { addPostViewModel.updatePostCaption(it) },
                 placeholder = { Text("Thêm chú thích...") },
                 modifier = Modifier.fillMaxSize(),
                 maxLines = 5 // Giới hạn số dòng hiển thị
@@ -158,7 +158,8 @@ fun AddPostDetailScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .clickable { navHostController.navigate(Routes.SelectLocationScreen.route) },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -196,7 +197,7 @@ fun AddPostDetailScreen(
                 isLoading = true // Bắt đầu loading
                 addPostViewModel.uploadPostToFirebase(
                     context = context,
-                    caption = caption,
+                    caption = addPostViewModel.postCaption.value,
                     userId = currentUser.userId,
                     username = currentUser.username,
                     profileImageUrl = currentUser.profileImage,

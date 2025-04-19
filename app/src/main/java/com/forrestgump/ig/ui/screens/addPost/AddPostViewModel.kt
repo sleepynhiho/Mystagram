@@ -32,14 +32,30 @@ class AddPostViewModel @Inject constructor(
         private set
     var selectedImages = MutableStateFlow<List<Uri>>(emptyList())
         private set
+    var postLocation = MutableStateFlow("")
+        private set
+
+    var postCaption = MutableStateFlow("")
+        private set
 
     // Hàm cập nhật danh sách ảnh
     fun updateSelectedImages(newImages: List<Uri>) {
         selectedImages.value = newImages
     }
 
+    // Hàm cập nhật vị trí
+    fun updatePostLocation(location: String) {
+        postLocation.value = location
+    }
+
+    fun updatePostCaption(caption: String) {
+        postCaption.value = caption
+    }
+
     private fun clearUiState() {
         uiState.update { UiState() }
+        postLocation.value = ""
+        postCaption.value = ""
     }
 
     override fun onCleared() {
@@ -94,6 +110,7 @@ class AddPostViewModel @Inject constructor(
                     mediaUrls = mediaUrls,
                     caption = caption,
                     reactions = emptyMap(),
+                    location = postLocation.value, // Add location here
                     commentsCount = 0,
                     mimeType = "image",
                     timestamp = null // @ServerTimestamp sẽ được Firestore set tự động
