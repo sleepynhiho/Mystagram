@@ -10,18 +10,12 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,13 +35,8 @@ import com.forrestgump.ig.ui.screens.chat.ChatBoxScreen
 import com.forrestgump.ig.ui.screens.chat.ChatScreen
 import com.forrestgump.ig.ui.screens.notification.NotificationScreen
 import com.forrestgump.ig.ui.screens.search.SearchScreen
-import com.forrestgump.ig.data.models.Chat
-import com.forrestgump.ig.data.models.Message
-import com.forrestgump.ig.data.models.MessageType
 import com.forrestgump.ig.data.models.Notification
 import com.forrestgump.ig.data.models.NotificationType
-import com.forrestgump.ig.data.models.Post
-import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.ui.screens.addPost.AddPostDetailScreen
 import com.forrestgump.ig.ui.screens.auth.LoginScreen
 import com.forrestgump.ig.ui.screens.auth.SignupScreen
@@ -69,7 +58,6 @@ import com.forrestgump.ig.ui.screens.userprofile.UserProfileViewModel
 import com.forrestgump.ig.ui.screens.checkout.CheckoutScreen
 import com.forrestgump.ig.ui.screens.profile.FollowViewModel
 import com.forrestgump.ig.ui.screens.profile.PostOptionsViewModel
-import com.google.firebase.firestore.FirebaseFirestore
 
 @UnstableApi
 @Composable
@@ -84,10 +72,10 @@ fun InnerNavigation(
     viewModelOtherUserProfile: UserProfileViewModel,
     viewModelFollow: FollowViewModel,
     optionsViewModel: PostOptionsViewModel,
+    viewModelOfAddPost: AddPostViewModel,
 ) {
     val currentUser by userViewModel.user.collectAsState()
     // Trong Activity hoặc các composable cha
-    val viewModelOfAddPost: AddPostViewModel = hiltViewModel()
     NavHost(
         navController = navHostController, startDestination = Routes.HomeScreen.route
     ) {
@@ -443,7 +431,8 @@ fun InnerNavigation(
         composable(route = Routes.AddPostDetailScreen.route) {
             AddPostDetailScreen(
                 navHostController = navHostController,
-                addPostViewModel = viewModelOfAddPost
+                addPostViewModel = viewModelOfAddPost,
+                userViewModel = userViewModel
             )
         }
 

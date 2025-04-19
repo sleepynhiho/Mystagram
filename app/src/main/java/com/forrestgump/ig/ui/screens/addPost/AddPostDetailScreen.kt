@@ -43,8 +43,8 @@ import com.forrestgump.ig.BuildConfig
 @Composable
 fun AddPostDetailScreen(
     navHostController: NavHostController,
-    addPostViewModel: AddPostViewModel = hiltViewModel(),
-    userViewModel: UserViewModel = hiltViewModel()  // Inject UserViewModel
+    addPostViewModel: AddPostViewModel,
+    userViewModel: UserViewModel,
 ) {
     val currentUser = userViewModel.user.collectAsState().value
     val context = LocalContext.current

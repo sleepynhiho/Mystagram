@@ -11,6 +11,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.forrestgump.ig.ui.components.BottomNavBar
+import com.forrestgump.ig.ui.screens.addPost.AddPostViewModel
 import com.forrestgump.ig.ui.screens.profile.ProfileViewModel
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import com.forrestgump.ig.ui.screens.home.HomeViewModel
@@ -32,6 +33,7 @@ fun InnerContainer(
     viewModelOtherUserProfile: UserProfileViewModel = hiltViewModel(),
     viewModelFollow: FollowViewModel = hiltViewModel(), // Add this line
     optionsViewModel: PostOptionsViewModel = hiltViewModel(),
+    viewModelOfAddPost: AddPostViewModel = hiltViewModel(),
 ) {
     val navHostController = rememberNavController()
     val navBackStackEntry by navHostController.currentBackStackEntryAsState()
@@ -71,6 +73,7 @@ fun InnerContainer(
                 viewModelOtherUserProfile = viewModelOtherUserProfile,
                 viewModelFollow = viewModelFollow,
                 optionsViewModel = optionsViewModel,
+                viewModelOfAddPost = viewModelOfAddPost,
             )
         }
     )
