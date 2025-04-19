@@ -48,10 +48,12 @@ fun PostDetailScreen(
     currentUser: User,
     userViewModel: UserViewModel, // Thêm tham số này
     optionsViewModel: PostOptionsViewModel,
+    profileViewModel: ProfileViewModel? = null, // Add ProfileViewModel parameter
 ) {
     var showOptionsMenu by remember { mutableStateOf(false) }
     val optionsUiState by optionsViewModel.uiState.collectAsState()
     var showPremiumDialog by remember { mutableStateOf(false) }
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
     val user by userViewModel.user.collectAsState()
 
     // Check if it's the current user's post and if it's promoted
@@ -63,6 +65,14 @@ fun PostDetailScreen(
 
     LaunchedEffect(post.postId) {
         userViewModel.fetchCurrentUser()
+    }
+
+    // Navigate back if post was deleted
+    LaunchedEffect(optionsUiState.isPostDeleted) {
+        if (optionsUiState.isPostDeleted) {
+            onBackPressed()
+            optionsViewModel.resetDeleteStatus()
+        }
     }
 
     Surface(
@@ -125,6 +135,14 @@ fun PostDetailScreen(
                                         }
                                     )
                                 }
+                                // Add delete option
+                                DropdownMenuItem(
+                                    text = { Text("Xóa bài viết") },
+                                    onClick = {
+                                        showDeleteConfirmDialog = true
+                                        showOptionsMenu = false
+                                    }
+                                )
                             }
                         }
                     }
@@ -195,6 +213,34 @@ fun PostDetailScreen(
                     onClick = { showPremiumDialog = false }
                 ) {
                     Text("Để sau")
+                }
+            }
+        )
+    }
+
+    // Delete confirmation dialog
+    if (showDeleteConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmDialog = false },
+            title = { Text("Xác nhận xóa") },
+            text = {
+                Text("Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác.")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        optionsViewModel.deletePost(post.postId, profileViewModel)
+                        showDeleteConfirmDialog = false
+                    }
+                ) {
+                    Text("Xóa")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showDeleteConfirmDialog = false }
+                ) {
+                    Text("Hủy")
                 }
             }
         )

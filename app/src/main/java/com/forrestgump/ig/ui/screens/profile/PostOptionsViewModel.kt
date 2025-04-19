@@ -17,12 +17,15 @@ data class PostOptionsUiState(
     val isPostPromoted: Boolean = false,
     val isPromoting: Boolean = false,
     val errorMessage: String? = null,
-    val successMessage: String? = null
+    val successMessage: String? = null,
+    val isDeleting: Boolean = false,
+    val isPostDeleted: Boolean = false
 )
 
 @HiltViewModel
 class PostOptionsViewModel @Inject constructor(
-    private val promotedPostRepository: PromotedPostRepository
+    private val promotedPostRepository: PromotedPostRepository,
+    private val firestore: FirebaseFirestore  // Inject Firestore directly
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PostOptionsUiState())
@@ -38,7 +41,6 @@ class PostOptionsViewModel @Inject constructor(
     fun promotePost(postId: String, userId: String, isPremium: Boolean) {
         viewModelScope.launch {
             // Recheck premium status from Firestore
-            val firestore = FirebaseFirestore.getInstance()
             val userDoc = firestore.collection("users").document(userId).get().await()
             val currentIsPremium = userDoc.getBoolean("premium") ?: false
 
@@ -106,7 +108,50 @@ class PostOptionsViewModel @Inject constructor(
         }
     }
 
+    fun deletePost(postId: String, profileViewModel: ProfileViewModel? = null) {
+        _uiState.update { it.copy(isDeleting = true, errorMessage = null, successMessage = null) }
+
+        viewModelScope.launch {
+            try {
+                val firestore = FirebaseFirestore.getInstance()
+
+                // Check if post is promoted
+                val isPromoted = promotedPostRepository.isPostPromoted(postId)
+
+                // Delete from posts collection
+                firestore.collection("posts").document(postId).delete().await()
+
+                // Delete from promotedPosts if it exists
+                if (isPromoted) {
+                    firestore.collection("promotedPosts").document(postId).delete().await()
+                }
+
+                _uiState.update {
+                    it.copy(
+                        isDeleting = false,
+                        isPostDeleted = true,
+                        successMessage = "Đã xóa bài viết thành công!"
+                    )
+                }
+                // Refresh profile data if view model is provided
+                profileViewModel?.loadUserData()
+
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isDeleting = false,
+                        errorMessage = "Không thể xóa bài viết. Vui lòng thử lại sau."
+                    )
+                }
+            }
+        }
+    }
+
     fun clearMessages() {
         _uiState.update { it.copy(errorMessage = null, successMessage = null) }
+    }
+
+    fun resetDeleteStatus() {
+        _uiState.update { it.copy(isPostDeleted = false) }
     }
 }

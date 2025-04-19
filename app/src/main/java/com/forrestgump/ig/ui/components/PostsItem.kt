@@ -152,16 +152,6 @@ fun PostHeader(post: Post, navController: NavController? = null) {
                 modifier = Modifier.padding(start = 8.dp)
             )
         }
-
-        Spacer(modifier = Modifier.weight(1f))
-        IconButton(onClick = { /* TODO: xử lý sự kiện more */ }) {
-            Icon(
-                painter = painterResource(id = R.drawable.more2),
-                contentDescription = "More options",
-                tint = MaterialTheme.colorScheme.onBackground
-            )
-        }
-
     }
 }
 

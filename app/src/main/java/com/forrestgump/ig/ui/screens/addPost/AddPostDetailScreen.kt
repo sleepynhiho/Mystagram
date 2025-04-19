@@ -154,30 +154,6 @@ fun AddPostDetailScreen(
 
         Divider(color = Color.LightGray, thickness = 1.dp)
 
-        // Row "Gắn thẻ người khác"
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_tag), // icon dành cho "Gắn thẻ người khác"
-                    contentDescription = "Tag Icon",
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Gắn thẻ người khác")
-            }
-            Icon(
-                painter = painterResource(id = R.drawable.ic_arrow_right), // icon (hoặc mũi tên) bên phải
-                contentDescription = "Next Icon",
-                modifier = Modifier.size(24.dp)
-            )
-        }
-
         // Row "Thêm vị trí"
         Row(
             modifier = Modifier
@@ -200,34 +176,6 @@ fun AddPostDetailScreen(
                 contentDescription = "Next Icon",
                 modifier = Modifier.size(24.dp)
             )
-        }
-
-        // Row "Đối tượng" với bên phải hiển thị "Người theo dõi" và icon
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_audience), // icon đối tượng (placeholder)
-                    contentDescription = "Audience Icon",
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Đối tượng")
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Người theo dõi")
-                Spacer(modifier = Modifier.width(8.dp))
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_arrow_right),
-                    contentDescription = "Next Icon",
-                    modifier = Modifier.size(24.dp)
-                )
-            }
         }
 
         Spacer(modifier = Modifier.weight(1f))
