@@ -44,7 +44,13 @@ fun NotificationScreen(
         NotificationList(
             notifications = notifications,
             innerPadding = innerPadding,
-            navHostController = navHostController
+            navHostController = navHostController,
+            onAcceptFollowRequest = { notification -> 
+                viewModel.acceptFollowRequest(notification)
+            },
+            onRejectFollowRequest = { notification ->
+                viewModel.rejectFollowRequest(notification)
+            }
         )
     }
 }

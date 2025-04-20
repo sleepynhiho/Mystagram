@@ -33,6 +33,7 @@ import com.forrestgump.ig.R
 import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.ui.components.Loading
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,7 +42,22 @@ fun UserProfileScreen(
     viewModel: UserProfileViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
+    
+    // Periodically refresh the follow request status if we have a pending request
+    LaunchedEffect(key1 = Unit) {
+        while (true) {
+            delay(5000) // Check every 5 seconds
+            if (uiState.isFollowRequestPending) {
+                // Check if the request was rejected or accepted
+                val currentUser = uiState.currentUser
+                val targetUser = uiState.user
+                
+                if (currentUser.userId.isNotEmpty() && targetUser.userId.isNotEmpty()) {
+                    viewModel.checkFollowRequestStatus(currentUser.userId, targetUser.userId)
+                }
+            }
+        }
+    }
 
     if (uiState.isLoading) {
         Loading()
@@ -86,6 +102,7 @@ fun UserProfileScreen(
                 // Action buttons
                 UserProfileActionButtons(
                     isFollowing = uiState.isCurrentUserFollowingThisUser,
+                    isFollowRequestPending = uiState.isFollowRequestPending,
                     onFollowClick = { viewModel.followUser() },
                     onUnfollowClick = { viewModel.unfollowUser() }
                 )
@@ -214,6 +231,7 @@ fun UserProfileInfoSection(
 @Composable
 fun UserProfileActionButtons(
     isFollowing: Boolean,
+    isFollowRequestPending: Boolean = false,
     onFollowClick: () -> Unit,
     onUnfollowClick: () -> Unit
 ) {
@@ -225,16 +243,30 @@ fun UserProfileActionButtons(
     ) {
         Button(
             onClick = {
-                if (isFollowing) onUnfollowClick() else onFollowClick()
+                if (isFollowing || isFollowRequestPending) onUnfollowClick() else onFollowClick()
             },
             modifier = Modifier.weight(1f),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isFollowing) Color.White else MaterialTheme.colorScheme.primary,
-                contentColor = if (isFollowing) Color.Black else Color.White
+                containerColor = when {
+                    isFollowing -> Color.White 
+                    isFollowRequestPending -> Color.White
+                    else -> MaterialTheme.colorScheme.primary
+                },
+                contentColor = when {
+                    isFollowing -> Color.Black 
+                    isFollowRequestPending -> Color.Black
+                    else -> Color.White
+                }
             ),
-            border = if (isFollowing) BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground) else null
+            border = if (isFollowing || isFollowRequestPending) BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground) else null
         ) {
-            Text(text = if (isFollowing) "Đang theo dõi" else "Theo dõi")
+            Text(
+                text = when {
+                    isFollowing -> "Đang theo dõi"
+                    isFollowRequestPending -> "Đã yêu cầu"
+                    else -> "Theo dõi"
+                }
+            )
         }
 
         Button(
