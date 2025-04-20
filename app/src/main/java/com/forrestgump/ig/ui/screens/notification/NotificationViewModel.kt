@@ -50,12 +50,22 @@ class NotificationViewModel @Inject constructor(
     }
     
     fun acceptFollowRequest(notification: Notification) {
-        if (notification.type != NotificationType.FOLLOW_REQUEST) return
+        // Don't process if it's not a follow request or if it's already been read (rejected)
+        if (notification.type != NotificationType.FOLLOW_REQUEST || notification.isRead) {
+            Log.d("NotificationViewModel", "Can't accept: not a valid follow request or already processed")
+            return
+        }
         
         viewModelScope.launch {
             try {
                 // Get the current user (receiver of the follow request)
                 val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+                
+                // Verify the notification is for this user
+                if (notification.receiverId != currentUserId) {
+                    Log.e("NotificationViewModel", "Notification doesn't belong to current user")
+                    return@launch
+                }
                 
                 // Get both users from Firestore
                 val currentUserDoc = firestore.collection("users").document(currentUserId).get().await()
@@ -66,7 +76,10 @@ class NotificationViewModel @Inject constructor(
                     return@launch
                 }
                 
-                // Update follower/following relationships
+                // Start a batch operation for atomicity
+                val batch = firestore.batch()
+                
+                // Prepare follower/following relationships update
                 val currentUserFollowers = currentUserDoc.get("followers") as? List<String> ?: emptyList()
                 val updatedFollowers = currentUserFollowers.toMutableList().apply {
                     if (!contains(notification.senderId)) add(notification.senderId)
@@ -77,26 +90,25 @@ class NotificationViewModel @Inject constructor(
                     if (!contains(currentUserId)) add(currentUserId)
                 }
                 
-                // Update Firestore documents
-                firestore.collection("users").document(currentUserId)
-                    .update("followers", updatedFollowers)
-                    .await()
+                // Update user documents
+                val currentUserRef = firestore.collection("users").document(currentUserId)
+                batch.update(currentUserRef, "followers", updatedFollowers)
                 
-                firestore.collection("users").document(notification.senderId)
-                    .update("following", updatedFollowing)
-                    .await()
+                val senderUserRef = firestore.collection("users").document(notification.senderId)
+                batch.update(senderUserRef, "following", updatedFollowing)
                 
-                // Mark ALL follow requests from this sender as read
-                firestore.collection("notifications")
+                // Get all follow requests from this sender
+                val requestQuerySnapshot = firestore.collection("notifications")
                     .whereEqualTo("senderId", notification.senderId)
                     .whereEqualTo("receiverId", currentUserId)
                     .whereEqualTo("type", NotificationType.FOLLOW_REQUEST)
                     .get()
                     .await()
-                    .documents
-                    .forEach { doc ->
-                        doc.reference.update("isRead", true)
-                    }
+                
+                // Delete all these requests instead of marking them as read
+                for (doc in requestQuerySnapshot.documents) {
+                    batch.delete(doc.reference)
+                }
                 
                 // Create a new notification to inform the user that their request was accepted
                 val acceptNotification = Notification(
@@ -109,22 +121,21 @@ class NotificationViewModel @Inject constructor(
                     isRead = false
                 )
                 
-                firestore.collection("notifications").document(acceptNotification.notificationId)
-                    .set(acceptNotification)
-                    .await()
+                // Add the acceptance notification
+                val acceptNotificationRef = firestore.collection("notifications").document(acceptNotification.notificationId)
+                batch.set(acceptNotificationRef, acceptNotification)
                 
-                // Update local notification list
-                _notifications.value = _notifications.value.map {
-                    if (it.senderId == notification.senderId 
-                        && it.receiverId == currentUserId
-                        && it.type == NotificationType.FOLLOW_REQUEST) {
-                        it.copy(isRead = true)
-                    } else {
-                        it
-                    }
+                // Commit all changes as a batch
+                batch.commit().await()
+                
+                // Update local notification list by removing the accepted follow requests
+                _notifications.value = _notifications.value.filter { notif ->
+                    !(notif.senderId == notification.senderId 
+                      && notif.receiverId == currentUserId
+                      && notif.type == NotificationType.FOLLOW_REQUEST)
                 }
                 
-                Log.d("NotificationViewModel", "Follow request accepted")
+                Log.d("NotificationViewModel", "Follow request accepted and original notifications deleted successfully")
                 
             } catch (e: Exception) {
                 Log.e("NotificationViewModel", "Error accepting follow request", e)
@@ -133,37 +144,50 @@ class NotificationViewModel @Inject constructor(
     }
     
     fun rejectFollowRequest(notification: Notification) {
-        if (notification.type != NotificationType.FOLLOW_REQUEST) return
+        // Don't process if it's not a follow request or if it's already been read
+        if (notification.type != NotificationType.FOLLOW_REQUEST || notification.isRead) {
+            Log.d("NotificationViewModel", "Can't reject: not a valid follow request or already processed")
+            return
+        }
         
         viewModelScope.launch {
             try {
                 // Get the current user ID
                 val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
                 
-                // Mark ALL follow requests from this sender as read
-                firestore.collection("notifications")
+                // Verify the notification is for this user
+                if (notification.receiverId != currentUserId) {
+                    Log.e("NotificationViewModel", "Notification doesn't belong to current user")
+                    return@launch
+                }
+                
+                // Use a batch for atomicity
+                val batch = firestore.batch()
+                
+                // Get all follow requests from this sender
+                val requestQuerySnapshot = firestore.collection("notifications")
                     .whereEqualTo("senderId", notification.senderId)
                     .whereEqualTo("receiverId", currentUserId)
                     .whereEqualTo("type", NotificationType.FOLLOW_REQUEST)
                     .get()
                     .await()
-                    .documents
-                    .forEach { doc ->
-                        doc.reference.update("isRead", true)
-                    }
                 
-                // Update local notification list
-                _notifications.value = _notifications.value.map {
-                    if (it.senderId == notification.senderId 
-                        && it.receiverId == currentUserId
-                        && it.type == NotificationType.FOLLOW_REQUEST) {
-                        it.copy(isRead = true)
-                    } else {
-                        it
-                    }
+                // Delete all these requests entirely instead of marking them as read
+                for (doc in requestQuerySnapshot.documents) {
+                    batch.delete(doc.reference)
                 }
                 
-                Log.d("NotificationViewModel", "Follow request rejected")
+                // Commit all changes as a batch
+                batch.commit().await()
+                
+                // Update local notification list by removing the rejected follow requests
+                _notifications.value = _notifications.value.filter { notif ->
+                    !(notif.senderId == notification.senderId 
+                      && notif.receiverId == currentUserId
+                      && notif.type == NotificationType.FOLLOW_REQUEST)
+                }
+                
+                Log.d("NotificationViewModel", "Follow request rejected and deleted successfully")
                 
             } catch (e: Exception) {
                 Log.e("NotificationViewModel", "Error rejecting follow request", e)

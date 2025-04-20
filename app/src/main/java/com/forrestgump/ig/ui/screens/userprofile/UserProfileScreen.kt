@@ -33,7 +33,6 @@ import com.forrestgump.ig.R
 import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.ui.components.Loading
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
-import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,6 +41,7 @@ fun UserProfileScreen(
     viewModel: UserProfileViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
 
     if (uiState.isLoading) {
         Loading()

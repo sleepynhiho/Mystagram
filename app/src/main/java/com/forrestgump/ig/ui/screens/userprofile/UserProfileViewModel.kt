@@ -97,7 +97,6 @@ class UserProfileViewModel @Inject constructor(
                     // Check if there's a pending follow request
                     if (user.isPrivate && !isCurrentUserFollowingThisUser) {
                         checkPendingFollowRequest(currentUser.userId, userId)
-
                     }
 
                     // Load posts of the user if we're allowed to view them
@@ -120,7 +119,6 @@ class UserProfileViewModel @Inject constructor(
             .whereEqualTo("senderId", currentUserId)
             .whereEqualTo("receiverId", targetUserId)
             .whereEqualTo("type", NotificationType.FOLLOW_REQUEST)
-            .whereEqualTo("isRead", false)
             .get()
             .addOnSuccessListener { snapshot ->
                 val isPending = !snapshot.isEmpty
@@ -304,5 +302,4 @@ class UserProfileViewModel @Inject constructor(
     fun getPostById(postId: String): Post? {
         return _uiState.value.posts.find { it.postId == postId }
     }
-
 }

@@ -57,6 +57,12 @@ fun NotificationList(
     onAcceptFollowRequest: (Notification) -> Unit = {},
     onRejectFollowRequest: (Notification) -> Unit = {}
 ) {
+    // Filter out read follow requests since they've been handled already
+    val filteredNotifications = notifications.filter { notification ->
+        // Keep unread notifications and all non-follow-request notifications
+        notification.type != NotificationType.FOLLOW_REQUEST || !notification.isRead
+    }
+    
     LazyColumn(
         contentPadding = innerPadding,
         modifier = Modifier
@@ -64,7 +70,7 @@ fun NotificationList(
             .background(color = MaterialTheme.colorScheme.background),
         content = {
             item { NotificationHeader() }
-            items(notifications) { notification ->
+            items(filteredNotifications) { notification ->
                 NotificationListItem(
                     notification = notification,
                     navHostController = navHostController,
