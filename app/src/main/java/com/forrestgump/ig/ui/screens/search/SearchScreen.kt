@@ -1,5 +1,6 @@
 package com.forrestgump.ig.ui.screens.search
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -47,13 +48,9 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PlayCircle
 import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -62,6 +59,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -100,18 +98,24 @@ import java.util.Locale
 @Composable
 fun SearchScreen(
     uiState: UiState,
-    navController: NavController
+    navController: NavController,
+    viewModel: SearchViewModel
 ) {
-
     var searchQuery by remember { mutableStateOf("") }
     var selectedTab by remember { mutableStateOf("Users") }
     var showFilters by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
 
-    // Fetch the current user from ProfileViewModel
+    // Handle empty query clearing suggestions
+    LaunchedEffect(searchQuery) {
+        if (searchQuery.isEmpty()) {
+            // Clear suggestions when query is empty
+            viewModel.searchSuggestions("")
+        }
+    }
 
-    // Consolidate filter states
+    // Consolidated filter states
     var userNameFilter by remember { mutableStateOf(true) }
     var userLocationFilter by remember { mutableStateOf(false) }
     var postContentFilter by remember { mutableStateOf(true) }
@@ -124,35 +128,8 @@ fun SearchScreen(
 
     val tabs = listOf("Users", "Posts")
 
-    // Filter users based on search criteria
-    val filteredUsers = uiState.users.filter { user ->
-        user.userId // Exclude the current user
-        run {
-            val matchesName = if (userNameFilter) {
-                user.username.contains(searchQuery, ignoreCase = true) ||
-                        user.fullName.contains(searchQuery, ignoreCase = true)
-            } else true
-
-            val matchesLocation = if (userLocationFilter) {
-                user.location.contains(locationInput, ignoreCase = true)
-            } else true
-
-            matchesName && matchesLocation
-        }
-    }
-
-    // Filter posts based on search criteria
-    val filteredPosts = uiState.posts.filter { post ->
-        val matchesContent = if (postContentFilter) {
-            post.caption.contains(searchQuery, ignoreCase = true)
-        } else true
-
-        val matchesTime = if (postTimeFilter) {
-            post.timestamp?.toString()?.contains(timeInput) ?: false
-        } else true
-
-        matchesContent && matchesTime
-    }
+    // Select appropriate data source based on whether we're showing suggestions
+    val showingSuggestions = searchQuery.isNotEmpty()
 
     if (uiState.isLoading) {
         Box(
@@ -186,7 +163,7 @@ fun SearchScreen(
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null
-                            ) { })
+                            ) { navController.popBackStack() })
 
                     Spacer(modifier = Modifier.width(12.dp))
 
@@ -245,7 +222,14 @@ fun SearchScreen(
                             fontSize = 13.sp, color = MaterialTheme.colorScheme.onBackground
                         ),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
+                        keyboardActions = KeyboardActions(
+                            onSearch = { 
+                                if (searchQuery.isNotEmpty()) {
+                                    viewModel.searchSuggestions(searchQuery)
+                                }
+                                focusManager.clearFocus() 
+                            }
+                        ),
                     )
                 }
 
@@ -342,25 +326,34 @@ fun SearchScreen(
                     }
                 }
 
-                // Tabs
-                TabRow(
-                    selectedTab = selectedTab, tabs = tabs, onTabSelected = { selectedTab = it })
-
-                // Content based on selected tab
-                when (selectedTab) {
-                    "Users" -> {
-                        UsersContent(
-                            users = filteredUsers,
-                            resultsCount = filteredUsers.size,
-                            navController = navController
-                        )
-                    }
-
-                    "Posts" -> {
-                        PostsContent(
-                            posts = filteredPosts, resultsCount = filteredPosts.size
-                        )
-                    }
+                // Display initial suggestions when search box is empty 
+                if (searchQuery.isEmpty()) {
+                    InitialSuggestionsContent(
+                        userSuggestions = uiState.userSuggestions,
+                        postSuggestions = uiState.postSuggestions,
+                        selectedTab = selectedTab,
+                        navController = navController,
+                        onTabSelected = { selectedTab = it },
+                        viewModel = viewModel
+                    )
+                }
+                // If we have search query but no results
+                else if (searchQuery.isNotEmpty() && 
+                         uiState.userSuggestions.isEmpty() && 
+                         uiState.postSuggestions.isEmpty() && 
+                         !uiState.isLoading) {
+                    EmptySearchResults()
+                } 
+                // Show query-based suggestions if we have a query
+                else if (showingSuggestions) {
+                    SuggestionsContent(
+                        userSuggestions = uiState.userSuggestions,
+                        postSuggestions = uiState.postSuggestions,
+                        selectedTab = selectedTab,
+                        navController = navController,
+                        onTabSelected = { selectedTab = it },
+                        viewModel = viewModel
+                    )
                 }
             }
         }
@@ -759,5 +752,371 @@ fun PostItem(post: Post) {
                 fontSize = 12.sp
             )
         }
+    }
+}
+
+@Composable
+fun InitialSuggestionsContent(
+    userSuggestions: List<UserSuggestion>,
+    postSuggestions: List<PostSuggestion>,
+    selectedTab: String,
+    navController: NavController,
+    onTabSelected: (String) -> Unit,
+    viewModel: SearchViewModel
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        // Tabs
+        TabRow(
+            selectedTab = selectedTab, 
+            tabs = listOf("Users", "Posts"), 
+            onTabSelected = onTabSelected
+        )
+        
+        // Show recommendation header
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Recommended for you",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+            
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                val count = if (selectedTab == "Users") userSuggestions.size else postSuggestions.size
+                Text(
+                    text = "$count recommendations",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 14.sp
+                )
+            }
+        }
+        
+        if (selectedTab == "Users" && userSuggestions.isNotEmpty()) {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(vertical = 8.dp)
+            ) {
+                items(userSuggestions) { suggestion ->
+                    UserSuggestionItem(
+                        suggestion = suggestion,
+                        navController = navController
+                    )
+                    Divider(
+                        color = Color.LightGray.copy(alpha = 0.5f),
+                        thickness = 0.5.dp
+                    )
+                }
+            }
+        } else if (selectedTab == "Posts" && postSuggestions.isNotEmpty()) {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(vertical = 8.dp)
+            ) {
+                items(postSuggestions) { suggestion ->
+                    PostSuggestionItem(
+                        suggestion = suggestion,
+                        navController = navController,
+                        viewModel = viewModel
+                    )
+                    Divider(
+                        color = Color.LightGray.copy(alpha = 0.5f),
+                        thickness = 0.5.dp
+                    )
+                }
+            }
+        } else {
+            // No suggestions for the selected tab
+            EmptyTabResults(selectedTab)
+        }
+    }
+}
+
+@Composable
+fun SuggestionsContent(
+    userSuggestions: List<UserSuggestion>,
+    postSuggestions: List<PostSuggestion>,
+    selectedTab: String,
+    navController: NavController,
+    onTabSelected: (String) -> Unit,
+    viewModel: SearchViewModel
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        // Tabs
+        TabRow(
+            selectedTab = selectedTab, 
+            tabs = listOf("Users", "Posts"), 
+            onTabSelected = onTabSelected
+        )
+        
+        // Show suggestion header with count
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Suggestions",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+            
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                val count = if (selectedTab == "Users") userSuggestions.size else postSuggestions.size
+                Text(
+                    text = "$count results",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 14.sp
+                )
+            }
+        }
+        
+        if (selectedTab == "Users" && userSuggestions.isNotEmpty()) {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(vertical = 8.dp)
+            ) {
+                items(userSuggestions) { suggestion ->
+                    UserSuggestionItem(
+                        suggestion = suggestion,
+                        navController = navController
+                    )
+                    Divider(
+                        color = Color.LightGray.copy(alpha = 0.5f),
+                        thickness = 0.5.dp
+                    )
+                }
+            }
+        } else if (selectedTab == "Posts" && postSuggestions.isNotEmpty()) {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(vertical = 8.dp)
+            ) {
+                items(postSuggestions) { suggestion ->
+                    PostSuggestionItem(
+                        suggestion = suggestion,
+                        navController = navController,
+                        viewModel = viewModel
+                    )
+                    Divider(
+                        color = Color.LightGray.copy(alpha = 0.5f),
+                        thickness = 0.5.dp
+                    )
+                }
+            }
+        } else {
+            // No suggestions for the selected tab
+            EmptyTabResults(selectedTab)
+        }
+    }
+}
+
+@Composable
+fun UserSuggestionItem(
+    suggestion: UserSuggestion,
+    navController: NavController
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                // Use direct navigation with simple string format
+                navController.navigate("UserProfileScreen/${suggestion.userId}")
+            }
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Profile picture
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(Color.LightGray)
+        ) {
+            if (suggestion.profilePicture.isNotEmpty()) {
+                Image(
+                    painter = rememberAsyncImagePainter(model = suggestion.profilePicture),
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Outlined.Person,
+                    contentDescription = "Default Profile",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .align(Alignment.Center),
+                    tint = Color.White
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.width(12.dp))
+        
+        // User info
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = suggestion.username,
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+            
+            Text(
+                text = suggestion.fullName,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                fontSize = 12.sp
+            )
+        }
+    }
+}
+
+@Composable
+fun PostSuggestionItem(
+    suggestion: PostSuggestion,
+    navController: NavController,
+    viewModel: SearchViewModel
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                // Simple direct navigation - the InnerNavigation will handle fetching the post
+                navController.navigate("PostDetailScreen/${suggestion.postId}")
+            }
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Post thumbnail
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(Color.LightGray),
+            contentAlignment = Alignment.Center
+        ) {
+            if (suggestion.imageUrl.isNotEmpty()) {
+                Image(
+                    painter = rememberAsyncImagePainter(model = suggestion.imageUrl),
+                    contentDescription = "Post Thumbnail",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Outlined.PlayCircle,
+                    contentDescription = "Post",
+                    modifier = Modifier.size(24.dp),
+                    tint = Color.White
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.width(12.dp))
+        
+        // Post info
+        Text(
+            text = suggestion.caption,
+            color = MaterialTheme.colorScheme.onBackground,
+            fontSize = 13.sp,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+fun EmptySearchResults() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 60.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.SearchOff,
+            contentDescription = "No Results",
+            tint = Color.Gray,
+            modifier = Modifier.size(48.dp)
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(
+            text = "No suggestions found",
+            color = MaterialTheme.colorScheme.onBackground,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
+        )
+        
+        Text(
+            text = "Try a different search term",
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+            fontSize = 14.sp,
+            modifier = Modifier.padding(top = 4.dp)
+        )
+    }
+}
+
+@Composable
+fun EmptyTabResults(tabName: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 60.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.SearchOff,
+            contentDescription = "No Results",
+            tint = Color.Gray,
+            modifier = Modifier.size(48.dp)
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(
+            text = "No $tabName found",
+            color = MaterialTheme.colorScheme.onBackground,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
+        )
+        
+        Text(
+            text = "Try a different search term",
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+            fontSize = 14.sp,
+            modifier = Modifier.padding(top = 4.dp)
+        )
     }
 }
