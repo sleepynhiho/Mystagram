@@ -42,22 +42,6 @@ fun UserProfileScreen(
     viewModel: UserProfileViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
-    // Periodically refresh the follow request status if we have a pending request
-    LaunchedEffect(key1 = Unit) {
-        while (true) {
-            delay(5000) // Check every 5 seconds
-            if (uiState.isFollowRequestPending) {
-                // Check if the request was rejected or accepted
-                val currentUser = uiState.currentUser
-                val targetUser = uiState.user
-                
-                if (currentUser.userId.isNotEmpty() && targetUser.userId.isNotEmpty()) {
-                    viewModel.checkFollowRequestStatus(currentUser.userId, targetUser.userId)
-                }
-            }
-        }
-    }
 
     if (uiState.isLoading) {
         Loading()

@@ -97,9 +97,7 @@ class UserProfileViewModel @Inject constructor(
                     // Check if there's a pending follow request
                     if (user.isPrivate && !isCurrentUserFollowingThisUser) {
                         checkPendingFollowRequest(currentUser.userId, userId)
-                        
-                        // Also explicitly check if a request was rejected/accepted
-                        checkFollowRequestStatus(currentUser.userId, userId)
+
                     }
 
                     // Load posts of the user if we're allowed to view them
@@ -307,38 +305,4 @@ class UserProfileViewModel @Inject constructor(
         return _uiState.value.posts.find { it.postId == postId }
     }
 
-    // Check current status of a follow request (for updating sender's UI)
-    fun checkFollowRequestStatus(senderId: String, receiverId: String) {
-        // First check if the user is now following (accepted case)
-        val isNowFollowing = _uiState.value.currentUser.following.contains(receiverId)
-        
-        if (isNowFollowing) {
-            // Request was accepted, update UI
-            _uiState.update { it.copy(
-                isFollowRequestPending = false,
-                isCurrentUserFollowingThisUser = true
-            )}
-            return
-        }
-        
-        // Check for unread follow requests
-        firestore.collection("notifications")
-            .whereEqualTo("senderId", senderId)
-            .whereEqualTo("receiverId", receiverId)
-            .whereEqualTo("type", NotificationType.FOLLOW_REQUEST)
-            .whereEqualTo("isRead", false)
-            .get()
-            .addOnSuccessListener { snapshot ->
-                val hasPendingRequest = !snapshot.isEmpty
-                
-                if (!hasPendingRequest && _uiState.value.isFollowRequestPending) {
-                    // No pending request but UI shows pending - means request was rejected
-                    _uiState.update { it.copy(
-                        isFollowRequestPending = false
-                    )}
-                    
-                    Log.d("UserProfileViewModel", "Follow request was rejected")
-                }
-            }
-    }
 }
