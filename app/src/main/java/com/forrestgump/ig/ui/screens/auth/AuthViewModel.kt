@@ -115,6 +115,60 @@ class AuthViewModel @Inject constructor(
             }
     }
 
+    // Google Sign-In
+    fun signInWithGoogle(idToken: String, onResult: (Boolean, String?) -> Unit) {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val user = auth.currentUser
+                    
+                    // Check if user already exists in Firestore
+                    user?.let { firebaseUser ->
+                        firestore.collection("users").document(firebaseUser.uid).get()
+                            .addOnSuccessListener { document ->
+                                if (document.exists()) {
+                                    // User exists, just update FCM token
+                                    saveFCMTokenToFirestore(firebaseUser.uid)
+                                    onResult(true, null)
+                                } else {
+                                    // Create new user in Firestore
+                                    val email = firebaseUser.email ?: ""
+                                    val username = extractUsernameFromEmail(email)
+                                    
+                                    val userData = User(
+                                        userId = firebaseUser.uid,
+                                        email = email,
+                                        username = username,
+                                        profileImage = firebaseUser.photoUrl?.toString() 
+                                            ?: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlRM2-AldpZgaraCXCnO5loktGi0wGiNPydQ&s",
+                                    )
+                                    
+                                    firestore.collection("users").document(firebaseUser.uid)
+                                        .set(userData)
+                                        .addOnSuccessListener {
+                                            saveFCMTokenToFirestore(firebaseUser.uid)
+                                            onResult(true, null)
+                                        }
+                                        .addOnFailureListener { e ->
+                                            onResult(false, e.message)
+                                        }
+                                }
+                            }
+                            .addOnFailureListener { e ->
+                                onResult(false, e.message)
+                            }
+                    } ?: onResult(false, "Failed to get user info")
+                } else {
+                    onResult(false, task.exception?.message)
+                }
+            }
+    }
+    
+    private fun extractUsernameFromEmail(email: String): String {
+        return email.substringBefore("@").replace(".", "_")
+    }
+
     // Hàm quên mật khẩu
     fun forgotPassword(context: Context, email: String, onResult: (Boolean, String?) -> Unit) {
         viewModelScope.launch {
@@ -143,6 +197,4 @@ class AuthViewModel @Inject constructor(
                 }
         }
     }
-
-
 }

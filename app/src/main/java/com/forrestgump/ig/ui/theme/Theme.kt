@@ -30,17 +30,18 @@ import kotlinx.coroutines.flow.map
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
     secondary = PurpleGrey80,
-    tertiary = Pink80,
+    tertiary = Color(0xFF3F3F3F),
     background = Color(0xFF121212),
     onBackground = Color.White,
     surface = Color.Black,
     onSurface = Color.White,
+
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = Purple40,
     secondary = PurpleGrey40,
-    tertiary = Pink40,
+    tertiary = Color(0xFFF5F5F5),
     background = Color(0xFFFFFFFF),
     onBackground = Color.Black,
     surface = Color.White,

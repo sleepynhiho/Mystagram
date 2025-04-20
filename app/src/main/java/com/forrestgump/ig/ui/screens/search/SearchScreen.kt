@@ -84,10 +84,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.forrestgump.ig.R
 import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.data.models.User
+import com.forrestgump.ig.ui.navigation.Routes
+import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -97,7 +100,9 @@ import java.util.Locale
 @Composable
 fun SearchScreen(
     uiState: UiState,
+    navController: NavController
 ) {
+
     var searchQuery by remember { mutableStateOf("") }
     var selectedTab by remember { mutableStateOf("Users") }
     var showFilters by remember { mutableStateOf(false) }
@@ -310,20 +315,26 @@ fun SearchScreen(
 
                             if (postTimeFilter) {
                                 Row(
-                                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 8.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     OutlinedTextField(
                                         value = fromTimeInput,
                                         onValueChange = { fromTimeInput = it },
                                         label = { Text(text = stringResource(id = R.string.from_time)) },
-                                        modifier = Modifier.weight(1f).padding(end = 4.dp)
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(end = 4.dp)
                                     )
                                     OutlinedTextField(
                                         value = toTimeInput,
                                         onValueChange = { toTimeInput = it },
                                         label = { Text(text = stringResource(id = R.string.to_time)) },
-                                        modifier = Modifier.weight(1f).padding(start = 4.dp)
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(start = 4.dp)
                                     )
                                 }
                             }
@@ -339,7 +350,9 @@ fun SearchScreen(
                 when (selectedTab) {
                     "Users" -> {
                         UsersContent(
-                            users = filteredUsers, resultsCount = filteredUsers.size
+                            users = filteredUsers,
+                            resultsCount = filteredUsers.size,
+                            navController = navController
                         )
                     }
 
@@ -458,7 +471,8 @@ fun FilterOption(
 
 @Composable
 fun UsersContent(
-    users: List<User>, resultsCount: Int
+    users: List<User>, resultsCount: Int,
+    navController: NavController
 ) {
     LazyColumn(
         modifier = Modifier
@@ -478,7 +492,7 @@ fun UsersContent(
             }
         } else {
             items(users) { user ->
-                UserItem(user = user)
+                UserItem(user = user, navController = navController)
             }
         }
     }
@@ -580,11 +594,21 @@ fun EmptyResults(message: String) {
 }
 
 @Composable
-fun UserItem(user: User) {
+fun UserItem(user: User, navController: NavController) {
+    val currentUserID = FirebaseAuth.getInstance().currentUser?.uid
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { }
+            .clickable {
+                if (user.userId == currentUserID) {
+                    // Navigate to MyProfileScreen for the current user
+                    navController.navigate(Routes.MyProfileScreen.route)
+                } else {
+                    // Navigate to UserProfileScreen for other users
+                    navController.navigate("UserProfileScreen/${user.userId}")
+                }
+            }
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -644,25 +668,6 @@ fun UserItem(user: User) {
                     )
                 }
             }
-        }
-
-        // Follow button
-        Button(
-            onClick = { },
-            modifier = Modifier
-                .height(32.dp)
-                .width(80.dp),
-            shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF3897F0)
-            ),
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
-        ) {
-            Text(
-                text = "Follow",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
-            )
         }
     }
 }

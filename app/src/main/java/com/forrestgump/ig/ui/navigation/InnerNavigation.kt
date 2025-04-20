@@ -131,7 +131,7 @@ fun InnerNavigation(
                 searchViewModel.loadAllData()
             }
             SearchScreen(
-                uiState = uiState
+                uiState = uiState, navController = navHostController
             )
         }
 
