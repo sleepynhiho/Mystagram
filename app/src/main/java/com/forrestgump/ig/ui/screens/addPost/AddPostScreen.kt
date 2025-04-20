@@ -43,8 +43,8 @@ import com.forrestgump.ig.ui.navigation.Routes
 @Composable
 fun AddPostScreen(
     navHostController: NavHostController,
-    addPostViewModel: AddPostViewModel = hiltViewModel()
-    ) {
+    addPostViewModel: AddPostViewModel,
+) {
     val context = LocalContext.current
 
     // State lưu các ảnh được chọn (từ thư viện hoặc camera)

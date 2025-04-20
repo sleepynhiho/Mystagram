@@ -246,23 +246,21 @@ fun ProfileTabRow() {
 }
 
 /**
- * Khu vực danh sách bài viết. Ở đây demo khi chưa có bài viết.
+ * Khu vực danh sách bài viết.
  */
 @Composable
 fun PostFeed(posts: List<Post>, onPostClick: (Post) -> Unit) {
-    // Lấy thông tin cấu hình màn hình hiện tại
     val configuration = LocalConfiguration.current
-    // Tính 1/3 độ rộng màn hình (screenWidthDp là số nguyên, chuyển thành dp)
     val imageWidth = (configuration.screenWidthDp / 3).dp
 
     LazyVerticalGrid(
-        columns = GridCells.Fixed(3), // 3 cột, mỗi ảnh chiếm 1/3 chiều rộng màn hình
+        columns = GridCells.Fixed(3),
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(
             start = 8.dp,
             top = 8.dp,
             end = 8.dp,
-            bottom = 64.dp // 56.dp cho navigation bar + 8.dp khoảng cách
+            bottom = 64.dp
         ),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -272,7 +270,7 @@ fun PostFeed(posts: List<Post>, onPostClick: (Post) -> Unit) {
                 modifier = Modifier
                     .width(imageWidth)
                     .height(imageWidth)
-                    .clickable { onPostClick(post) } // Xử lý sự kiện click vào ảnh
+                    .clickable { onPostClick(post) }
             ) {
                 // Hiển thị ảnh chính
                 AsyncImage(
@@ -282,7 +280,7 @@ fun PostFeed(posts: List<Post>, onPostClick: (Post) -> Unit) {
                     modifier = Modifier.fillMaxSize()
                 )
 
-                // Nếu có nhiều hơn 1 ảnh, hiển thị biểu tượng stack ở góc trên phải
+
                 if (post.mediaUrls.size > 1) {
                     Box(
                         modifier = Modifier

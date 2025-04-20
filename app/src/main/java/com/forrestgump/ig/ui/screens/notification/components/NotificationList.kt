@@ -3,6 +3,8 @@ package com.forrestgump.ig.ui.screens.notification.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,12 +17,17 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
@@ -47,7 +54,15 @@ fun NotificationList(
     notifications: List<Notification>,
     innerPadding: PaddingValues,
     navHostController: NavHostController,
+    onAcceptFollowRequest: (Notification) -> Unit = {},
+    onRejectFollowRequest: (Notification) -> Unit = {}
 ) {
+    // Filter out read follow requests since they've been handled already
+    val filteredNotifications = notifications.filter { notification ->
+        // Keep unread notifications and all non-follow-request notifications
+        notification.type != NotificationType.FOLLOW_REQUEST || !notification.isRead
+    }
+    
     LazyColumn(
         contentPadding = innerPadding,
         modifier = Modifier
@@ -55,10 +70,12 @@ fun NotificationList(
             .background(color = MaterialTheme.colorScheme.background),
         content = {
             item { NotificationHeader() }
-            items(notifications) { notification ->
+            items(filteredNotifications) { notification ->
                 NotificationListItem(
                     notification = notification,
-                    navHostController = navHostController
+                    navHostController = navHostController,
+                    onAcceptFollowRequest = onAcceptFollowRequest,
+                    onRejectFollowRequest = onRejectFollowRequest
                 )
             }
         }
@@ -126,39 +143,84 @@ fun getNotificationMessage(notification: Notification): AnnotatedString {
 fun NotificationListItem(
     notification: Notification,
     navHostController: NavHostController,
+    onAcceptFollowRequest: (Notification) -> Unit = {},
+    onRejectFollowRequest: (Notification) -> Unit = {}
 ) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(color = MaterialTheme.colorScheme.background)
-            .height(72.dp)
-            .clickable {
-//                navHostController.navigate("ChatBoxScreen/${chat.chatId}")
-            },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start
+            .padding(vertical = 8.dp, horizontal = 10.dp)
     ) {
-        Spacer(modifier = Modifier.width(10.dp))
-        Surface(
+        Row(
             modifier = Modifier
-                .size(56.dp),
-            shape = CircleShape,
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
         ) {
-            AsyncImage(
-                modifier = Modifier.fillMaxSize(),
-                model = notification.senderProfileImage,
-                contentScale = ContentScale.Crop,
-                contentDescription = stringResource(id = R.string.profile_image)
+            // Profile Image
+            Surface(
+                modifier = Modifier
+                    .size(56.dp),
+                shape = CircleShape,
+            ) {
+                AsyncImage(
+                    modifier = Modifier.fillMaxSize(),
+                    model = notification.senderProfileImage,
+                    contentScale = ContentScale.Crop,
+                    contentDescription = stringResource(id = R.string.profile_image)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            // Notification text
+            Text(
+                text = getNotificationMessage(notification),
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.weight(1f)
             )
         }
-
-        Spacer(modifier = Modifier.width(10.dp))
-
-        Text(
-            text = getNotificationMessage(notification),
-            fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        
+        // Add follow request buttons if this is a follow request notification
+        if (notification.type == NotificationType.FOLLOW_REQUEST && !notification.isRead) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 66.dp, end = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = { onAcceptFollowRequest(notification) },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(4.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text(
+                        text = "Chấp nhận",
+                        fontSize = 14.sp
+                    )
+                }
+                
+                OutlinedButton(
+                    onClick = { onRejectFollowRequest(notification) },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(4.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text(
+                        text = "Từ chối",
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        }
     }
 }
 

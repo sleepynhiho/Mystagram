@@ -10,5 +10,6 @@ data class UserProfileUiState(
     var isLoading: Boolean = true,
     var isFollowing: Boolean = false,
     var isCurrentUserFollowingThisUser: Boolean = false,
-    var isCurrentUserFollowedByThisUser: Boolean = false
+    var isCurrentUserFollowedByThisUser: Boolean = false,
+    var isFollowRequestPending: Boolean = false
 )

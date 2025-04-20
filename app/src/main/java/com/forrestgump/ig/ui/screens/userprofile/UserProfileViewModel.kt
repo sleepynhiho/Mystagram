@@ -3,6 +3,8 @@ package com.forrestgump.ig.ui.screens.userprofile
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.forrestgump.ig.data.models.Notification
+import com.forrestgump.ig.data.models.NotificationType
 import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.data.models.User
 import com.google.firebase.auth.FirebaseAuth
@@ -23,7 +25,12 @@ class UserProfileViewModel @Inject constructor(
         private set
     val uiState: StateFlow<UserProfileUiState> = _uiState
 
-    fun loadUserData(userId: String) {
+    fun loadUserData(userId: String, forceReload: Boolean = false) {
+        // Nếu đã load và không yêu cầu force reload, không làm gì
+        if (!forceReload && _uiState.value.user.userId == userId && !_uiState.value.isLoading) {
+            return
+        }
+
         _uiState.update { it.copy(isLoading = true) }
 
         // Load the current user first
@@ -42,7 +49,8 @@ class UserProfileViewModel @Inject constructor(
                             followers = document.get("followers") as? List<String> ?: emptyList(),
                             following = document.get("following") as? List<String> ?: emptyList(),
                             isPrivate = document.getBoolean("private") ?: false,
-                            isPremium = document.getBoolean("premium") ?: false
+                            isPremium = document.getBoolean("premium") ?: false,
+                            premiumDate = document.getTimestamp("premiumDate")?.toDate()
                         )
 
                         // Now load the target user's data
@@ -72,7 +80,8 @@ class UserProfileViewModel @Inject constructor(
                         followers = document.get("followers") as? List<String> ?: emptyList(),
                         following = document.get("following") as? List<String> ?: emptyList(),
                         isPrivate = document.getBoolean("private") ?: false,
-                        isPremium = document.getBoolean("premium") ?: false
+                        isPremium = document.getBoolean("premium") ?: false,
+                        premiumDate = document.getTimestamp("premiumDate")?.toDate()
                     )
 
                     val isCurrentUserFollowingThisUser = currentUser.following.contains(userId)
@@ -85,6 +94,11 @@ class UserProfileViewModel @Inject constructor(
                         isCurrentUserFollowedByThisUser = isCurrentUserFollowedByThisUser
                     ) }
 
+                    // Check if there's a pending follow request
+                    if (user.isPrivate && !isCurrentUserFollowingThisUser) {
+                        checkPendingFollowRequest(currentUser.userId, userId)
+                    }
+
                     // Load posts of the user if we're allowed to view them
                     if (!user.isPrivate || isCurrentUserFollowingThisUser) {
                         loadUserPosts(userId)
@@ -96,6 +110,19 @@ class UserProfileViewModel @Inject constructor(
             .addOnFailureListener { exception ->
                 Log.e("UserProfileViewModel", "Error getting user data", exception)
                 _uiState.update { it.copy(isLoading = false) }
+            }
+    }
+
+    // Check if there's a pending follow request
+    private fun checkPendingFollowRequest(currentUserId: String, targetUserId: String) {
+        firestore.collection("notifications")
+            .whereEqualTo("senderId", currentUserId)
+            .whereEqualTo("receiverId", targetUserId)
+            .whereEqualTo("type", NotificationType.FOLLOW_REQUEST)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val isPending = !snapshot.isEmpty
+                _uiState.update { it.copy(isFollowRequestPending = isPending) }
             }
     }
 
@@ -123,37 +150,98 @@ class UserProfileViewModel @Inject constructor(
         val targetUser = _uiState.value.user
 
         viewModelScope.launch {
-            // Update current user's following list
-            val currentUserRef = firestore.collection("users").document(currentUser.userId)
-            val updatedFollowing = currentUser.following.toMutableList().apply { add(targetUser.userId) }
-
-            currentUserRef.update("following", updatedFollowing)
-                .addOnSuccessListener {
-                    // Update the target user's followers list
-                    val targetUserRef = firestore.collection("users").document(targetUser.userId)
-                    val updatedFollowers = targetUser.followers.toMutableList().apply { add(currentUser.userId) }
-
-                    targetUserRef.update("followers", updatedFollowers)
-                        .addOnSuccessListener {
-                            // Update UI state
-                            _uiState.update { state ->
-                                state.copy(
-                                    isCurrentUserFollowingThisUser = true,
-                                    currentUser = state.currentUser.copy(
-                                        following = updatedFollowing
-                                    ),
-                                    user = state.user.copy(
-                                        followers = updatedFollowers
-                                    )
+            try {
+                // If target user is private, send a follow request instead of direct follow
+                if (targetUser.isPrivate && !_uiState.value.isCurrentUserFollowingThisUser) {
+                    // First check if there's an existing follow request (read or unread)
+                    firestore.collection("notifications")
+                        .whereEqualTo("senderId", currentUser.userId)
+                        .whereEqualTo("receiverId", targetUser.userId)
+                        .whereEqualTo("type", NotificationType.FOLLOW_REQUEST)
+                        .get()
+                        .addOnSuccessListener { querySnapshot ->
+                            if (!querySnapshot.isEmpty) {
+                                // Request already exists, update it to unread instead of creating a new one
+                                val existingRequest = querySnapshot.documents.first()
+                                existingRequest.reference.update("isRead", false)
+                                    .addOnSuccessListener {
+                                        _uiState.update { it.copy(isFollowRequestPending = true) }
+                                    }
+                            } else {
+                                // No existing request, create a new one
+                                val notificationId = firestore.collection("notifications").document().id
+                                val notification = Notification(
+                                    notificationId = notificationId,
+                                    receiverId = targetUser.userId,
+                                    senderId = currentUser.userId,
+                                    senderUsername = currentUser.username,
+                                    senderProfileImage = currentUser.profileImage,
+                                    type = NotificationType.FOLLOW_REQUEST,
+                                    isRead = false
                                 )
-                            }
 
-                            // If the user is private and we just followed them, reload their posts
-                            if (targetUser.isPrivate) {
-                                loadUserPosts(targetUser.userId)
+                                // Add to notifications collection
+                                firestore.collection("notifications").document(notificationId)
+                                    .set(notification)
+                                    .addOnSuccessListener {
+                                        // Update local UI to show pending state
+                                        _uiState.update { it.copy(isFollowRequestPending = true) }
+                                    }
                             }
                         }
+                } else {
+                    // For public accounts, direct follow as before
+                    // Update current user's following list
+                    val currentUserRef = firestore.collection("users").document(currentUser.userId)
+                    val updatedFollowing = currentUser.following.toMutableList().apply { add(targetUser.userId) }
+
+                    currentUserRef.update("following", updatedFollowing)
+                        .addOnSuccessListener {
+                            // Update the target user's followers list
+                            val targetUserRef = firestore.collection("users").document(targetUser.userId)
+                            val updatedFollowers = targetUser.followers.toMutableList().apply { add(currentUser.userId) }
+
+                            targetUserRef.update("followers", updatedFollowers)
+                                .addOnSuccessListener {
+                                    // Update UI state
+                                    _uiState.update { state ->
+                                        state.copy(
+                                            isCurrentUserFollowingThisUser = true,
+                                            currentUser = state.currentUser.copy(
+                                                following = updatedFollowing
+                                            ),
+                                            user = state.user.copy(
+                                                followers = updatedFollowers
+                                            )
+                                        )
+                                    }
+
+                                    // Create a notification for the follow
+                                    val notificationId = firestore.collection("notifications").document().id
+                                    val notification = Notification(
+                                        notificationId = notificationId,
+                                        receiverId = targetUser.userId,
+                                        senderId = currentUser.userId,
+                                        senderUsername = currentUser.username,
+                                        senderProfileImage = currentUser.profileImage,
+                                        type = NotificationType.FOLLOW,
+                                        isRead = false
+                                    )
+
+                                    // Add to notifications collection
+                                    firestore.collection("notifications").document(notificationId)
+                                        .set(notification)
+
+                                    // If the user is private and we just followed them, reload their posts
+                                    if (targetUser.isPrivate) {
+                                        loadUserPosts(targetUser.userId)
+                                    }
+                                }
+                        }
                 }
+            } catch (e: Exception) {
+                Log.e("UserProfileViewModel", "Error following user", e)
+            }
         }
     }
 
@@ -162,32 +250,52 @@ class UserProfileViewModel @Inject constructor(
         val targetUser = _uiState.value.user
 
         viewModelScope.launch {
-            // Update current user's following list
-            val currentUserRef = firestore.collection("users").document(currentUser.userId)
-            val updatedFollowing = currentUser.following.toMutableList().apply { remove(targetUser.userId) }
-
-            currentUserRef.update("following", updatedFollowing)
-                .addOnSuccessListener {
-                    // Update the target user's followers list
-                    val targetUserRef = firestore.collection("users").document(targetUser.userId)
-                    val updatedFollowers = targetUser.followers.toMutableList().apply { remove(currentUser.userId) }
-
-                    targetUserRef.update("followers", updatedFollowers)
-                        .addOnSuccessListener {
-                            // Update UI state
-                            _uiState.update { state ->
-                                state.copy(
-                                    isCurrentUserFollowingThisUser = false,
-                                    currentUser = state.currentUser.copy(
-                                        following = updatedFollowing
-                                    ),
-                                    user = state.user.copy(
-                                        followers = updatedFollowers
-                                    )
-                                )
+            try {
+                // If there's a pending follow request, cancel it
+                if (_uiState.value.isFollowRequestPending) {
+                    firestore.collection("notifications")
+                        .whereEqualTo("senderId", currentUser.userId)
+                        .whereEqualTo("receiverId", targetUser.userId)
+                        .whereEqualTo("type", NotificationType.FOLLOW_REQUEST)
+                        .get()
+                        .addOnSuccessListener { querySnapshot ->
+                            for (doc in querySnapshot.documents) {
+                                doc.reference.delete()
                             }
+                            _uiState.update { it.copy(isFollowRequestPending = false) }
                         }
+                    return@launch
                 }
+
+                // Regular unfollow logic
+                val currentUserRef = firestore.collection("users").document(currentUser.userId)
+                val updatedFollowing = currentUser.following.toMutableList().apply { remove(targetUser.userId) }
+
+                currentUserRef.update("following", updatedFollowing)
+                    .addOnSuccessListener {
+                        // Update the target user's followers list
+                        val targetUserRef = firestore.collection("users").document(targetUser.userId)
+                        val updatedFollowers = targetUser.followers.toMutableList().apply { remove(currentUser.userId) }
+
+                        targetUserRef.update("followers", updatedFollowers)
+                            .addOnSuccessListener {
+                                // Update UI state
+                                _uiState.update { state ->
+                                    state.copy(
+                                        isCurrentUserFollowingThisUser = false,
+                                        currentUser = state.currentUser.copy(
+                                            following = updatedFollowing
+                                        ),
+                                        user = state.user.copy(
+                                            followers = updatedFollowers
+                                        )
+                                    )
+                                }
+                            }
+                    }
+            } catch (e: Exception) {
+                Log.e("UserProfileViewModel", "Error unfollowing user", e)
+            }
         }
     }
 

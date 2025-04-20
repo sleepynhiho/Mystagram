@@ -1,6 +1,5 @@
 package com.forrestgump.ig.ui.screens.home
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.forrestgump.ig.data.models.User
@@ -11,11 +10,14 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.data.repositories.PostRepository
+import com.forrestgump.ig.data.repositories.PromotedPostRepository
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val postRepository: PostRepository // Inject repository vào
+    private val postRepository: PostRepository, // Inject repository vào
+    private val promotedPostRepository: PromotedPostRepository // Add this
 ) : ViewModel() {
 
     var uiState = MutableStateFlow(UiState())
@@ -33,17 +35,33 @@ class HomeViewModel @Inject constructor(
             try {
                 val newPosts: List<Post> = postRepository.getPosts(pageSize)
                 if (newPosts.isNotEmpty()) {
-                    uiState.update { currentState ->
-                        // Nối danh sách bài viết hiện có với bài viết mới
-                        currentState.copy(
-                            posts = currentState.posts + newPosts,
-                            isLoading = false,
+                    // Xử lý promoted posts
+                    val promotedPosts = promotedPostRepository.getPromotedPosts()
+                    val promotedPostIds = promotedPosts.map { it.postId }
+
+                    // Mark promoted posts
+                    val updatedNewPosts = newPosts.map { post ->
+                        if (promotedPostIds.contains(post.postId)) {
+                            post.copy(isSponsored = true)
+                        } else {
+                            post
+                        }
+                    }
+
+                    // Combine with existing posts
+                    val allPosts = uiState.value.posts + updatedNewPosts
+
+                    // Reapply the 3:1 pattern
+                    val combinedPosts = combineRegularAndPromotedPosts(allPosts)
+
+                    uiState.update {
+                        it.copy(
+                            posts = combinedPosts,
                             isLoadingMore = false,
                             hasMore = newPosts.size >= pageSize
                         )
                     }
-                    val totalPosts = uiState.value.posts.size
-                    Log.d("HomeViewModel", "Tổng số post đã load: $totalPosts")
+
                 } else {
                     // Không còn bài viết để load thêm (có thể thêm biến trạng thái 'hasMore')
                     uiState.update { it.copy(isLoadingMore = false, hasMore = false) }
@@ -58,14 +76,36 @@ class HomeViewModel @Inject constructor(
 
     fun refreshPosts() {
         viewModelScope.launch {
-            uiState.update { it.copy(isRefreshing = true) }
-            // Reset lại phân trang để load trang đầu tiên
+            // Mark as refreshing and completely clear the post list during refresh
+            // to ensure we don't show any posts until we have the final formatted list
+            uiState.update { it.copy(isRefreshing = true, posts = emptyList()) }
+
+            // Reset pagination to load the first page
             postRepository.resetPagination()
             try {
-                val refreshedPosts = postRepository.getPosts(pageSize)  // load 5 post đầu tiên
+                // Get regular posts
+                val refreshedPosts = postRepository.getPosts(pageSize)
+
+                // Get promoted posts
+                val promotedPosts = promotedPostRepository.getPromotedPosts()
+                val promotedPostIds = promotedPosts.map { it.postId }
+
+                // Mark posts as sponsored
+                val updatedPosts = refreshedPosts.map { post ->
+                    if (promotedPostIds.contains(post.postId)) {
+                        post.copy(isSponsored = true)
+                    } else {
+                        post
+                    }
+                }
+
+                // Combine posts according to the 3:1 rule
+                val combinedPosts = combineRegularAndPromotedPosts(updatedPosts)
+
+                // Update UI state only once all processing is complete
                 uiState.update {
                     it.copy(
-                        posts = refreshedPosts,  // Thay thế danh sách post cũ
+                        posts = combinedPosts,
                         isRefreshing = false,
                         hasMore = refreshedPosts.size >= pageSize
                     )
@@ -102,15 +142,63 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    // Modify observePosts method to include promoted posts
     fun observePosts() {
-        postRepository.observePosts { posts ->
-            uiState.update { currentState ->
-                currentState.copy(
-                    posts = posts,
-                    isLoading = false,
-                    isRefreshing = false
-                )
+        postRepository.observePosts { regularPosts ->
+            viewModelScope.launch {
+                // Get all promoted posts
+                val promotedPosts = promotedPostRepository.getPromotedPosts()
+                val promotedPostIds = promotedPosts.map { it.postId }
+
+                // Mark regular posts that are promoted
+                val updatedRegularPosts = regularPosts.map { post ->
+                    if (promotedPostIds.contains(post.postId)) {
+                        post.copy(isSponsored = true)
+                    } else {
+                        post
+                    }
+                }
+
+                // Insert a promoted post after every 3 regular posts
+                val combinedPosts = combineRegularAndPromotedPosts(updatedRegularPosts)
+
+                uiState.update { currentState ->
+                    currentState.copy(
+                        posts = combinedPosts,
+                        isLoading = false,
+                        isRefreshing = false
+                    )
+                }
             }
         }
+    }
+
+    // Helper function to combine regular and promoted posts
+    // Phiên bản cải tiến, mỗi post quảng cáo chỉ xuất hiện một lần
+    private fun combineRegularAndPromotedPosts(posts: List<Post>): List<Post> {
+        val result = mutableListOf<Post>()
+        val regularPosts = posts.filter { !it.isSponsored }
+        val promotedPosts = posts.filter { it.isSponsored }.distinctBy { it.postId }
+
+        if (promotedPosts.isEmpty()) {
+            return regularPosts
+        }
+
+        var promotedIndex = 0
+
+        // Thêm regular posts với một promoted post sau mỗi 3 bài
+        regularPosts.forEachIndexed { index, post ->
+            result.add(post)
+
+            // Sau mỗi 3 bài regular, thêm một promoted post nếu còn
+            if ((index + 1) % 3 == 0 && promotedIndex < promotedPosts.size) {
+                result.add(promotedPosts[promotedIndex])
+                promotedIndex++
+            }
+        }
+
+        // Không cần thêm các promoted posts còn lại, mỗi promoted post chỉ hiển thị 1 lần
+
+        return result
     }
 }

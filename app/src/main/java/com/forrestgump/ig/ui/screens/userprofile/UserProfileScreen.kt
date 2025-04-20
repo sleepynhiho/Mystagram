@@ -79,12 +79,14 @@ fun UserProfileScreen(
                     isPrivate = uiState.user.isPrivate,
                     isFollowing = uiState.isCurrentUserFollowingThisUser,
                     navController = navController,
-                    canViewFollowers = !uiState.user.isPrivate || uiState.isCurrentUserFollowingThisUser
+                    canViewFollowers = !uiState.user.isPrivate || uiState.isCurrentUserFollowingThisUser,
+                    userId = uiState.user.userId
                 )
 
                 // Action buttons
                 UserProfileActionButtons(
                     isFollowing = uiState.isCurrentUserFollowingThisUser,
+                    isFollowRequestPending = uiState.isFollowRequestPending,
                     onFollowClick = { viewModel.followUser() },
                     onUnfollowClick = { viewModel.unfollowUser() }
                 )
@@ -121,7 +123,8 @@ fun UserProfileInfoSection(
     isPrivate: Boolean,
     isFollowing: Boolean,
     navController: NavController,
-    canViewFollowers: Boolean
+    canViewFollowers: Boolean,
+    userId: String // Add userId parameter
 ) {
     Column(
         modifier = Modifier
@@ -152,7 +155,7 @@ fun UserProfileInfoSection(
             if (canViewFollowers) {
                 Box(
                     modifier = Modifier.clickable {
-                        navController.navigate("FollowerScreen")
+                        navController.navigate("UserFollowerScreen/${userId}")
                     }
                 ) {
                     ProfileStatItem(number = followers, label = "Người theo dõi")
@@ -161,7 +164,7 @@ fun UserProfileInfoSection(
 
                 Box(
                     modifier = Modifier.clickable {
-                        navController.navigate("FollowingScreen")
+                        navController.navigate("UserFollowingScreen/${userId}")
                     }
                 ) {
                     ProfileStatItem(number = following, label = "Đang theo dõi")
@@ -212,6 +215,7 @@ fun UserProfileInfoSection(
 @Composable
 fun UserProfileActionButtons(
     isFollowing: Boolean,
+    isFollowRequestPending: Boolean = false,
     onFollowClick: () -> Unit,
     onUnfollowClick: () -> Unit
 ) {
@@ -223,16 +227,30 @@ fun UserProfileActionButtons(
     ) {
         Button(
             onClick = {
-                if (isFollowing) onUnfollowClick() else onFollowClick()
+                if (isFollowing || isFollowRequestPending) onUnfollowClick() else onFollowClick()
             },
             modifier = Modifier.weight(1f),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isFollowing) Color.White else MaterialTheme.colorScheme.primary,
-                contentColor = if (isFollowing) Color.Black else Color.White
+                containerColor = when {
+                    isFollowing -> Color.White 
+                    isFollowRequestPending -> Color.White
+                    else -> MaterialTheme.colorScheme.primary
+                },
+                contentColor = when {
+                    isFollowing -> Color.Black 
+                    isFollowRequestPending -> Color.Black
+                    else -> Color.White
+                }
             ),
-            border = if (isFollowing) BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground) else null
+            border = if (isFollowing || isFollowRequestPending) BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground) else null
         ) {
-            Text(text = if (isFollowing) "Đang theo dõi" else "Theo dõi")
+            Text(
+                text = when {
+                    isFollowing -> "Đang theo dõi"
+                    isFollowRequestPending -> "Đã yêu cầu"
+                    else -> "Theo dõi"
+                }
+            )
         }
 
         Button(

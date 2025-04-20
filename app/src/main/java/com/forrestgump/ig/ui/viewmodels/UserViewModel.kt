@@ -23,7 +23,7 @@ class UserViewModel @Inject constructor() : ViewModel() {
         fetchCurrentUser()
     }
 
-    private fun fetchCurrentUser() {
+    fun fetchCurrentUser() {
         val firebaseUser = firebaseAuth.currentUser
         if (firebaseUser != null) {
             val db = FirebaseFirestore.getInstance()
@@ -47,7 +47,7 @@ class UserViewModel @Inject constructor() : ViewModel() {
                             profileImage = firebaseUser.photoUrl?.toString() ?: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlRM2-AldpZgaraCXCnO5loktGi0wGiNPydQ&s",
                             bio = "",
                             followers = emptyList(),
-                            following = emptyList()
+                            following = emptyList(),
                         )
                     }
                 }
