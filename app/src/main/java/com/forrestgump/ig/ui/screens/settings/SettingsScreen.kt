@@ -14,22 +14,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Block
-import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Payment
-import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -61,9 +51,10 @@ import com.forrestgump.ig.ui.navigation.Routes
 import com.forrestgump.ig.ui.theme.ThemeManager
 import com.forrestgump.ig.utils.constants.changeAppLanguage
 import com.google.firebase.auth.FirebaseAuth
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
-import javax.inject.Inject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,15 +65,6 @@ fun SettingsScreen(navController: NavController) {
         EntryPointAccessors.fromApplication(context, ThemeManagerEntryPoint::class.java)
             .themeManager()
     val currentTheme by themeManager.currentTheme.collectAsState("system") // Quan sát trạng thái chủ đề
-    val isPremium by remember { mutableStateOf(false) }
-    val savedText = stringResource(id = R.string.saved)
-    val notificationsText = stringResource(id = R.string.notifications)
-    val accountPrivacyText = stringResource(id = R.string.account_privacy)
-    val privateText = stringResource(id = R.string.privates)
-    val closeFriendsText = stringResource(id = R.string.close_friends)
-    val blockedText = stringResource(id = R.string.blocked)
-    val favoritesText = stringResource(id = R.string.favorites)
-    val mutedAccountsText = stringResource(id = R.string.muted_accounts)
     val multiLanguageText = stringResource(id = R.string.multi_language)
     val englishText = stringResource(id = R.string.english_language)
     val vietnamText = stringResource(id = R.string.vietnamese_language)
@@ -121,50 +103,6 @@ fun SettingsScreen(navController: NavController) {
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            item { SectionHeader(title = stringResource(id = R.string.section_how_you_use)) }
-            items(
-                listOf(
-                    SettingsItemData(icon = Icons.Default.Bookmark, title = savedText),
-                    SettingsItemData(icon = Icons.Default.Notifications, title = notificationsText)
-                )
-            ) { itemData -> SettingsRow(itemData = itemData) }
-
-            item { SectionHeader(title = stringResource(id = R.string.section_who_can_see)) }
-            items(
-                listOf(
-                    SettingsItemData(
-                        icon = Icons.Default.Lock,
-                        title = accountPrivacyText,
-                        subtitle = privateText
-                    ),
-                    SettingsItemData(
-                        icon = Icons.Default.Group,
-                        title = closeFriendsText,
-                        subtitle = "0"
-                    ),
-                    SettingsItemData(
-                        icon = Icons.Default.Block,
-                        title = blockedText,
-                        subtitle = "0"
-                    )
-                )
-            ) { itemData -> SettingsRow(itemData = itemData) }
-
-            item { SectionHeader(title = stringResource(id = R.string.section_what_you_see)) }
-            items(
-                listOf(
-                    SettingsItemData(
-                        icon = Icons.Default.Favorite,
-                        title = favoritesText,
-                        subtitle = "0"
-                    ),
-                    SettingsItemData(
-                        icon = Icons.Default.VolumeOff,
-                        title = mutedAccountsText,
-                        subtitle = "0"
-                    )
-                )
-            ) { itemData -> SettingsRow(itemData = itemData) }
 
             item { SectionHeader(title = stringResource(id = R.string.section_your_app_media)) }
             items(
@@ -186,37 +124,11 @@ fun SettingsScreen(navController: NavController) {
                 SettingsRow(itemData = itemData, onClick = { showDarkModeDialog = true })
             }
 
-            item {
-                SettingsRow(
-                    itemData = SettingsItemData(
-                        icon = Icons.Default.Star,
-                        title = stringResource(id = R.string.account_status),
-                        subtitle = if (isPremium) stringResource(id = R.string.premium) else stringResource(
-                            id = R.string.basic
-                        )
-                    )
-                )
-            }
 
-            item { SectionHeader(title = stringResource(id = R.string.section_orders_fundraisers)) }
-            item {
-                SettingsRow(
-                    itemData = SettingsItemData(
-                        icon = Icons.Default.Payment,
-                        title = stringResource(id = R.string.orders_payments)
-                    )
-                )
-            }
+
 
             item { SectionHeader(title = stringResource(id = R.string.section_login)) }
-            item {
-                SettingsRow(
-                    itemData = SettingsItemData(
-                        icon = Icons.Default.PersonAdd,
-                        title = stringResource(id = R.string.add_account)
-                    )
-                )
-            }
+
 
             item {
                 SettingsRow(
@@ -225,8 +137,29 @@ fun SettingsScreen(navController: NavController) {
                         title = stringResource(id = R.string.log_out)
                     ),
                     onClick = {
+                        // Sign out from Firebase
                         FirebaseAuth.getInstance().signOut()
-                        navController.navigate(Routes.LoginScreen.route) { popUpTo(0) }
+                        
+                        // Sign out from Google to ensure account picker is shown next time
+                        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                            .requestIdToken(context.getString(R.string.default_web_client_id))
+                            .requestEmail()
+                            .build()
+                        
+                        try {
+                            val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                            googleSignInClient.signOut().addOnCompleteListener {
+                                // Navigate back to login screen
+                                navController.navigate(Routes.LoginScreen.route) { 
+                                    popUpTo(0) 
+                                }
+                            }
+                        } catch (e: Exception) {
+                            // If Google sign-out fails, still navigate to login screen
+                            navController.navigate(Routes.LoginScreen.route) { 
+                                popUpTo(0) 
+                            }
+                        }
                     }
                 )
             }

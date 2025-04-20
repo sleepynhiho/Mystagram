@@ -37,6 +37,7 @@
     <string name="meta_logo">Meta logo</string>
     <string name="google_logo_desc">Google Logo</string>
     <string name="facebook_logo_desc">Facebook Logo</string>
+    <string name="default_web_client_id">12307520939-1kqdr4j2ppba6dmnno33a6k4sbb0hp49.apps.googleusercontent.com</string>
     <string name="signup_title">Account registration</string>
     <string name="signup_description">Enter your username, email and password to create an account.</string>
     <string name="username">Username</string>

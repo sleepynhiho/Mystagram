@@ -55,6 +55,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
@@ -82,15 +83,15 @@ fun findActivity(): Activity {
 @Composable
 fun CheckoutScreen(
     viewModel: ProfileViewModel,
-    onBackClick:()->Unit,
-    onCheckoutComplete:()->Unit,
+    onBackClick: () -> Unit,
+    onCheckoutComplete: () -> Unit,
 ) {
     var paymentIntentClientSecret by remember { mutableStateOf<String?>(null) }
 
     var error by remember { mutableStateOf<String?>(null) }
 
     val activity = findActivity()
-    val context= LocalContext.current
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val isPremium = uiState.curUser.isPremium
     val remainingDays = uiState.curUser.getRemainingPremiumDays()
@@ -106,11 +107,13 @@ fun CheckoutScreen(
                         onCheckoutComplete()
                     },
                     onFailure = { e ->
-                        error = "Payment was successful but we couldn't update your account. Please contact support."
+                        error =
+                            "Payment was successful but we couldn't update your account. Please contact support."
                         Log.e("CheckoutScreen", "Error updating premium status", e)
                     }
                 )
             }
+
             is PaymentSheetResult.Canceled -> showToast("Payment canceled!", activity, context)
             is PaymentSheetResult.Failed -> {
                 error = paymentResult.error.localizedMessage ?: paymentResult.error.message
@@ -138,12 +141,12 @@ fun CheckoutScreen(
     }
 
     Scaffold(
-        topBar={
+        topBar = {
             TopAppBar(
-                title = {Text("Premium")},
+                title = { Text("Premium") },
                 navigationIcon = {
-                    IconButton( onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack,"Back")
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.Default.ArrowBack, "Back")
                     }
                 }
             )
@@ -174,8 +177,7 @@ fun CheckoutScreen(
                         )
                     }
                 )
-            }
-            else {
+            } else {
                 PayButton(
                     enabled = paymentIntentClientSecret != null,
                     onClick = {
@@ -203,7 +205,7 @@ private fun PremiumInfoScreen(
             .fillMaxWidth()
             .padding(16.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFFF5F5F5))
+            .background(MaterialTheme.colorScheme.tertiary)
             .padding(16.dp)
     ) {
         Column(
@@ -230,6 +232,7 @@ private fun PremiumInfoScreen(
             Text(
                 text = "Bạn đang là người dùng Premium!",
                 fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
@@ -237,6 +240,7 @@ private fun PremiumInfoScreen(
                 Text(
                     text = "Còn lại: $remainingDays ngày",
                     fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
@@ -244,6 +248,7 @@ private fun PremiumInfoScreen(
                 Text(
                     text = "Bạn vừa đăng ký thành công gói Premium!",
                     fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
@@ -253,6 +258,7 @@ private fun PremiumInfoScreen(
                 text = "Với tài khoản Premium, bạn có thể:",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier
                     .align(Alignment.Start)
                     .padding(bottom = 8.dp)
@@ -305,7 +311,8 @@ private fun PremiumFeatureItem(text: String) {
                 .size(20.dp)
                 .padding(end = 8.dp)
         )
-        Text(text = text, fontSize = 14.sp)
+
+        Text(text = text, fontSize = 14.sp, color = MaterialTheme.colorScheme.onBackground)
     }
 }
 
@@ -447,7 +454,7 @@ private suspend fun fetchPaymentIntent(): Result<String> = suspendCoroutine { co
 
     OkHttpClient()
         .newCall(request)
-        .enqueue(object: Callback {
+        .enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 continuation.resume(Result.failure(e))
             }
@@ -461,7 +468,8 @@ private suspend fun fetchPaymentIntent(): Result<String> = suspendCoroutine { co
                     clientSecret?.let { secret ->
                         continuation.resume(Result.success(secret))
                     } ?: run {
-                        val error = Exception("Could not find payment intent client secret in response!")
+                        val error =
+                            Exception("Could not find payment intent client secret in response!")
 
                         continuation.resume(Result.failure(error))
                     }
@@ -481,9 +489,9 @@ private fun extractClientSecretFromResponse(response: Response): String? {
     }
 }
 
-private fun showToast(message: String, activity:Activity, context: Context) {
+private fun showToast(message: String, activity: Activity, context: Context) {
     activity.runOnUiThread {
-        Toast.makeText(context,  message, Toast.LENGTH_LONG).show()
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
 }
 
