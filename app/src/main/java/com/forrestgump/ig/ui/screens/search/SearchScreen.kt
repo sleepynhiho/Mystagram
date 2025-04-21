@@ -1,6 +1,5 @@
 package com.forrestgump.ig.ui.screens.search
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -39,18 +38,20 @@ import androidx.compose.material.Divider
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PlayCircle
 import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -73,6 +74,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -89,7 +91,9 @@ import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.ui.navigation.Routes
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -125,6 +129,23 @@ fun SearchScreen(
     var timeInput by remember { mutableStateOf("") }
     var fromTimeInput by remember { mutableStateOf("") }
     var toTimeInput by remember { mutableStateOf("") }
+
+    // Function to apply search with current filters
+    val applySearch = {
+        if (searchQuery.isNotEmpty()) {
+            viewModel.searchSuggestions(searchQuery)
+        }
+    }
+
+    // Effect to reapply filters when filter values change
+    LaunchedEffect(
+        userNameFilter, userLocationFilter, locationInput,
+        postContentFilter, postTimeFilter, fromTimeInput, toTimeInput
+    ) {
+        if (searchQuery.isNotEmpty()) {
+            applySearch()
+        }
+    }
 
     val tabs = listOf("Users", "Posts")
 
@@ -189,30 +210,16 @@ fun SearchScreen(
                             )
                         },
                         trailingIcon = {
-                            Row {
-                                if (searchQuery.isNotEmpty()) {
-                                    IconButton(
-                                        onClick = { searchQuery = "" },
-                                        modifier = Modifier.size(32.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Clear,
-                                            contentDescription = "Clear",
-                                            tint = MaterialTheme.colorScheme.onBackground,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
-                                }
-
+                            if (searchQuery.isNotEmpty()) {
                                 IconButton(
-                                    onClick = { showFilters = !showFilters },
+                                    onClick = { searchQuery = "" },
                                     modifier = Modifier.size(32.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Outlined.FilterList,
-                                        contentDescription = "Filters",
-                                        tint = if (showFilters) Color(0xFF3897F0) else Color.Gray,
-                                        modifier = Modifier.size(18.dp)
+                                        imageVector = Icons.Default.Clear,
+                                        contentDescription = "Clear",
+                                        tint = MaterialTheme.colorScheme.onBackground,
+                                        modifier = Modifier.size(16.dp)
                                     )
                                 }
                             }
@@ -235,7 +242,7 @@ fun SearchScreen(
 
                 // Filter options
                 AnimatedVisibility(
-                    visible = showFilters,
+                    visible = false,
                     enter = fadeIn(animationSpec = tween(200)) + expandVertically(
                         animationSpec = tween(250)
                     ),
@@ -247,81 +254,293 @@ fun SearchScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(MaterialTheme.colorScheme.background)
+                            .shadow(elevation = 2.dp, shape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp))
                             .padding(16.dp)
                     ) {
-                        Text(
-                            text = stringResource(id = R.string.search_filters),
-                            color = MaterialTheme.colorScheme.onBackground,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 12.dp)
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.search_filters),
+                                color = MaterialTheme.colorScheme.onBackground,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            
+                            // Reset filters button
+                            Text(
+                                text = "Reset",
+                                color = Color(0xFF3897F0),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier
+                                    .clickable {
+                                        if (selectedTab == "Users") {
+                                            userNameFilter = true
+                                            userLocationFilter = false
+                                            locationInput = ""
+                                        } else {
+                                            postContentFilter = true
+                                            postTimeFilter = false
+                                            fromTimeInput = ""
+                                            toTimeInput = ""
+                                        }
+                                        // Apply search with reset filters
+                                        applySearch()
+                                    }
+                                    .padding(8.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         if (selectedTab == "Users") {
-                            FilterOption(
-                                title = stringResource(id = R.string.search_by_name),
-                                isChecked = userNameFilter,
-                                onCheckedChange = { userNameFilter = it },
-                                icon = Icons.Outlined.Person
-                            )
-
-                            FilterOption(
-                                title = stringResource(id = R.string.search_by_location),
-                                isChecked = userLocationFilter,
-                                onCheckedChange = { userLocationFilter = it },
-                                icon = Icons.Outlined.LocationOn
-                            )
+                            // Simplified user filter options as toggle buttons
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                FilterToggleButton(
+                                    icon = Icons.Outlined.Person,
+                                    text = stringResource(id = R.string.search_by_name),
+                                    isSelected = userNameFilter,
+                                    onToggle = { 
+                                        userNameFilter = it
+                                        // If turning off name filter but location is also off, enable location
+                                        if (!it && !userLocationFilter) {
+                                            userLocationFilter = true
+                                        }
+                                    }
+                                )
+                                
+                                FilterToggleButton(
+                                    icon = Icons.Outlined.LocationOn,
+                                    text = stringResource(id = R.string.search_by_location),
+                                    isSelected = userLocationFilter,
+                                    onToggle = { 
+                                        userLocationFilter = it
+                                        // If turning off location filter but name is also off, enable name
+                                        if (!it && !userNameFilter) {
+                                            userNameFilter = true
+                                        }
+                                    }
+                                )
+                            }
 
                             if (userLocationFilter) {
+                                Spacer(modifier = Modifier.height(8.dp))
                                 OutlinedTextField(
                                     value = locationInput,
                                     onValueChange = { locationInput = it },
                                     label = { Text(text = stringResource(id = R.string.enter_location)) },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 8.dp)
+                                    singleLine = true,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = TextFieldDefaults.colors(
+                                        focusedContainerColor = MaterialTheme.colorScheme.background,
+                                        unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                                        focusedIndicatorColor = Color(0xFF3897F0),
+                                        cursorColor = Color(0xFF3897F0)
+                                    ),
+                                    trailingIcon = {
+                                        if (locationInput.isNotEmpty()) {
+                                            IconButton(onClick = { locationInput = "" }) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Clear,
+                                                    contentDescription = "Clear",
+                                                    tint = Color.Gray
+                                                )
+                                            }
+                                        }
+                                    }
                                 )
                             }
                         } else {
-                            FilterOption(
-                                title = stringResource(id = R.string.search_by_content),
-                                isChecked = postContentFilter,
-                                onCheckedChange = { postContentFilter = it },
-                                icon = Icons.Outlined.Description
-                            )
-
-                            FilterOption(
-                                title = stringResource(id = R.string.search_by_time),
-                                isChecked = postTimeFilter,
-                                onCheckedChange = { postTimeFilter = it },
-                                icon = Icons.Outlined.CalendarToday
-                            )
+                            // Simplified post filter options as toggle buttons
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                FilterToggleButton(
+                                    icon = Icons.Outlined.Description,
+                                    text = stringResource(id = R.string.search_by_content),
+                                    isSelected = postContentFilter,
+                                    onToggle = { 
+                                        postContentFilter = it
+                                        // If turning off content filter but time is also off, enable time
+                                        if (!it && !postTimeFilter) {
+                                            postTimeFilter = true
+                                        }
+                                    }
+                                )
+                                
+                                FilterToggleButton(
+                                    icon = Icons.Outlined.CalendarToday,
+                                    text = stringResource(id = R.string.search_by_time),
+                                    isSelected = postTimeFilter,
+                                    onToggle = { 
+                                        postTimeFilter = it
+                                        // If turning off time filter but content is also off, enable content
+                                        if (!it && !postContentFilter) {
+                                            postContentFilter = true
+                                        }
+                                    }
+                                )
+                            }
 
                             if (postTimeFilter) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Filter by Month and Year",
+                                    fontSize = 13.sp,
+                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                                    modifier = Modifier.padding(bottom = 4.dp)
+                                )
+                                
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(top = 8.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                        .padding(top = 4.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    OutlinedTextField(
-                                        value = fromTimeInput,
-                                        onValueChange = { fromTimeInput = it },
-                                        label = { Text(text = stringResource(id = R.string.from_time)) },
+                                    // Month selection
+                                    val months = listOf("January", "February", "March", "April", "May", "June", 
+                                                      "July", "August", "September", "October", "November", "December")
+                                    var monthDropdownExpanded by remember { mutableStateOf(false) }
+                                    var selectedMonth by remember { mutableStateOf("") }
+                                    
+                                    Box(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .padding(end = 4.dp)
-                                    )
-                                    OutlinedTextField(
-                                        value = toTimeInput,
-                                        onValueChange = { toTimeInput = it },
-                                        label = { Text(text = stringResource(id = R.string.to_time)) },
+                                            .border(
+                                                width = 1.dp,
+                                                color = Color.Gray.copy(alpha = 0.3f),
+                                                shape = RoundedCornerShape(4.dp)
+                                            )
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable { monthDropdownExpanded = true }
+                                                .padding(12.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = selectedMonth.ifEmpty { "Select Month" },
+                                                color = if (selectedMonth.isEmpty()) Color.Gray else MaterialTheme.colorScheme.onBackground,
+                                                fontSize = 14.sp
+                                            )
+                                            Icon(
+                                                imageVector = Icons.Default.ArrowDropDown,
+                                                contentDescription = "Dropdown",
+                                                tint = Color.Gray
+                                            )
+                                        }
+                                        
+                                        DropdownMenu(
+                                            expanded = monthDropdownExpanded,
+                                            onDismissRequest = { monthDropdownExpanded = false },
+                                            modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                                        ) {
+                                            months.forEachIndexed { index, month ->
+                                                DropdownMenuItem(
+                                                    text = { Text(text = month) },
+                                                    onClick = {
+                                                        selectedMonth = month
+                                                        // Update fromTimeInput with the proper format for filtering
+                                                        val monthNum = String.format("%02d", index + 1)
+                                                        fromTimeInput = monthNum
+                                                        monthDropdownExpanded = false
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Year selection
+                                    var yearDropdownExpanded by remember { mutableStateOf(false) }
+                                    var selectedYear by remember { mutableStateOf("") }
+                                    val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+                                    val years = (currentYear downTo currentYear - 5).map { it.toString() }
+                                    
+                                    Box(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .padding(start = 4.dp)
-                                    )
+                                            .border(
+                                                width = 1.dp,
+                                                color = Color.Gray.copy(alpha = 0.3f),
+                                                shape = RoundedCornerShape(4.dp)
+                                            )
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable { yearDropdownExpanded = true }
+                                                .padding(12.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = selectedYear.ifEmpty { "Select Year" },
+                                                color = if (selectedYear.isEmpty()) Color.Gray else MaterialTheme.colorScheme.onBackground,
+                                                fontSize = 14.sp
+                                            )
+                                            Icon(
+                                                imageVector = Icons.Default.ArrowDropDown,
+                                                contentDescription = "Dropdown",
+                                                tint = Color.Gray
+                                            )
+                                        }
+                                        
+                                        DropdownMenu(
+                                            expanded = yearDropdownExpanded,
+                                            onDismissRequest = { yearDropdownExpanded = false },
+                                            modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                                        ) {
+                                            years.forEach { year ->
+                                                DropdownMenuItem(
+                                                    text = { Text(text = year) },
+                                                    onClick = {
+                                                        selectedYear = year
+                                                        // Update toTimeInput with the proper format for filtering
+                                                        toTimeInput = year
+                                                        yearDropdownExpanded = false
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
+                        }
+                        
+                        // Apply button
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        Button(
+                            onClick = { 
+                                if (searchQuery.isNotEmpty()) {
+                                    viewModel.searchSuggestions(searchQuery)
+                                }
+                                showFilters = false  // Close filter panel after applying
+                                focusManager.clearFocus()
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF3897F0)
+                            ),
+                            contentPadding = PaddingValues(vertical = 12.dp)
+                        ) {
+                            Text(
+                                text = "Apply Filters",
+                                fontWeight = FontWeight.Medium
+                            )
                         }
                     }
                 }
@@ -421,44 +640,46 @@ fun TabRow(
 }
 
 @Composable
-fun FilterOption(
-    title: String,
-    isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    icon: androidx.compose.ui.graphics.vector.ImageVector
+fun FilterToggleButton(
+    icon: ImageVector,
+    text: String,
+    isSelected: Boolean,
+    onToggle: (Boolean) -> Unit
 ) {
-    Row(
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .clickable { onCheckedChange(!isChecked) },
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Checkbox(
-            checked = isChecked,
-            onCheckedChange = onCheckedChange,
-            colors = CheckboxDefaults.colors(
-                checkedColor = Color(0xFF3897F0),
-                uncheckedColor = Color.Gray,
-                checkmarkColor = Color.White
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { onToggle(!isSelected) }
+            .background(
+                if (isSelected) Color(0xFF3897F0).copy(alpha = 0.15f)
+                else MaterialTheme.colorScheme.surface
             )
-        )
-
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = if (isChecked) Color(0xFF3897F0) else Color.Gray,
-            modifier = Modifier
-                .size(18.dp)
-                .padding(end = 4.dp)
-        )
-
-        Text(
-            text = title,
-            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 14.sp,
-            modifier = Modifier.padding(start = 4.dp)
-        )
+            .border(
+                width = 1.dp,
+                color = if (isSelected) Color(0xFF3897F0) else Color.Gray.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(8.dp)
+            )
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (isSelected) Color(0xFF3897F0) else Color.Gray,
+                modifier = Modifier.size(18.dp)
+            )
+            
+            Text(
+                text = text,
+                color = if (isSelected) Color(0xFF3897F0) else MaterialTheme.colorScheme.onBackground,
+                fontSize = 14.sp,
+                fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal
+            )
+        }
     }
 }
 
@@ -471,7 +692,7 @@ fun UsersContent(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(bottom = 35.dp)
+        contentPadding = PaddingValues(start = 0.dp, top = 8.dp, end = 0.dp, bottom = 80.dp)
     ) {
         item {
             ResultsHeader(
@@ -496,7 +717,7 @@ fun PostsContent(
     posts: List<Post>, resultsCount: Int
 ) {
     LazyColumn(
-        contentPadding = PaddingValues(8.dp),
+        contentPadding = PaddingValues(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 80.dp),
         modifier = Modifier.fillMaxSize()
     ) {
         item {
@@ -513,8 +734,8 @@ fun PostsContent(
             item {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
-                    contentPadding = PaddingValues(0.dp),
-                    modifier = Modifier.height((posts.size * 120).dp)
+                    contentPadding = PaddingValues(start = 0.dp, top = 0.dp, end = 0.dp, bottom = 80.dp),
+                    modifier = Modifier.height((posts.size * 120).dp + 80.dp)
                 ) {
                     items(posts) { post ->
                         PostItem(post = post)
@@ -809,7 +1030,7 @@ fun InitialSuggestionsContent(
         if (selectedTab == "Users" && userSuggestions.isNotEmpty()) {
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(vertical = 8.dp)
+                contentPadding = PaddingValues(start = 0.dp, top = 8.dp, end = 0.dp, bottom = 80.dp)
             ) {
                 items(userSuggestions) { suggestion ->
                     UserSuggestionItem(
@@ -825,7 +1046,7 @@ fun InitialSuggestionsContent(
         } else if (selectedTab == "Posts" && postSuggestions.isNotEmpty()) {
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(vertical = 8.dp)
+                contentPadding = PaddingValues(start = 0.dp, top = 8.dp, end = 0.dp, bottom = 80.dp)
             ) {
                 items(postSuggestions) { suggestion ->
                     PostSuggestionItem(
@@ -899,8 +1120,10 @@ fun SuggestionsContent(
         
         if (selectedTab == "Users" && userSuggestions.isNotEmpty()) {
             LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(vertical = 8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentPadding = PaddingValues(start = 0.dp, top = 8.dp, end = 0.dp, bottom = 80.dp)
             ) {
                 items(userSuggestions) { suggestion ->
                     UserSuggestionItem(
@@ -915,8 +1138,10 @@ fun SuggestionsContent(
             }
         } else if (selectedTab == "Posts" && postSuggestions.isNotEmpty()) {
             LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(vertical = 8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentPadding = PaddingValues(start = 0.dp, top = 8.dp, end = 0.dp, bottom = 80.dp)
             ) {
                 items(postSuggestions) { suggestion ->
                     PostSuggestionItem(
@@ -942,11 +1167,29 @@ fun UserSuggestionItem(
     suggestion: UserSuggestion,
     navController: NavController
 ) {
+    // Get user location from Firestore
+    var userLocation by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(true) }
+    
+    LaunchedEffect(suggestion.userId) {
+        // Fetch the complete user data to get the location
+        FirebaseFirestore.getInstance().collection("users")
+            .document(suggestion.userId)
+            .get()
+            .addOnSuccessListener { document ->
+                val user = document.toObject(User::class.java)
+                userLocation = user?.location ?: ""
+                isLoading = false
+            }
+            .addOnFailureListener {
+                isLoading = false
+            }
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                // Use direct navigation with simple string format
                 navController.navigate("UserProfileScreen/${suggestion.userId}")
             }
             .padding(horizontal = 16.dp, vertical = 8.dp),
@@ -980,7 +1223,7 @@ fun UserSuggestionItem(
         
         Spacer(modifier = Modifier.width(12.dp))
         
-        // User info
+        // User info with location
         Column(
             modifier = Modifier.weight(1f)
         ) {
@@ -996,6 +1239,27 @@ fun UserSuggestionItem(
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                 fontSize = 12.sp
             )
+            
+            // Display location if available
+            if (!isLoading && userLocation.isNotEmpty()) {
+                Row(
+                    modifier = Modifier.padding(top = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.LocationOn,
+                        contentDescription = "Location",
+                        tint = Color(0xFF3897F0),
+                        modifier = Modifier.size(12.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = userLocation,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                        fontSize = 12.sp
+                    )
+                }
+            }
         }
     }
 }
@@ -1006,11 +1270,29 @@ fun PostSuggestionItem(
     navController: NavController,
     viewModel: SearchViewModel
 ) {
+    // Get post date from Firestore
+    var postTime by remember { mutableStateOf<Date?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+    
+    LaunchedEffect(suggestion.postId) {
+        // Fetch the complete post data to get the timestamp
+        FirebaseFirestore.getInstance().collection("posts")
+            .document(suggestion.postId)
+            .get()
+            .addOnSuccessListener { document ->
+                val post = document.toObject(Post::class.java)
+                postTime = post?.timestamp
+                isLoading = false
+            }
+            .addOnFailureListener {
+                isLoading = false
+            }
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                // Simple direct navigation - the InnerNavigation will handle fetching the post
                 navController.navigate("PostDetailScreen/${suggestion.postId}")
             }
             .padding(horizontal = 16.dp, vertical = 8.dp),
@@ -1043,15 +1325,39 @@ fun PostSuggestionItem(
         
         Spacer(modifier = Modifier.width(12.dp))
         
-        // Post info
-        Text(
-            text = suggestion.caption,
-            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 13.sp,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
+        // Post info with timestamp
+        Column(
             modifier = Modifier.weight(1f)
-        )
+        ) {
+            Text(
+                text = suggestion.caption,
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 13.sp,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            
+            // Display post time if available
+            if (!isLoading && postTime != null) {
+                Row(
+                    modifier = Modifier.padding(top = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.CalendarToday,
+                        contentDescription = "Date",
+                        tint = Color(0xFF3897F0),
+                        modifier = Modifier.size(12.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(postTime!!),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                        fontSize = 12.sp
+                    )
+                }
+            }
+        }
     }
 }
 

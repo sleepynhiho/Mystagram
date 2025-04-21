@@ -8,11 +8,14 @@ import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.data.models.User
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.Query
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import java.text.SimpleDateFormat
+import java.util.*
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
@@ -26,20 +29,20 @@ class SearchViewModel @Inject constructor(
     private val currentUser = FirebaseAuth.getInstance().currentUser
 
     init {
-        loadInitialSuggestions()
+        loadBasicData()
     }
     
-    fun loadInitialSuggestions() {
+    // Simple function to load all users and posts
+    fun loadBasicData() {
         viewModelScope.launch {
             uiState.update { it.copy(isLoading = true) }
             
             // Get current user ID to exclude from results
             val currentUserId = currentUser?.uid ?: ""
             
-            // Load suggested users (limited to 5)
+            // Load all users except current user
             firestore.collection("users")
                 .whereNotEqualTo("userId", currentUserId) // Exclude current user
-                .limit(5)
                 .get()
                 .addOnSuccessListener { querySnapshot ->
                     val userSuggestions = querySnapshot.documents.mapNotNull { doc ->
@@ -53,16 +56,22 @@ class SearchViewModel @Inject constructor(
                             )
                         }
                     }
+                    
                     uiState.update { it.copy(userSuggestions = userSuggestions) }
+                    
+                    // Also store complete user objects
+                    val users = querySnapshot.documents.mapNotNull { doc ->
+                        doc.toObject(User::class.java)
+                    }
+                    uiState.update { it.copy(users = users) }
                 }
                 .addOnFailureListener { exception ->
-                    Log.e("SearchViewModel", "Error loading suggested users", exception)
+                    Log.e("SearchViewModel", "Error loading users", exception)
                 }
                 
-            // Load recent/popular posts (limited to 5)
+            // Load all posts
             firestore.collection("posts")
-                .orderBy("timestamp") // Sort by newest
-                .limit(5)
+                .orderBy("timestamp", Query.Direction.DESCENDING) // Sort by newest
                 .get()
                 .addOnSuccessListener { querySnapshot ->
                     val postSuggestions = querySnapshot.documents.mapNotNull { doc ->
@@ -71,48 +80,24 @@ class SearchViewModel @Inject constructor(
                             PostSuggestion(
                                 postId = it.postId,
                                 userId = it.userId,
-                                caption = it.caption,
+                                caption = it.caption ?: "",
                                 imageUrl = it.mediaUrls.firstOrNull() ?: ""
                             )
                         }
                     }
+                    
                     uiState.update { 
                         it.copy(
                             postSuggestions = postSuggestions,
                             isLoading = false
                         ) 
                     }
-                }
-                .addOnFailureListener { exception ->
-                    Log.e("SearchViewModel", "Error loading suggested posts", exception)
-                    uiState.update { it.copy(isLoading = false) }
-                }
-        }
-    }
-
-    fun loadAllData() {
-        viewModelScope.launch {
-            uiState.update { it.copy(isLoading = true) }
-
-            // Fetch all users
-            firestore.collection("users").get()
-                .addOnSuccessListener { querySnapshot ->
-                    val users = querySnapshot.documents.mapNotNull { doc ->
-                        doc.toObject(User::class.java)
-                    }
-                    uiState.update { it.copy(users = users) } // Ensure 'users' is part of UiState
-                }
-                .addOnFailureListener { exception ->
-                    Log.e("SearchViewModel", "Error loading users", exception)
-                }
-
-            // Fetch all posts
-            firestore.collection("posts").get()
-                .addOnSuccessListener { querySnapshot ->
+                    
+                    // Also store complete post objects
                     val posts = querySnapshot.documents.mapNotNull { doc ->
                         doc.toObject(Post::class.java)
                     }
-                    uiState.update { it.copy(posts = posts, isLoading = false) }
+                    uiState.update { it.copy(posts = posts) }
                 }
                 .addOnFailureListener { exception ->
                     Log.e("SearchViewModel", "Error loading posts", exception)
@@ -121,70 +106,56 @@ class SearchViewModel @Inject constructor(
         }
     }
     
+    // Simple search function that filters locally instead of using complex Firestore queries
     fun searchSuggestions(query: String) {
         if (query.isEmpty()) {
-            loadInitialSuggestions() // Show initial suggestions when search is cleared
+            loadBasicData() // Show all data when search is cleared
             return
         }
         
         viewModelScope.launch {
             uiState.update { it.copy(isLoading = true) }
             
-            // User suggestions - limit to 5 results
-            firestore.collection("users")
-                .orderBy("username")
-                .startAt(query)
-                .endAt(query + "\uf8ff")
-                .limit(5)
-                .get()
-                .addOnSuccessListener { querySnapshot ->
-                    val userSuggestions = querySnapshot.documents.mapNotNull { doc ->
-                        // Only extract minimal data needed for suggestions
-                        val user = doc.toObject(User::class.java)
-                        user?.let {
-                            UserSuggestion(
-                                userId = it.userId,
-                                username = it.username,
-                                fullName = it.fullName,
-                                profilePicture = it.profileImage
-                            )
-                        }
-                    }
-                    uiState.update { it.copy(userSuggestions = userSuggestions) }
-                }
-                .addOnFailureListener { exception ->
-                    Log.e("SearchViewModel", "Error loading user suggestions", exception)
-                }
+            // Filter users by username
+            val filteredUsers = uiState.value.users.filter { user ->
+                user.username.contains(query, ignoreCase = true) ||
+                user.fullName.contains(query, ignoreCase = true) ||
+                user.location.contains(query, ignoreCase = true)
+            }
             
-            // Post suggestions based on caption - limit to 5 results
-            firestore.collection("posts")
-                .orderBy("caption")
-                .startAt(query)
-                .endAt(query + "\uf8ff")
-                .limit(5)
-                .get()
-                .addOnSuccessListener { querySnapshot ->
-                    val postSuggestions = querySnapshot.documents.mapNotNull { doc ->
-                        // Only extract minimal data needed for suggestions
-                        val post = doc.toObject(Post::class.java)
-                        post?.let {
-                            PostSuggestion(
-                                postId = it.postId,
-                                userId = it.userId,
-                                caption = it.caption,
-                                imageUrl = it.mediaUrls.firstOrNull() ?: ""
-                            )
-                        }
-                    }
-                    uiState.update { it.copy(
-                        postSuggestions = postSuggestions,
-                        isLoading = false
-                    )}
-                }
-                .addOnFailureListener { exception ->
-                    Log.e("SearchViewModel", "Error loading post suggestions", exception)
-                    uiState.update { it.copy(isLoading = false) }
-                }
+            // Create user suggestions from filtered users
+            val userSuggestions = filteredUsers.map { user ->
+                UserSuggestion(
+                    userId = user.userId,
+                    username = user.username,
+                    fullName = user.fullName,
+                    profilePicture = user.profileImage
+                )
+            }
+            
+            // Filter posts by caption
+            val filteredPosts = uiState.value.posts.filter { post ->
+                post.caption?.contains(query, ignoreCase = true) ?: false
+            }
+            
+            // Create post suggestions from filtered posts
+            val postSuggestions = filteredPosts.map { post ->
+                PostSuggestion(
+                    postId = post.postId,
+                    userId = post.userId,
+                    caption = post.caption ?: "",
+                    imageUrl = post.mediaUrls.firstOrNull() ?: ""
+                )
+            }
+            
+            // Update UI with filtered results
+            uiState.update { 
+                it.copy(
+                    userSuggestions = userSuggestions,
+                    postSuggestions = postSuggestions,
+                    isLoading = false
+                ) 
+            }
         }
     }
 
