@@ -85,6 +85,8 @@ fun EditProfileScreen(
     val showChooseImageDialog = remember { mutableStateOf(false) }
     val photoFile = remember { mutableStateOf<File?>(null) }
 
+    Log.d("EditProfileScreen", "Current location in uiState: ${uiState.curUser.location}")
+
     val pickImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -152,7 +154,7 @@ fun EditProfileScreen(
             Button(
                 onClick = {
                     focusManager.clearFocus() // Loại bỏ focus khi nhấn nút lưu
-                    Log.d("EditProfileScreen", "${newProfileImage}")
+                    Log.d("EditProfileScreen", "${uiState.curUser.location}")
                     viewModel.updateUserProfile(
                         context = context,
                         newProfileImage = newProfileImage,
@@ -160,6 +162,7 @@ fun EditProfileScreen(
                         newUsername = newUsername,
                         newBio = newBio,
                         newAccountPrivacy = newAccountPrivacy,
+                        newLocation = uiState.curUser.location, // Add this line to pass the location
                         onSuccess = {
                             // Sau khi cập nhật thành công, có thể navigate back hoặc show thông báo
                             navController.popBackStack()
@@ -353,11 +356,27 @@ fun EditProfileScreen(
                         .padding(12.dp)
                         .clickable { navController.navigate(Routes.EditLocationScreen.route) }
                 ) {
-                    Text(
-                        text = "Chỉnh sửa vị trí",
-                        color = Color.Black,
-                        fontSize = 16.sp
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Chỉnh sửa vị trí",
+                            color = Color.Black,
+                            fontSize = 16.sp
+                        )
+
+                        // Hiển thị vị trí hiện tại nếu có, căn phải
+                        if (uiState.curUser.location.isNotEmpty()) {
+                            Text(
+                                text = uiState.curUser.location,
+                                color = Color.Gray,
+                                fontSize = 14.sp,
+                                textAlign = TextAlign.End
+                            )
+                        }
+                    }
                 }
 
 
