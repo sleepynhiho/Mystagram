@@ -228,6 +228,16 @@ class ProfileViewModel @Inject constructor(
         )
         // Update local state only
         uiState.update { it.copy(curUser = updatedUser) }
+        // Save to Firebase immediately
+        firestore.collection("users").document(currentUser.userId)
+            .update("location", newLocation)
+            .addOnSuccessListener {
+                Log.d("ProfileViewModel", "Location updated in Firebase: $newLocation")
+            }
+            .addOnFailureListener { e ->
+                Log.e("ProfileViewModel", "Error updating location", e)
+            }
+
         Log.d("ProfileViewModel", "updateLocalUserLocation: ${uiState.value.curUser.location}")
     }
 
