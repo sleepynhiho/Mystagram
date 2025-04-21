@@ -85,8 +85,6 @@ fun EditProfileScreen(
     val showChooseImageDialog = remember { mutableStateOf(false) }
     val photoFile = remember { mutableStateOf<File?>(null) }
 
-    Log.d("EditProfileScreen", "Current location in uiState: ${uiState.curUser.location}")
-
     val pickImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -284,7 +282,7 @@ fun EditProfileScreen(
                     ) {
                         Text(
                             text = if (newStateOfPremium) "Hủy gói premium" else "Nâng cấp tài khoản premium",
-                            color = Color.Black,
+                            color = MaterialTheme.colorScheme.onBackground,
                             fontSize = 16.sp
                         )
 
@@ -299,7 +297,7 @@ fun EditProfileScreen(
                             ) {
                                 Text(
                                     text = "Premium",
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.onBackground,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -326,11 +324,11 @@ fun EditProfileScreen(
                             Icon(
                                 imageVector = Icons.Default.Lock,
                                 contentDescription = "Account privacy",
-                                tint = Color.Black,
+                                tint = MaterialTheme.colorScheme.onBackground,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(16.dp))
-                            Text(text = "Account privacy", color = Color.Black, fontSize = 15.sp)
+                            Text(text = "Account privacy", color = MaterialTheme.colorScheme.onBackground, fontSize = 15.sp)
                         }
                         Switch(
                             checked = newAccountPrivacy,
@@ -363,7 +361,7 @@ fun EditProfileScreen(
                     ) {
                         Text(
                             text = "Chỉnh sửa vị trí",
-                            color = Color.Black,
+                            color = MaterialTheme.colorScheme.onBackground,
                             fontSize = 16.sp
                         )
 

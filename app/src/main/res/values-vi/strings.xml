@@ -118,4 +118,26 @@
     <string name="enter_time">Nhập thời gian</string>
     <string name="from_time">Từ</string>
     <string name="to_time">Đến</string>
+    <string name="chat_placeholder">Tin nhắn...</string>
+    <string name="comment_header">Bình luận</string>
+    <string name="react_noti"> đã phản ứng bài viết của bạn. </string>
+    <string name="comment_noti">" đã bình luận bài viết của bạn. "</string>
+    <string name="follow_noti">" đã bắt đầu theo dõi bạn. "</string>
+    <string name="follow_req_noti">" đã yêu cầu theo dõi bạn. "</string>
+    <string name="follow_accepted_noti">" đã chấp nhận yêu cầu theo dõi của bạn. "</string>
+    
+    <!-- Change Password -->
+    <string name="change_password">Đổi mật khẩu</string>
+    <string name="current_password">Mật khẩu hiện tại</string>
+    <string name="new_password">Mật khẩu mới</string>
+    <string name="confirm_new_password">Xác nhận mật khẩu mới</string>
+    <string name="password_changed">Đổi mật khẩu thành công</string>
+    <string name="password_change_error">Lỗi đổi mật khẩu: %1$s</string>
+    
+    <!-- Account Verification -->
+    <string name="verify_account">Xác thực tài khoản</string>
+    <string name="account_verified">Tài khoản của bạn đã được xác thực</string>
+    <string name="account_not_verified">Tài khoản của bạn chưa được xác thực</string>
+    <string name="send_verification_email">Gửi email xác thực</string>
+    <string name="verification_email_sent">Đã gửi email xác thực</string>
 </resources>

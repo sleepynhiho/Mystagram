@@ -1,5 +1,6 @@
 package com.forrestgump.ig.ui.components
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -24,6 +25,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,6 +38,7 @@ import coil.compose.AsyncImage
 import com.forrestgump.ig.R
 import com.forrestgump.ig.ui.navigation.Routes
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun BottomNavBar(
@@ -45,6 +48,7 @@ fun BottomNavBar(
     val items = Routes.Items.bottomNavItems
     val navBackStackEntry by navHostController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    val context = LocalContext.current
 
     Surface(
         modifier = Modifier
@@ -74,9 +78,27 @@ fun BottomNavBar(
                     isMyProfileScreen = item.route == Routes.MyProfileScreen.route,
                     myProfileImage = myProfileImage,
                     onClick = {
-                        navHostController.navigate(item.route) {
-                            popUpTo(Routes.HomeScreen.route)
-                            launchSingleTop = true
+                        // Check if the user is trying to navigate to AddPostScreen
+                        if (item.route == Routes.AddPostScreen.route) {
+                            // Check if user's account is verified
+                            val currentUser = FirebaseAuth.getInstance().currentUser
+                            if (currentUser?.isEmailVerified == true) {
+                                // Account is verified, allow navigation
+                                navHostController.navigate(item.route) {
+                                    popUpTo(Routes.HomeScreen.route)
+                                    launchSingleTop = true
+                                }
+                            } else {
+                                // Account is not verified, show toast message
+                                Toast.makeText(context, "Please verify your account", Toast.LENGTH_SHORT).show()
+                                // Don't navigate
+                            }
+                        } else {
+                            // For other destinations, navigate normally
+                            navHostController.navigate(item.route) {
+                                popUpTo(Routes.HomeScreen.route)
+                                launchSingleTop = true
+                            }
                         }
                     }
                 )

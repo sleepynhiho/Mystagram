@@ -8,16 +8,27 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
@@ -37,6 +48,7 @@ import com.forrestgump.ig.ui.screens.notification.NotificationScreen
 import com.forrestgump.ig.ui.screens.search.SearchScreen
 import com.forrestgump.ig.data.models.Notification
 import com.forrestgump.ig.data.models.NotificationType
+import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.ui.screens.addPost.AddPostDetailScreen
 import com.forrestgump.ig.ui.screens.auth.LoginScreen
 import com.forrestgump.ig.ui.screens.auth.SignupScreen
@@ -52,13 +64,13 @@ import com.forrestgump.ig.ui.screens.settings.SettingsScreen
 import com.forrestgump.ig.ui.screens.story.StoryViewModel
 import com.forrestgump.ig.ui.viewmodels.UserViewModel
 import com.forrestgump.ig.ui.screens.search.SearchViewModel
-
 import com.forrestgump.ig.ui.screens.profile.EditLocationScreen
 import com.forrestgump.ig.ui.screens.userprofile.UserProfileScreen
 import com.forrestgump.ig.ui.screens.userprofile.UserProfileViewModel
 import com.forrestgump.ig.ui.screens.checkout.CheckoutScreen
 import com.forrestgump.ig.ui.screens.profile.FollowViewModel
 import com.forrestgump.ig.ui.screens.profile.PostOptionsViewModel
+import com.google.firebase.firestore.FirebaseFirestore
 
 @UnstableApi
 @Composable
@@ -127,11 +139,10 @@ fun InnerNavigation(
             fadeOut(animationSpec = tween(350))
         }) {
             val uiState by searchViewModel.uiState.collectAsState()
-            LaunchedEffect(Unit) {
-                searchViewModel.loadAllData()
-            }
             SearchScreen(
-                uiState = uiState
+                uiState = uiState, 
+                navController = navHostController,
+                viewModel = searchViewModel
             )
         }
 
@@ -450,40 +461,98 @@ fun InnerNavigation(
             }
         ) { navBackStackEntry ->
             val postId = navBackStackEntry.arguments?.getString("postId") ?: ""
-            LaunchedEffect(Unit) {
-                // Force refresh data when entering post detail
-                viewModelProfile.loadUserData()
-            }
-
-            // Check in ViewModels first
-            val post1 = viewModelProfile.getPostById(postId)
-            val post2 = viewModelOtherUserProfile.getPostById(postId)
-            Log.d("InnerNavigation", "${post1?.postId}")
-            Log.d("InnerNavigation", "${post2?.postId}")
-
-            val post = post1 ?: post2
-
-            post?.let {
-                currentUser?.let { it1 ->
-                    PostDetailScreen(
-                        post = it,
-                        onBackPressed = { navHostController.popBackStack() },
-                        navController = navHostController,
-                        currentUser = it1,
-                        userViewModel = userViewModel, // Thêm dòng này,
-                        optionsViewModel = optionsViewModel,
-                    )
+            var isLoading by remember { mutableStateOf(true) }
+            var post by remember { mutableStateOf<Post?>(null) }
+            var errorMessage by remember { mutableStateOf("") }
+            
+            LaunchedEffect(postId) {
+                // First try to get the post from ViewModels
+                val postFromProfile = viewModelProfile.getPostById(postId)
+                val postFromOtherProfile = viewModelOtherUserProfile.getPostById(postId)
+                
+                if (postFromProfile != null || postFromOtherProfile != null) {
+                    // Post found in ViewModel cache
+                    post = postFromProfile ?: postFromOtherProfile
+                    isLoading = false
+                } else {
+                    // Post not found in cache, fetch directly from Firestore
+                    FirebaseFirestore.getInstance().collection("posts").document(postId).get()
+                        .addOnSuccessListener { document ->
+                            if (document != null && document.exists()) {
+                                post = document.toObject(Post::class.java)
+                                isLoading = false
+                            } else {
+                                errorMessage = "Post not found"
+                                isLoading = false
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            errorMessage = "Error loading post: ${e.message}"
+                            isLoading = false
+                            Log.e("InnerNavigation", "Error fetching post", e)
+                        }
                 }
-            } ?: run {
-                // Hiển thị màn hình lỗi nếu không tìm thấy post
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Text(
-                        "Không tìm thấy bài viết",
-                        modifier = Modifier.align(Alignment.Center)
-                    )
+            }
+            
+            when {
+                isLoading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
+                post != null -> {
+                    // Store both post and currentUser in local variables that can be smart cast
+                    val postCopy = post
+                    val userCopy = currentUser
+                    if (postCopy != null && userCopy != null) {
+                        PostDetailScreen(
+                            post = postCopy,
+                            onBackPressed = { navHostController.popBackStack() },
+                            navController = navHostController,
+                            currentUser = userCopy,
+                            userViewModel = userViewModel,
+                            optionsViewModel = optionsViewModel,
+                        )
+                    } else if (postCopy != null) {
+                        // Post exists but user not logged in
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            Column(
+                                modifier = Modifier.align(Alignment.Center),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "Please log in to view this post",
+                                    modifier = Modifier.padding(16.dp),
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Button(onClick = { navHostController.popBackStack() }) {
+                                    Text("Go Back")
+                                }
+                            }
+                        }
+                    }
+                }
+                else -> {
+                    // Error state - no post found
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        Column(
+                            modifier = Modifier.align(Alignment.Center),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = errorMessage.ifEmpty { "Post not found" },
+                                modifier = Modifier.padding(16.dp),
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(onClick = { navHostController.popBackStack() }) {
+                                Text("Go Back")
+                            }
+                        }
+                    }
                 }
             }
-
         }
 
         composable(route = Routes.EditLocationScreen.route) {

@@ -37,6 +37,7 @@
     <string name="meta_logo">Meta logo</string>
     <string name="google_logo_desc">Google Logo</string>
     <string name="facebook_logo_desc">Facebook Logo</string>
+    <string name="default_web_client_id">12307520939-1kqdr4j2ppba6dmnno33a6k4sbb0hp49.apps.googleusercontent.com</string>
     <string name="signup_title">Account registration</string>
     <string name="signup_description">Enter your username, email and password to create an account.</string>
     <string name="username">Username</string>
@@ -127,4 +128,19 @@
     <string name="follow_noti">" started following you. "</string>
     <string name="follow_req_noti">" requested to follow you.  "</string>
     <string name="follow_accepted_noti">" accepted your follow request. "</string>
+
+    <!-- Change Password -->
+    <string name="change_password">Change Password</string>
+    <string name="current_password">Current Password</string>
+    <string name="new_password">New Password</string>
+    <string name="confirm_new_password">Confirm New Password</string>
+    <string name="password_changed">Password successfully changed</string>
+    <string name="password_change_error">Error changing password: %1$s</string>
+    
+    <!-- Account Verification -->
+    <string name="verify_account">Verify Account</string>
+    <string name="account_verified">Your account is verified</string>
+    <string name="account_not_verified">Your account is not verified</string>
+    <string name="send_verification_email">Send verification email</string>
+    <string name="verification_email_sent">Verification email sent</string>
 </resources>

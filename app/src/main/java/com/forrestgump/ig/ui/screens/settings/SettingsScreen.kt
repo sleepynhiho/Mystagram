@@ -1,7 +1,9 @@
 package com.forrestgump.ig.ui.screens.settings
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,33 +16,29 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Block
-import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Payment
-import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +51,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -60,10 +59,12 @@ import com.forrestgump.ig.R
 import com.forrestgump.ig.ui.navigation.Routes
 import com.forrestgump.ig.ui.theme.ThemeManager
 import com.forrestgump.ig.utils.constants.changeAppLanguage
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
-import javax.inject.Inject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,15 +75,6 @@ fun SettingsScreen(navController: NavController) {
         EntryPointAccessors.fromApplication(context, ThemeManagerEntryPoint::class.java)
             .themeManager()
     val currentTheme by themeManager.currentTheme.collectAsState("system") // Quan sát trạng thái chủ đề
-    val isPremium by remember { mutableStateOf(false) }
-    val savedText = stringResource(id = R.string.saved)
-    val notificationsText = stringResource(id = R.string.notifications)
-    val accountPrivacyText = stringResource(id = R.string.account_privacy)
-    val privateText = stringResource(id = R.string.privates)
-    val closeFriendsText = stringResource(id = R.string.close_friends)
-    val blockedText = stringResource(id = R.string.blocked)
-    val favoritesText = stringResource(id = R.string.favorites)
-    val mutedAccountsText = stringResource(id = R.string.muted_accounts)
     val multiLanguageText = stringResource(id = R.string.multi_language)
     val englishText = stringResource(id = R.string.english_language)
     val vietnamText = stringResource(id = R.string.vietnamese_language)
@@ -90,6 +82,39 @@ fun SettingsScreen(navController: NavController) {
     val darkModeText = stringResource(id = R.string.dark_mode)
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showDarkModeDialog by remember { mutableStateOf(false) }
+
+    // Change Password states
+    var showChangePasswordDialog by remember { mutableStateOf(false) }
+    var currentPassword by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var confirmNewPassword by remember { mutableStateOf("") }
+    var isChangingPassword by remember { mutableStateOf(false) }
+    
+    // Store string resources for use in callbacks
+    val passwordChangedText = "Password successfully changed"
+    val passwordMismatchText = "Password does not match"
+    
+    // Verify Account states
+    var showVerifyAccountDialog by remember { mutableStateOf(false) }
+    var isVerifyingEmail by remember { mutableStateOf(false) }
+    var isRefreshingVerification by remember { mutableStateOf(false) }
+    val currentUser = FirebaseAuth.getInstance().currentUser
+
+    // Function to refresh the user verification status
+    val refreshVerificationStatus = {
+        isRefreshingVerification = true
+        currentUser?.reload()?.addOnCompleteListener {
+            isRefreshingVerification = false
+            // No need to reassign currentUser, we'll get fresh data when we check
+        }
+    }
+    
+    // Check verification status when dialog is shown
+    LaunchedEffect(showVerifyAccountDialog) {
+        if (showVerifyAccountDialog) {
+            refreshVerificationStatus()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -121,50 +146,6 @@ fun SettingsScreen(navController: NavController) {
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            item { SectionHeader(title = stringResource(id = R.string.section_how_you_use)) }
-            items(
-                listOf(
-                    SettingsItemData(icon = Icons.Default.Bookmark, title = savedText),
-                    SettingsItemData(icon = Icons.Default.Notifications, title = notificationsText)
-                )
-            ) { itemData -> SettingsRow(itemData = itemData) }
-
-            item { SectionHeader(title = stringResource(id = R.string.section_who_can_see)) }
-            items(
-                listOf(
-                    SettingsItemData(
-                        icon = Icons.Default.Lock,
-                        title = accountPrivacyText,
-                        subtitle = privateText
-                    ),
-                    SettingsItemData(
-                        icon = Icons.Default.Group,
-                        title = closeFriendsText,
-                        subtitle = "0"
-                    ),
-                    SettingsItemData(
-                        icon = Icons.Default.Block,
-                        title = blockedText,
-                        subtitle = "0"
-                    )
-                )
-            ) { itemData -> SettingsRow(itemData = itemData) }
-
-            item { SectionHeader(title = stringResource(id = R.string.section_what_you_see)) }
-            items(
-                listOf(
-                    SettingsItemData(
-                        icon = Icons.Default.Favorite,
-                        title = favoritesText,
-                        subtitle = "0"
-                    ),
-                    SettingsItemData(
-                        icon = Icons.Default.VolumeOff,
-                        title = mutedAccountsText,
-                        subtitle = "0"
-                    )
-                )
-            ) { itemData -> SettingsRow(itemData = itemData) }
 
             item { SectionHeader(title = stringResource(id = R.string.section_your_app_media)) }
             items(
@@ -186,36 +167,36 @@ fun SettingsScreen(navController: NavController) {
                 SettingsRow(itemData = itemData, onClick = { showDarkModeDialog = true })
             }
 
-            item {
-                SettingsRow(
-                    itemData = SettingsItemData(
-                        icon = Icons.Default.Star,
-                        title = stringResource(id = R.string.account_status),
-                        subtitle = if (isPremium) stringResource(id = R.string.premium) else stringResource(
-                            id = R.string.basic
-                        )
-                    )
-                )
-            }
-
-            item { SectionHeader(title = stringResource(id = R.string.section_orders_fundraisers)) }
-            item {
-                SettingsRow(
-                    itemData = SettingsItemData(
-                        icon = Icons.Default.Payment,
-                        title = stringResource(id = R.string.orders_payments)
-                    )
-                )
-            }
-
             item { SectionHeader(title = stringResource(id = R.string.section_login)) }
-            item {
-                SettingsRow(
-                    itemData = SettingsItemData(
-                        icon = Icons.Default.PersonAdd,
-                        title = stringResource(id = R.string.add_account)
+
+            // Account Settings
+            items(
+                listOf(
+                    SettingsItemData(
+                        icon = Icons.Default.Lock,
+                        title = "Change Password"
                     )
                 )
+            ) { itemData ->
+                SettingsRow(itemData = itemData, onClick = { showChangePasswordDialog = true })
+            }
+
+            items(
+                listOf(
+                    SettingsItemData(
+                        icon = Icons.Default.Verified,
+                        title = "Verify Account",
+                        subtitle = if (FirebaseAuth.getInstance().currentUser?.isEmailVerified == true)
+                            "Account Verified"
+                        else
+                            "Account Not Verified"
+                    )
+                )
+            ) { itemData ->
+                SettingsRow(itemData = itemData, onClick = { 
+                    refreshVerificationStatus()
+                    showVerifyAccountDialog = true 
+                })
             }
 
             item {
@@ -225,14 +206,36 @@ fun SettingsScreen(navController: NavController) {
                         title = stringResource(id = R.string.log_out)
                     ),
                     onClick = {
+                        // Sign out from Firebase
                         FirebaseAuth.getInstance().signOut()
-                        navController.navigate(Routes.LoginScreen.route) { popUpTo(0) }
+
+                        // Sign out from Google to ensure account picker is shown next time
+                        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                            .requestIdToken(context.getString(R.string.default_web_client_id))
+                            .requestEmail()
+                            .build()
+
+                        try {
+                            val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                            googleSignInClient.signOut().addOnCompleteListener {
+                                // Navigate back to login screen
+                                navController.navigate(Routes.LoginScreen.route) {
+                                    popUpTo(0)
+                                }
+                            }
+                        } catch (e: Exception) {
+                            // If Google sign-out fails, still navigate to login screen
+                            navController.navigate(Routes.LoginScreen.route) {
+                                popUpTo(0)
+                            }
+                        }
                     }
                 )
             }
         }
     }
 
+    // Language Dialog
     if (showLanguageDialog) {
         AlertDialog(
             onDismissRequest = { showLanguageDialog = false },
@@ -273,12 +276,228 @@ fun SettingsScreen(navController: NavController) {
         )
     }
 
+    // Dark Mode Dialog
     if (showDarkModeDialog) {
         ThemeSelectionDialog(
             currentTheme = currentTheme,
             themeManager = themeManager,
             onDismiss = { showDarkModeDialog = false },
             onThemeChanged = { themeManager.applyTheme() } // Apply theme immediately
+        )
+    }
+
+    // Change Password Dialog
+    if (showChangePasswordDialog) {
+        AlertDialog(
+            onDismissRequest = { 
+                showChangePasswordDialog = false
+                currentPassword = ""
+                newPassword = ""
+                confirmNewPassword = ""
+            },
+            title = {
+                Text(text = "Change Password")
+            },
+            text = {
+                Column {
+                    // Current password
+                    OutlinedTextField(
+                        value = currentPassword,
+                        onValueChange = { currentPassword = it },
+                        label = { Text("Current Password") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    )
+                    
+                    // New password
+                    OutlinedTextField(
+                        value = newPassword,
+                        onValueChange = { newPassword = it },
+                        label = { Text("New Password") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    )
+                    
+                    // Confirm new password
+                    OutlinedTextField(
+                        value = confirmNewPassword,
+                        onValueChange = { confirmNewPassword = it },
+                        label = { Text("Confirm New Password") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (newPassword != confirmNewPassword) {
+                            Toast.makeText(context, passwordMismatchText, Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        
+                        if (currentPassword.isNotEmpty() && newPassword.isNotEmpty() && !isChangingPassword) {
+                            isChangingPassword = true
+                            
+                            val user = FirebaseAuth.getInstance().currentUser
+                            user?.let { firebaseUser ->
+                                val email = firebaseUser.email
+                                
+                                if (email != null) {
+                                    // Re-authenticate user
+                                    val credential =
+                                        EmailAuthProvider.getCredential(email, currentPassword)
+                                    firebaseUser.reauthenticate(credential)
+                                        .addOnCompleteListener { reauthTask ->
+                                            if (reauthTask.isSuccessful) {
+                                                // Change password
+                                                firebaseUser.updatePassword(newPassword)
+                                                    .addOnCompleteListener { updateTask ->
+                                                        isChangingPassword = false
+                                                        if (updateTask.isSuccessful) {
+                                                            Toast.makeText(context, passwordChangedText, Toast.LENGTH_SHORT).show()
+                                                            // Clear fields and close dialog after success
+                                                            currentPassword = ""
+                                                            newPassword = ""
+                                                            confirmNewPassword = ""
+                                                            showChangePasswordDialog = false
+                                                        } else {
+                                                            Toast.makeText(
+                                                                context,
+                                                                "Error changing password: ${updateTask.exception?.message ?: ""}",
+                                                                Toast.LENGTH_LONG
+                                                            ).show()
+                                                        }
+                                                    }
+                                            } else {
+                                                isChangingPassword = false
+                                                Toast.makeText(
+                                                    context,
+                                                    "Error changing password: ${reauthTask.exception?.message ?: ""}",
+                                                    Toast.LENGTH_LONG
+                                                ).show()
+                                            }
+                                        }
+                                }
+                            } ?: run {
+                                isChangingPassword = false
+                                Toast.makeText(context, "Error: User is not logged in", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    },
+                    enabled = currentPassword.isNotEmpty() && newPassword.isNotEmpty() && 
+                              confirmNewPassword.isNotEmpty() && !isChangingPassword
+                ) {
+                    if (isChangingPassword) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    } else {
+                        Text(text = "Confirm")
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { 
+                    showChangePasswordDialog = false
+                    currentPassword = ""
+                    newPassword = ""
+                    confirmNewPassword = ""
+                }) {
+                    Text(text = "Cancel")
+                }
+            }
+        )
+    }
+
+    // Verify Account Dialog
+    if (showVerifyAccountDialog) {
+        AlertDialog(
+            onDismissRequest = { 
+                showVerifyAccountDialog = false 
+            },
+            title = {
+                Text(text = "Verify Account")
+            },
+            text = {
+                Column {
+                    if (isRefreshingVerification) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                        }
+                    } else {
+                        if (FirebaseAuth.getInstance().currentUser?.isEmailVerified == true) {
+                            Text(text = "Account Verified")
+                        } else {
+                            Text(text = "Account Not Verified")
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                val isVerified = FirebaseAuth.getInstance().currentUser?.isEmailVerified == true
+                
+                if (!isVerified) {
+                    Button(
+                        onClick = {
+                            if (!isVerifyingEmail) {
+                                isVerifyingEmail = true
+                                
+                                FirebaseAuth.getInstance().currentUser?.let { user ->
+                                    user.sendEmailVerification()
+                                        .addOnCompleteListener { task ->
+                                            isVerifyingEmail = false
+                                            if (task.isSuccessful) {
+                                                Toast.makeText(context, "Verification email sent", Toast.LENGTH_SHORT).show()
+                                                showVerifyAccountDialog = false
+                                            } else {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Error sending verification email: ${task.exception?.message ?: ""}",
+                                                    Toast.LENGTH_LONG
+                                                ).show()
+                                            }
+                                        }
+                                } ?: run {
+                                    isVerifyingEmail = false
+                                    Toast.makeText(context, "Error: User is not logged in", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        },
+                        enabled = !isVerifyingEmail && !isRefreshingVerification
+                    ) {
+                        if (isVerifyingEmail) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        } else {
+                            Text(text = "Send Verification Email")
+                        }
+                    }
+                } else {
+                    TextButton(onClick = { showVerifyAccountDialog = false }) {
+                        Text(text = "Close")
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { 
+                    showVerifyAccountDialog = false 
+                }) {
+                    Text(text = "Cancel")
+                }
+            }
         )
     }
 }
@@ -374,8 +593,6 @@ fun SettingsRow(itemData: SettingsItemData, onClick: () -> Unit = {}) {
             .clickable { onClick() }
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
-
-
     ) {
         Icon(
             imageVector = itemData.icon,
