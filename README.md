@@ -17,4 +17,16 @@ Some of the core features:
   <img src="docs/addStory.jpg" width="250" />
 </p>
 
+Note: 
+1. To use the function of OAuth **login with Google** using firebase, you need to create an SHA1 key in the dir: **\.android\debug.keystore** 
+by using this command line on Windows: **keytool -list -v -keystore <path\to\your\debug.keystore> -alias androiddebugkey -storepass android**
+So normally the path to your debug.keystore would be something like:  **C:\Users\ADMIN\.android\debug.keystore**
+<p float="center">
+  <img src="docs/sha1_fix_bug_gg_login.png" width="250" />
+</p>
+2. Then on your project firebase, go to **Project settings** >> **Android apps** >> **Add fingerprint** >> Thêm phần SHA1 key lúc nãy tạo ra vào trong này:
+<p float="center">
+  <img src="docs/add_finger_print_login_gg.png" width="250" />
+</p>
+3. Chạy lại app để thấy kết quả.
 Mystagram is still under development.
