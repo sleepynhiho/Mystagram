@@ -90,7 +90,7 @@ fun NewChatList(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = Color.White)
+                    .background(color = MaterialTheme.colorScheme.background)
                     .padding(5.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
@@ -108,7 +108,7 @@ fun NewChatList(
                     modifier = Modifier
                         .fillMaxWidth(),
                     textStyle = TextStyle(
-                        fontSize = 14.sp
+                        fontSize = 14.sp, color = MaterialTheme.colorScheme.onBackground
                     ),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
