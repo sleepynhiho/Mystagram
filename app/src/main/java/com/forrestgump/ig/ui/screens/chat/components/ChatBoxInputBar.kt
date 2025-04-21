@@ -71,7 +71,7 @@ fun ChatBoxInputBar(
                 if (message.isEmpty()) {
                     Text(
                         text = stringResource(R.string.search_placeholder),
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                        color = Color.Gray,
                         fontWeight = FontWeight.Normal
                     )
                     Spacer(modifier = Modifier.width(10.dp))
@@ -114,7 +114,7 @@ fun ChatBoxInputBar(
                     Icon(
                         painter = painterResource(id = R.drawable.upload_image),
                         contentDescription = stringResource(id = R.string.upload_image),
-                        tint = MaterialTheme.colorScheme.onBackground
+                        tint = Color.Gray
                     )
                 }
             } else {
