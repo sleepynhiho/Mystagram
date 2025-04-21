@@ -96,7 +96,7 @@ fun LoginScreen(
             .requestEmail()
             .build()
     }
-    
+
     val googleSignInClient = remember {
         try {
             GoogleSignIn.getClient(context, gso)
@@ -107,7 +107,7 @@ fun LoginScreen(
             null
         }
     }
-    
+
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -449,14 +449,14 @@ private fun handleGoogleSignInResult(
 ) {
     try {
         val account = completedTask.getResult(ApiException::class.java)
-        
+
         // Google Sign In was successful, authenticate with Firebase
         val idToken = account.idToken
         if (idToken == null) {
             callback(false, "Failed to get ID token from Google")
             return
         }
-        
+
         authViewModel.signInWithGoogle(idToken) { success, errorMsg ->
             if (success) {
                 navController.navigate(Routes.InnerContainer.route) {

@@ -89,7 +89,7 @@ class AuthViewModel @Inject constructor(
                                         }
                                         .addOnFailureListener { e ->
                                             onResult(false, e.message)
-                                         }
+                                        }
                                 } else {
                                     onResult(false, updateTask.exception?.message)
                                 }
@@ -122,7 +122,7 @@ class AuthViewModel @Inject constructor(
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val user = auth.currentUser
-                    
+
                     // Check if user already exists in Firestore
                     user?.let { firebaseUser ->
                         firestore.collection("users").document(firebaseUser.uid).get()
@@ -135,15 +135,15 @@ class AuthViewModel @Inject constructor(
                                     // Create new user in Firestore
                                     val email = firebaseUser.email ?: ""
                                     val username = extractUsernameFromEmail(email)
-                                    
+
                                     val userData = User(
                                         userId = firebaseUser.uid,
                                         email = email,
                                         username = username,
-                                        profileImage = firebaseUser.photoUrl?.toString() 
+                                        profileImage = firebaseUser.photoUrl?.toString()
                                             ?: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlRM2-AldpZgaraCXCnO5loktGi0wGiNPydQ&s",
                                     )
-                                    
+
                                     firestore.collection("users").document(firebaseUser.uid)
                                         .set(userData)
                                         .addOnSuccessListener {
@@ -164,7 +164,7 @@ class AuthViewModel @Inject constructor(
                 }
             }
     }
-    
+
     private fun extractUsernameFromEmail(email: String): String {
         return email.substringBefore("@").replace(".", "_")
     }
