@@ -5,6 +5,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.cloudinary.Cloudinary
 import com.forrestgump.ig.BuildConfig
+import com.forrestgump.ig.data.repositories.FriendSuggestionRepository
 import com.forrestgump.ig.data.repositories.StoryRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
@@ -55,5 +56,13 @@ object AppModule {
         cloudinary: Cloudinary
     ): StoryRepository {
         return StoryRepository(firestore, cloudinary)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFriendSuggestionRepository(
+        firestore: FirebaseFirestore
+    ): FriendSuggestionRepository {
+        return FriendSuggestionRepository(firestore)
     }
 }
