@@ -6,21 +6,22 @@ import androidx.lifecycle.viewModelScope
 import com.cloudinary.Cloudinary
 import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.data.models.User
-import com.google.firebase.firestore.FirebaseFirestore
+import com.forrestgump.ig.data.repositories.FriendSuggestionRepository
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
-import java.text.SimpleDateFormat
-import java.util.*
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val cloudinary: Cloudinary,
+    private val friendSuggestionRepository: FriendSuggestionRepository
 ) : ViewModel() {
 
     var uiState = MutableStateFlow(UiState())
@@ -30,6 +31,7 @@ class SearchViewModel @Inject constructor(
 
     init {
         loadBasicData()
+        loadFriendSuggestions()
     }
     
     // Simple function to load all users and posts
@@ -103,6 +105,92 @@ class SearchViewModel @Inject constructor(
                     Log.e("SearchViewModel", "Error loading posts", exception)
                     uiState.update { it.copy(isLoading = false) }
                 }
+        }
+    }
+    
+    // Function to load friend suggestions
+    fun loadFriendSuggestions() {
+        viewModelScope.launch {
+            try {
+                val currentUserId = currentUser?.uid ?: return@launch
+                
+                // Get combined suggestions from the repository
+                val suggestions = friendSuggestionRepository.getCombinedSuggestions(currentUserId)
+                
+                // Map to user suggestions
+                val friendSuggestions = suggestions.map { suggestion ->
+                    FriendSuggestion(
+                        userId = suggestion.user.userId,
+                        username = suggestion.user.username,
+                        fullName = suggestion.user.fullName,
+                        profilePicture = suggestion.user.profileImage,
+                        reason = suggestion.reason
+                    )
+                }
+                
+                // Update the UI state with the new suggestions
+                uiState.update {
+                    it.copy(friendSuggestions = friendSuggestions)
+                }
+                
+            } catch (e: Exception) {
+                Log.e("SearchViewModel", "Error loading friend suggestions", e)
+            }
+        }
+    }
+    
+    // Follow a suggested user
+    fun followUser(userId: String) {
+        viewModelScope.launch {
+            try {
+                val currentUserId = currentUser?.uid ?: return@launch
+                
+                // Get current user document
+                val currentUserDoc = firestore.collection("users").document(currentUserId)
+                
+                // Get target user document
+                val targetUserDoc = firestore.collection("users").document(userId)
+                
+                // Update current user's following list
+                firestore.runTransaction { transaction ->
+                    val currentUserSnapshot = transaction.get(currentUserDoc)
+                    val currentUserData = currentUserSnapshot.toObject(User::class.java)
+                    
+                    if (currentUserData != null) {
+                        val updatedFollowing = currentUserData.following.toMutableList()
+                        
+                        if (!updatedFollowing.contains(userId)) {
+                            updatedFollowing.add(userId)
+                            transaction.update(currentUserDoc, "following", updatedFollowing)
+                        }
+                    }
+                    
+                    // Update target user's followers list
+                    val targetUserSnapshot = transaction.get(targetUserDoc)
+                    val targetUserData = targetUserSnapshot.toObject(User::class.java)
+                    
+                    if (targetUserData != null) {
+                        val updatedFollowers = targetUserData.followers.toMutableList()
+                        
+                        if (!updatedFollowers.contains(currentUserId)) {
+                            updatedFollowers.add(currentUserId)
+                            transaction.update(targetUserDoc, "followers", updatedFollowers)
+                        }
+                    }
+                }.await()
+                
+                // Remove the followed user from suggestions
+                uiState.update { state ->
+                    val updatedSuggestions = state.friendSuggestions.filter { it.userId != userId }
+                    state.copy(friendSuggestions = updatedSuggestions)
+                }
+                
+                // Reload friend suggestions to get new ones
+                loadFriendSuggestions()
+                
+            } catch (e: Exception) {
+                Log.e("SearchViewModel", "Error following user", e)
+            }
         }
     }
     
@@ -182,4 +270,13 @@ data class PostSuggestion(
     val userId: String = "",
     val caption: String = "",
     val imageUrl: String = ""
+)
+
+// New data class for friend suggestions
+data class FriendSuggestion(
+    val userId: String = "",
+    val username: String = "",
+    val fullName: String = "",
+    val profilePicture: String = "",
+    val reason: String = "Suggested for you"
 )
