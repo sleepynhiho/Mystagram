@@ -240,6 +240,19 @@ fun SearchScreen(
                     )
                 }
 
+                // Display friend suggestions only when search query is empty
+                if (searchQuery.isEmpty() && uiState.showFriendSuggestions && uiState.friendSuggestions.isNotEmpty()) {
+                    FriendSuggestions(
+                        suggestions = uiState.friendSuggestions,
+                        onUserClick = { userId ->
+                            navController.navigate("${Routes.UserProfileScreen.route.replace("{userId}", userId)}")
+                        },
+                        onFollowClick = { userId ->
+                            viewModel.followUser(userId)
+                        }
+                    )
+                }
+
                 // Filter options
                 AnimatedVisibility(
                     visible = false,
@@ -1424,5 +1437,119 @@ fun EmptyTabResults(tabName: String) {
             fontSize = 14.sp,
             modifier = Modifier.padding(top = 4.dp)
         )
+    }
+}
+
+@Composable
+fun FriendSuggestions(
+    suggestions: List<FriendSuggestion>,
+    onUserClick: (String) -> Unit,
+    onFollowClick: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "People You Might Know",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.height(300.dp)
+        ) {
+            items(suggestions) { suggestion ->
+                FriendSuggestionItem(
+                    suggestion = suggestion,
+                    onUserClick = { onUserClick(suggestion.userId) },
+                    onFollowClick = { onFollowClick(suggestion.userId) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun FriendSuggestionItem(
+    suggestion: FriendSuggestion,
+    onUserClick: () -> Unit,
+    onFollowClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clickable(onClick = onUserClick),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Profile image
+        Image(
+            painter = rememberAsyncImagePainter(
+                model = suggestion.profilePicture,
+                error = painterResource(id = R.drawable.ic_launcher_foreground)
+            ),
+            contentDescription = "Profile image",
+            modifier = Modifier
+                .size(50.dp)
+                .clip(CircleShape)
+                .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), CircleShape),
+            contentScale = ContentScale.Crop
+        )
+        
+        Spacer(modifier = Modifier.width(12.dp))
+        
+        // User info (name, username, reason)
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .wrapContentHeight()
+        ) {
+            Text(
+                text = suggestion.username,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold
+            )
+            
+            Text(
+                text = suggestion.fullName,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+            
+            Text(
+                text = suggestion.reason,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        
+        Spacer(modifier = Modifier.width(8.dp))
+        
+        // Follow button
+        Button(
+            onClick = onFollowClick,
+            modifier = Modifier
+                .wrapContentHeight()
+                .height(36.dp),
+            shape = RoundedCornerShape(8.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            ),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
+        ) {
+            Text(
+                text = "Follow",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
