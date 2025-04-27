@@ -36,8 +36,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import coil.request.CachePolicy
-import coil.request.ImageRequest
 import com.forrestgump.ig.R
 import com.forrestgump.ig.utils.constants.formatAsElapsedTime
 import com.forrestgump.ig.data.models.Story
@@ -54,7 +52,9 @@ fun UserStoryDetail(
     modifier: Modifier = Modifier,
     isStoryActive: Boolean,
     isPaused: Boolean,
-    onProgressComplete: () -> Unit
+    onProgressComplete: () -> Unit, // Story tự hết
+    onCloseStory: () -> Unit,        // User bấm nút Close
+
 ) {
     val alphaOnPress by animateFloatAsState(
         targetValue = if (isPaused) 0f else 1f,
@@ -63,9 +63,6 @@ fun UserStoryDetail(
     )
     val sortedUserStory = userStory.copy(stories = userStory.stories.sortedBy { it.timestamp })
 
-
-
-    Log.d("NHII CURRENT STORY: ", sortedUserStory.toString())
 
     Column(
         modifier = Modifier
@@ -141,7 +138,7 @@ fun UserStoryDetail(
                             currentUser = currentUser,
                             userStory = sortedUserStory,
                             currentStoryIndex = currentStoryIndex,
-                            onProgressComplete = onProgressComplete
+                            onCloseStory = onCloseStory
                         )
                     }
                 }
@@ -156,7 +153,7 @@ fun StoryHeader(
     userStory: UserStory,
     currentStoryIndex: Int,
     modifier: Modifier = Modifier,
-    onProgressComplete: () -> Unit
+    onCloseStory: () -> Unit,        // User bấm nút Close
 ) {
     Row(
         modifier = modifier
@@ -221,7 +218,7 @@ fun StoryHeader(
             tint = Color.White,
             contentDescription = stringResource(R.string.close_story),
             modifier = Modifier.clickable {
-                onProgressComplete()
+                onCloseStory()
             }
         )
     }
@@ -250,6 +247,7 @@ private fun UserStoryDetailPreview() {
         modifier = Modifier,
         isStoryActive = true,
         onProgressComplete = { },
-        currentUser = TODO()
+        currentUser = User(),
+        onCloseStory = {}
     )
 }

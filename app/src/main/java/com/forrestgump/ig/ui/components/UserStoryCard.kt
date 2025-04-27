@@ -120,7 +120,11 @@ fun UserStoryCard(
                             shape = CircleShape,
                             width = if (isAllStoryViewed == true) 1.dp else 2.dp
                         )
-                        .border(width = 5.dp, color = MaterialTheme.colorScheme.background, shape = CircleShape),
+                        .border(
+                            width = 5.dp,
+                            color = MaterialTheme.colorScheme.background,
+                            shape = CircleShape
+                        ),
                     color = Color.LightGray
                 ) {
                     AsyncImage(
@@ -158,8 +162,10 @@ fun UserStoryCard(
 
             Text(
                 modifier = Modifier.padding(vertical = 2.dp),
-                text = if (userStory.username != currentUser.username) userStory.username
-                else stringResource(id = R.string.your_story),
+                text = if (userStory.username != currentUser.username)
+                    (if (userStory.username.length > 9) userStory.username.take(9) + "..." else userStory.username)
+                else
+                    stringResource(id = R.string.your_story),
                 style = TextStyle(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,

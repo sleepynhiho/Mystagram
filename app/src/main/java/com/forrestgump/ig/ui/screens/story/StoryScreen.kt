@@ -1,6 +1,5 @@
 package com.forrestgump.ig.ui.screens.story
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -65,6 +64,9 @@ fun StoryScreen(
                         onDismiss()
                     }
                 }
+            },
+            onCloseStory = {
+                onDismiss()
             }
         )
 
