@@ -103,7 +103,7 @@ fun PostDetailScreen(
                                 Icon(
                                     imageVector = Icons.Default.MoreVert,
                                     contentDescription = "More options",
-                                    tint = Color.White
+                                    tint = MaterialTheme.colorScheme.onBackground
                                 )
                             }
                             DropdownMenu(
