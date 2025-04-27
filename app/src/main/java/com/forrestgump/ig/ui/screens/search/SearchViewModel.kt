@@ -54,7 +54,8 @@ class SearchViewModel @Inject constructor(
                                 userId = it.userId,
                                 username = it.username,
                                 fullName = it.fullName,
-                                profilePicture = it.profileImage
+                                profilePicture = it.profileImage,
+                                reason = ""
                             )
                         }
                     }
@@ -117,15 +118,21 @@ class SearchViewModel @Inject constructor(
                 // Get combined suggestions from the repository
                 val suggestions = friendSuggestionRepository.getCombinedSuggestions(currentUserId)
                 
-                // Map to user suggestions
+                // Map to user suggestions and ensure reason is properly set
                 val friendSuggestions = suggestions.map { suggestion ->
                     FriendSuggestion(
                         userId = suggestion.user.userId,
                         username = suggestion.user.username,
                         fullName = suggestion.user.fullName,
                         profilePicture = suggestion.user.profileImage,
-                        reason = suggestion.reason
+                        // If repository returns empty reason, use default text
+                        reason = if (suggestion.reason.isNotEmpty()) suggestion.reason else "Suggested for you"
                     )
+                }
+                
+                // Log reasons for debugging
+                friendSuggestions.forEach { 
+                    Log.d("SearchViewModel", "Friend suggestion for ${it.username} with reason: ${it.reason}")
                 }
                 
                 // Update the UI state with the new suggestions
@@ -217,7 +224,8 @@ class SearchViewModel @Inject constructor(
                     userId = user.userId,
                     username = user.username,
                     fullName = user.fullName,
-                    profilePicture = user.profileImage
+                    profilePicture = user.profileImage,
+                    reason = ""
                 )
             }
             
@@ -255,6 +263,9 @@ class SearchViewModel @Inject constructor(
         super.onCleared()
         clearUiState()
     }
+
+    // Add a function to get the current UI state
+    fun getUiState(): UiState = uiState.value
 }
 
 // Lightweight data classes for suggestions
@@ -262,7 +273,8 @@ data class UserSuggestion(
     val userId: String = "",
     val username: String = "",
     val fullName: String = "",
-    val profilePicture: String = ""
+    val profilePicture: String = "",
+    val reason: String = ""
 )
 
 data class PostSuggestion(
@@ -278,5 +290,5 @@ data class FriendSuggestion(
     val username: String = "",
     val fullName: String = "",
     val profilePicture: String = "",
-    val reason: String = "Suggested for you"
+    val reason: String = ""
 )

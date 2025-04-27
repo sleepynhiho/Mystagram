@@ -5,6 +5,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
+import android.util.Log
 
 @Singleton
 class FriendSuggestionRepository @Inject constructor(
@@ -149,6 +150,16 @@ class FriendSuggestionRepository @Inject constructor(
         val mutualSuggestions = getSuggestionsBasedOnMutualFollowers(currentUserId)
         val interactionSuggestions = getSuggestionsBasedOnPostInteractions(currentUserId)
         
+        // Debug reasons in mutual suggestions
+        mutualSuggestions.forEach { 
+            Log.d("FriendRepo", "Mutual suggestion for ${it.user.username}: reason=${it.reason}")
+        }
+        
+        // Debug reasons in interaction suggestions
+        interactionSuggestions.forEach { 
+            Log.d("FriendRepo", "Interaction suggestion for ${it.user.username}: reason=${it.reason}")
+        }
+        
         // Combine suggestions
         val combinedMap = mutableMapOf<String, SuggestionWithScore>()
         
@@ -179,9 +190,16 @@ class FriendSuggestionRepository @Inject constructor(
         }
         
         // Convert to list, sort by score, and take top suggestions
-        return combinedMap.values.toList()
+        val finalSuggestions = combinedMap.values.toList()
             .sortedByDescending { it.score }
             .take(limit)
+            
+        // Debug final suggestions
+        finalSuggestions.forEach { 
+            Log.d("FriendRepo", "Final suggestion for ${it.user.username}: score=${it.score}, reason=${it.reason}")
+        }
+        
+        return finalSuggestions
     }
 }
 
