@@ -150,6 +150,8 @@ class NotificationViewModel @Inject constructor(
             return
         }
         
+        Log.d("NotificationViewModel", "Starting follow request rejection process for notificationId: ${notification.notificationId}, from sender: ${notification.senderId}")
+        
         viewModelScope.launch {
             try {
                 // Get the current user ID
@@ -160,6 +162,20 @@ class NotificationViewModel @Inject constructor(
                     Log.e("NotificationViewModel", "Notification doesn't belong to current user")
                     return@launch
                 }
+                
+                Log.d("NotificationViewModel", "Verified notification belongs to current user: $currentUserId")
+                
+                // Get current user data for the rejection notification
+                val currentUserDoc = firestore.collection("users").document(currentUserId).get().await()
+                if (!currentUserDoc.exists()) {
+                    Log.e("NotificationViewModel", "Current user document doesn't exist")
+                    return@launch
+                }
+                
+                val currentUsername = currentUserDoc.getString("username") ?: ""
+                val currentProfileImage = currentUserDoc.getString("profileImage") ?: ""
+                
+                Log.d("NotificationViewModel", "Retrieved user data: username=$currentUsername")
                 
                 // Use a batch for atomicity
                 val batch = firestore.batch()
@@ -172,13 +188,35 @@ class NotificationViewModel @Inject constructor(
                     .get()
                     .await()
                 
+                Log.d("NotificationViewModel", "Found ${requestQuerySnapshot.size()} follow requests to delete")
+                
                 // Delete all these requests entirely instead of marking them as read
                 for (doc in requestQuerySnapshot.documents) {
                     batch.delete(doc.reference)
+                    Log.d("NotificationViewModel", "Added delete operation for follow request: ${doc.id}")
                 }
                 
+                // Create a rejection notification for the sender (User A)
+                val rejectionNotificationId = firestore.collection("notifications").document().id
+                val rejectionNotification = Notification(
+                    notificationId = rejectionNotificationId,
+                    receiverId = notification.senderId,  // The original sender receives this
+                    senderId = currentUserId,            // Current user (rejector) sends this
+                    senderUsername = currentUsername,
+                    senderProfileImage = currentProfileImage,
+                    type = NotificationType.FOLLOW_REJECTED,  // We need to add this type
+                    isRead = false
+                )
+                
+                Log.d("NotificationViewModel", "Created rejection notification with ID: $rejectionNotificationId, type: ${rejectionNotification.type}")
+                
+                // Add the rejection notification to the batch
+                batch.set(firestore.collection("notifications").document(rejectionNotificationId), rejectionNotification)
+                
                 // Commit all changes as a batch
+                Log.d("NotificationViewModel", "Committing batch operations...")
                 batch.commit().await()
+                Log.d("NotificationViewModel", "Batch commit succeeded!")
                 
                 // Update local notification list by removing the rejected follow requests
                 _notifications.value = _notifications.value.filter { notif ->
@@ -187,7 +225,7 @@ class NotificationViewModel @Inject constructor(
                       && notif.type == NotificationType.FOLLOW_REQUEST)
                 }
                 
-                Log.d("NotificationViewModel", "Follow request rejected and deleted successfully")
+                Log.d("NotificationViewModel", "Follow request rejection completed successfully. FOLLOW_REJECTED notification created with ID: $rejectionNotificationId")
                 
             } catch (e: Exception) {
                 Log.e("NotificationViewModel", "Error rejecting follow request", e)
