@@ -219,6 +219,18 @@ fun UserProfileActionButtons(
     onFollowClick: () -> Unit,
     onUnfollowClick: () -> Unit
 ) {
+    // Log the button state for debugging
+    val buttonText = when {
+        isFollowing -> "Đang theo dõi"
+        isFollowRequestPending -> "Đã yêu cầu"
+        else -> "Theo dõi"
+    }
+    
+    LaunchedEffect(isFollowing, isFollowRequestPending) {
+        Log.d("UserProfileScreen", "Follow button state - isFollowing: $isFollowing, isFollowRequestPending: $isFollowRequestPending")
+        Log.d("UserProfileScreen", "Follow button text: $buttonText")
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -245,11 +257,7 @@ fun UserProfileActionButtons(
             border = if (isFollowing || isFollowRequestPending) BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground) else null
         ) {
             Text(
-                text = when {
-                    isFollowing -> "Đang theo dõi"
-                    isFollowRequestPending -> "Đã yêu cầu"
-                    else -> "Theo dõi"
-                }
+                text = buttonText
             )
         }
 
