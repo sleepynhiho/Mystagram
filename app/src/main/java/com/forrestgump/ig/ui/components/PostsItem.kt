@@ -358,7 +358,7 @@ fun PostActions(
                 if ((post.commentsCount) > 0) {
                     Text(
                         text = post.commentsCount.toString(),
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold
                     )

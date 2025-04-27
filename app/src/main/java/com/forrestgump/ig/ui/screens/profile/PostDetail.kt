@@ -84,14 +84,14 @@ fun PostDetailScreen(
         Column {
             TopAppBar(
                 title = {
-                    Text(text = "Detail", color = Color.White)
+                    Text(text = "Detail", color = MaterialTheme.colorScheme.onBackground)
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackPressed) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = Color.White
+                            tint = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 },
@@ -150,7 +150,7 @@ fun PostDetailScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Black
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
 

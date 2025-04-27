@@ -204,7 +204,7 @@ fun AddPostScreen(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_multiple), // icon cho "Chọn nhiều"
                         contentDescription = "Chọn nhiều",
-                        tint = Color.Gray,
+                        tint = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
@@ -225,7 +225,7 @@ fun AddPostScreen(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_camera), // icon camera
                         contentDescription = "Chụp ảnh",
-                        tint = Color.Black,
+                        tint = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.size(24.dp)
                     )
                 }
