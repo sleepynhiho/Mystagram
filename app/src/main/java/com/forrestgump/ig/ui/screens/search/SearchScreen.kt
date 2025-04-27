@@ -893,6 +893,13 @@ fun UserSuggestionItem(
             }
     }
 
+    // Cải thiện điều kiện kiểm tra xem lý do đề xuất đã chứa thông tin vị trí chưa
+    val reasonHasLocationInfo = suggestion.reason.contains("from", ignoreCase = true) ||
+                               suggestion.reason.contains("Lives in", ignoreCase = true) ||
+                               suggestion.reason.contains("nearby location", ignoreCase = true) ||
+                               suggestion.reason.contains("same area", ignoreCase = true) ||
+                               (userLocation.isNotEmpty() && suggestion.reason.contains(userLocation, ignoreCase = true))
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -957,8 +964,8 @@ fun UserSuggestionItem(
                 modifier = Modifier.padding(top = 2.dp)
             )
             
-            // Only show location if we have it and need additional info
-            if (!isLoading && userLocation.isNotEmpty()) {
+            // Chỉ hiển thị vị trí nếu chúng ta có vị trí và lý do chưa chứa thông tin vị trí
+            if (!isLoading && userLocation.isNotEmpty() && !reasonHasLocationInfo) {
                 Row(
                     modifier = Modifier.padding(top = 4.dp),
                     verticalAlignment = Alignment.CenterVertically

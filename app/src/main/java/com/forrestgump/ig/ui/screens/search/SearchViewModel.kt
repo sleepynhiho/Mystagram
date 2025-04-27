@@ -122,6 +122,13 @@ class SearchViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 if (suggestedUserIds.isEmpty()) {
+                    // Nếu không có người dùng được đề xuất, cập nhật UI với danh sách rỗng
+                    uiState.update { 
+                        it.copy(
+                            postSuggestions = emptyList(),
+                            posts = emptyList()
+                        ) 
+                    }
                     return@launch
                 }
                 
@@ -135,30 +142,13 @@ class SearchViewModel @Inject constructor(
                     it.toObject(Post::class.java) 
                 }
                 
-                // Filter posts from suggested users
+                // Filter posts from suggested users only
                 val recommendedPosts = allPosts.filter { 
                     suggestedUserIds.contains(it.userId) 
                 }
                 
-                // If we don't have enough posts from suggested users, add random posts
-                val minPostCount = 10 // Minimum number of posts to show
-                val randomPosts = if (recommendedPosts.size < minPostCount) {
-                    // Get posts from users not in the suggestion list
-                    val otherPosts = allPosts.filter { 
-                        !suggestedUserIds.contains(it.userId) 
-                    }
-                    
-                    // Shuffle and take enough to reach minPostCount
-                    otherPosts.shuffled().take(minPostCount - recommendedPosts.size)
-                } else {
-                    emptyList()
-                }
-                
-                // Combine recommended and random posts
-                val finalPosts = (recommendedPosts + randomPosts).take(minPostCount)
-                
-                // Map to post suggestions
-                val postSuggestions = finalPosts.map { post ->
+                // Map to post suggestions (chỉ dùng các bài đăng từ người dùng được đề xuất)
+                val postSuggestions = recommendedPosts.map { post ->
                     PostSuggestion(
                         postId = post.postId,
                         userId = post.userId,
@@ -171,12 +161,11 @@ class SearchViewModel @Inject constructor(
                 uiState.update { 
                     it.copy(
                         postSuggestions = postSuggestions,
-                        posts = finalPosts
+                        posts = recommendedPosts
                     ) 
                 }
                 
-                Log.d("SearchViewModel", "Loaded ${postSuggestions.size} post suggestions " +
-                        "(${recommendedPosts.size} from recommended users, ${randomPosts.size} random)")
+                Log.d("SearchViewModel", "Loaded ${postSuggestions.size} post suggestions from recommended users")
                 
             } catch (e: Exception) {
                 Log.e("SearchViewModel", "Error loading recommended posts", e)
