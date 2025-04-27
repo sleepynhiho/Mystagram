@@ -29,6 +29,7 @@ pagingCompose = "1.0.0"
 pagingComposeVersion = "1.0.0-alpha18"
 pagingRuntime = "3.3.6"
 playServicesAuth = "21.3.0"
+securityCrypto = "1.1.0-alpha07"
 tedimagepicker = "1.4.0"
 ui = "1.7.6"
 navigationCompose = "2.8.5"
@@ -45,6 +46,7 @@ animationAndroid = "1.7.2"
 runtimeLivedata = "1.7.8"
 uiVersion = "1.7.8"
 firebaseInappmessagingKtx = "21.0.2"
+securityCryptoKtx = "1.0.0"
 
 [libraries]
 accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanistPager" }
@@ -66,6 +68,7 @@ androidx-paging-compose-v100alpha18 = { module = "androidx.paging:paging-compose
 androidx-paging-runtime = { module = "androidx.paging:paging-runtime", version.ref = "pagingRuntime" }
 androidx-runtime = { module = "androidx.compose.runtime:runtime" }
 androidx-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata", version.ref = "runtimeLivedata" }
+androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "securityCrypto" }
 androidx-ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
 androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "ui" }
 androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "ui" }
@@ -110,6 +113,7 @@ play-services-auth = { module = "com.google.android.gms:play-services-auth", ver
 play-services-cast-framework = { group = "com.google.android.gms", name = "play-services-cast-framework", version.ref = "playServicesCastFramework" }
 androidx-animation-android = { group = "androidx.compose.animation", name = "animation-android", version.ref = "animationAndroid" }
 firebase-inappmessaging-ktx = { group = "com.google.firebase", name = "firebase-inappmessaging-ktx", version.ref = "firebaseInappmessagingKtx" }
+androidx-security-crypto-ktx = { group = "androidx.security", name = "security-crypto-ktx", version.ref = "securityCryptoKtx" }
 #androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
 
 

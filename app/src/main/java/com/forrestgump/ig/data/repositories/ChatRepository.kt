@@ -5,22 +5,21 @@ import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import com.forrestgump.ig.data.models.Chat
 import com.forrestgump.ig.data.models.Message
+import com.forrestgump.ig.utils.constants.EncryptionUtils
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
-
 class ChatRepository @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val encryptionUtils: EncryptionUtils
 ) {
-    // Function to get all chats where userId1 is the specified userId
     suspend fun getAllChatsForUser(userId: String): List<Chat> {
         return try {
-            // Fetch chats where userId is either user1Id or user2Id
             val chatSnapshot1 = firestore.collection("chats")
                 .whereEqualTo("user1Id", userId)
                 .get()
-                .await()  // Await the result of the query
+                .await()
 
             val chatSnapshot2 = firestore.collection("chats")
                 .whereEqualTo("user2Id", userId)
@@ -29,8 +28,32 @@ class ChatRepository @Inject constructor(
 
             // Combine the results from both queries
             val chatList = mutableListOf<Chat>()
-            chatList.addAll(chatSnapshot1.documents.mapNotNull { it.toObject(Chat::class.java) })
-            chatList.addAll(chatSnapshot2.documents.mapNotNull { it.toObject(Chat::class.java) })
+
+            // Process chat data and decrypt lastMessage field
+            val chats1 = chatSnapshot1.documents.mapNotNull { doc ->
+                doc.toObject(Chat::class.java)?.let { chat ->
+                    // Only decrypt if lastMessage is not empty
+                    if (chat.lastMessage.isNotEmpty()) {
+                        chat.copy(lastMessage = encryptionUtils.decrypt(chat.lastMessage))
+                    } else {
+                        chat
+                    }
+                }
+            }
+
+            val chats2 = chatSnapshot2.documents.mapNotNull { doc ->
+                doc.toObject(Chat::class.java)?.let { chat ->
+                    // Only decrypt if lastMessage is not empty
+                    if (chat.lastMessage.isNotEmpty()) {
+                        chat.copy(lastMessage = encryptionUtils.decrypt(chat.lastMessage))
+                    } else {
+                        chat
+                    }
+                }
+            }
+
+            chatList.addAll(chats1)
+            chatList.addAll(chats2)
 
             chatList
         } catch (e: Exception) {
@@ -48,7 +71,14 @@ class ChatRepository @Inject constructor(
             val chatSnapshot = chatRef.get().await()
 
             if (chatSnapshot.exists()) {
-                chatSnapshot.toObject(Chat::class.java)!!
+                val chat = chatSnapshot.toObject(Chat::class.java)!!
+
+                // Decrypt the lastMessage if it exists
+                if (chat.lastMessage.isNotEmpty()) {
+                    chat.copy(lastMessage = encryptionUtils.decrypt(chat.lastMessage))
+                } else {
+                    chat
+                }
             } else {
                 val newChat = Chat(
                     chatId = chatId,
@@ -70,16 +100,22 @@ class ChatRepository @Inject constructor(
 
     suspend fun loadChatAndMessages(chatId: String): Pair<Chat?, List<Message>> {
         try {
-            // Lấy thông tin chat
+            // Get chat information
             val chatRef = firestore.collection("chats").document(chatId)
             val chatSnapshot = chatRef.get().await()
 
             var chatData: Chat? = null
             if (chatSnapshot.exists()) {
                 chatData = chatSnapshot.toObject(Chat::class.java)
+
+                // Decrypt the lastMessage if it exists
+                if (chatData != null && chatData.lastMessage.isNotEmpty()) {
+                    chatData = chatData.copy(lastMessage = encryptionUtils.decrypt(chatData.lastMessage))
+                }
             }
 
-            // Lấy tất cả các tin nhắn trong chat
+            // Get all messages in the chat - leave them encrypted
+            // They will be decrypted in the ViewModel before display
             val messagesSnapshot = chatRef.collection("messages").get().await()
             val messagesList = messagesSnapshot.documents.map { doc ->
                 doc.toObject(Message::class.java)!!
@@ -109,11 +145,9 @@ class ChatRepository @Inject constructor(
                     val updatedMessages = snapshot.documents.mapNotNull { doc ->
                         doc.toObject(Message::class.java)
                     }
+
                     onMessagesUpdated(updatedMessages)
                 }
             }
     }
-
-
-
 }
