@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,12 +36,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.forrestgump.ig.R
+import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.utils.constants.formatAsElapsedTime
 import com.forrestgump.ig.data.models.Story
 import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.data.models.UserStory
+import com.forrestgump.ig.ui.navigation.Routes
 import java.util.Date
 
 
@@ -55,6 +59,7 @@ fun UserStoryDetail(
     onProgressComplete: () -> Unit, // Story tự hết
     onCloseStory: () -> Unit,        // User bấm nút Close
     onDeleteStory: () -> Unit,       // User bấm nút Delete
+    navHostController: NavHostController
 ) {
     val alphaOnPress by animateFloatAsState(
         targetValue = if (isPaused) 0f else 1f,
@@ -139,7 +144,8 @@ fun UserStoryDetail(
                             userStory = sortedUserStory,
                             currentStoryIndex = currentStoryIndex,
                             onCloseStory = onCloseStory,
-                            onDeleteStory = onDeleteStory
+                            onDeleteStory = onDeleteStory,
+                            navHostController = navHostController,
                         )
                     }
                 }
@@ -156,6 +162,7 @@ fun StoryHeader(
     modifier: Modifier = Modifier,
     onCloseStory: () -> Unit,        // User bấm nút Close
     onDeleteStory: () -> Unit,       // User bấm nút Delete
+    navHostController: NavHostController
 ) {
     Row(
         modifier = modifier
@@ -174,7 +181,18 @@ fun StoryHeader(
         )
         {
             Surface(
-                modifier = Modifier.size(42.dp),
+                modifier = Modifier
+                    .size(42.dp)
+                    .clickable {
+                        // Check if the post belongs to the current user
+                        if (userStory.userId == currentUser.userId) {
+                            // Navigate to MyProfileScreen for the current user
+                            navHostController.navigate(Routes.MyProfileScreen.route)
+                        } else {
+                            // Navigate to UserProfileScreen for other users
+                            navHostController.navigate("UserProfileScreen/${userStory.userId}")
+                        }
+                    },
                 shape = CircleShape
             ) {
                 // Author's profile image
@@ -269,6 +287,7 @@ private fun UserStoryDetailPreview() {
         onProgressComplete = { },
         currentUser = User(),
         onCloseStory = {},
-        onDeleteStory = {}
+        onDeleteStory = {},
+        navHostController = TODO()
     )
 }

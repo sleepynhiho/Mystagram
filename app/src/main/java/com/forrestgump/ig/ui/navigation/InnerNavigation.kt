@@ -128,7 +128,7 @@ fun InnerNavigation(
                     onChatScreenClicked = {
                         navHostController.navigate(Routes.ChatScreen.route)
                     },
-                    navController = navHostController,
+                    navHostController = navHostController,
                 )
             }
         }

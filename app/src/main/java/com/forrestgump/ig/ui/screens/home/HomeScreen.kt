@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.forrestgump.ig.ui.screens.home.components.TopNavBar
 import com.forrestgump.ig.ui.screens.story.StoryScreen
 import com.forrestgump.ig.ui.components.Loading
@@ -42,7 +43,7 @@ fun HomeScreen(
     onAddStoryClicked: () -> Unit,
     onStoryScreenClicked: (Boolean, Int) -> Unit,
     onChatScreenClicked: () -> Unit,
-    navController: NavController,
+    navHostController: NavHostController,
 ) {
     var userStoryIndex by remember { mutableIntStateOf(0) }
     var isMyStory by remember { mutableStateOf(true) }
@@ -97,7 +98,7 @@ fun HomeScreen(
                     hasMore = uiState.hasMore,
                     onRefresh = { viewModel.refreshPosts() },
                     onLoadMore = { viewModel.loadNextPosts() },
-                    navController = navController,
+                    navController = navHostController,
                     currentUser = currentUser,
                     onCommentClicked = { post ->
                         selectedPost = post
@@ -116,7 +117,8 @@ fun HomeScreen(
         onDismiss = { onStoryScreenClicked(false, 0) },
         userStories = { if (isMyStory) uiState.myStories else uiState.userStories },
         onUserStoryIndexChanged = { newIndex -> userStoryIndex = newIndex },
-        userStoryIndex = userStoryIndex
+        userStoryIndex = userStoryIndex,
+        navHostController = navHostController
     )
 
     if (showCommentScreen && selectedPost != null) {

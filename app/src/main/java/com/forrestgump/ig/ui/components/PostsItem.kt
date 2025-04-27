@@ -333,16 +333,16 @@ fun PostActions(
                     }
                 }
 
-                Spacer(modifier = Modifier.width(5.dp))
+//                Spacer(modifier = Modifier.width(5.dp))
 
-                if (post.reactions.entries.isNotEmpty()) {
-                    Text(
-                        text = post.reactions.entries.size.toString(),
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+//                if (post.reactions.entries.isNotEmpty()) {
+//                    Text(
+//                        text = post.reactions.entries.size.toString(),
+//                        color = MaterialTheme.colorScheme.onBackground,
+//                        fontSize = 16.sp,
+//                        fontWeight = FontWeight.SemiBold
+//                    )
+//                }
 
 
                 IconButton(onClick = onCommentClicked) {

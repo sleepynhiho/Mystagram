@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -95,7 +96,7 @@ fun AddStoryCard(
             style = TextStyle(
                 fontSize = 12.sp,
                 fontWeight = FontWeight.W400,
-                color = Color(0xFF000000),
+                color = MaterialTheme.colorScheme.onBackground,
                 lineHeight = 16.sp
             )
         )
