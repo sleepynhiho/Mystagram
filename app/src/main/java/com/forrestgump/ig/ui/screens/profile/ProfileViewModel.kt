@@ -1,6 +1,7 @@
 package com.forrestgump.ig.ui.screens.profile
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
@@ -11,12 +12,15 @@ import com.forrestgump.ig.data.models.Post
 import com.forrestgump.ig.data.models.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.WriteBatch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
@@ -131,6 +135,9 @@ class ProfileViewModel @Inject constructor(
         onFailure: (Exception) -> Unit = {}
     ) {
         val currentUser = uiState.value.curUser
+        val usernameChanged = currentUser.username != newUsername
+        val profileImageChanged = currentUser.profileImage != newProfileImage
+        
         fun updateFirestoreWithImage(imageUrl: String) {
             val updatedUser = currentUser.copy(
                 profileImage = imageUrl,
@@ -142,7 +149,6 @@ class ProfileViewModel @Inject constructor(
             )
             // Cập nhật uiState ngay trên local
             uiState.update { it.copy(curUser = updatedUser) }
-
 
             // Create a map for updates
             val updates = mutableMapOf(
@@ -163,27 +169,19 @@ class ProfileViewModel @Inject constructor(
             val userDocRef = firestore.collection("users").document(currentUser.userId)
             userDocRef.update(updates as Map<String, Any>)
                 .addOnSuccessListener {
-
-                // Sau khi cập nhật user, tiến hành cập nhật ảnh đại diện trong các bài post
-                firestore.collection("posts")
-                    .whereEqualTo("userId", currentUser.userId)
-                    .get()
-                    .addOnSuccessListener { querySnapshot ->
-                        val batch = firestore.batch()
-                        querySnapshot.documents.forEach { doc ->
-                            // Giả sử trường ảnh đại diện trong post là "profileImageUrl"
-                            batch.update(doc.reference, "profileImageUrl", imageUrl)
-                        }
-                        batch.commit()
-                            .addOnSuccessListener {
+                    // Chỉ cập nhật các bảng liên quan nếu username hoặc profileImage thay đổi
+                    if (usernameChanged || profileImageChanged) {
+                        updateUserDataAcrossCollections(
+                            userId = currentUser.userId,
+                            newUsername = newUsername, 
+                            newProfileImage = imageUrl,
+                            usernameChanged = usernameChanged,
+                            profileImageChanged = profileImageChanged,
+                            onSuccess = onSuccess,
+                            onFailure = onFailure
+                        )
+                    } else {
                                 onSuccess()
-                            }
-                            .addOnFailureListener { exception ->
-                                onFailure(exception)
-                            }
-                    }
-                    .addOnFailureListener { exception ->
-                        onFailure(exception)
                     }
             }.addOnFailureListener { exception ->
                 onFailure(exception)
@@ -218,7 +216,231 @@ class ProfileViewModel @Inject constructor(
                 updateFirestoreWithImage(newProfileImage)
             }
         }
+    }
 
+    /**
+     * Cập nhật thông tin người dùng trên tất cả các bảng dữ liệu liên quan
+     */
+    private fun updateUserDataAcrossCollections(
+        userId: String,
+        newUsername: String,
+        newProfileImage: String,
+        usernameChanged: Boolean,
+        profileImageChanged: Boolean,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val batch = firestore.batch()
+                val batches = mutableListOf<WriteBatch>()
+                var currentBatch = firestore.batch()
+                var operationCount = 0
+                val MAX_BATCH_SIZE = 450 // Firestore giới hạn 500 operations/batch
+                
+                Log.d("ProfileViewModel", "Starting to update user data across collections")
+                
+                // 1. Cập nhật bài đăng (Posts)
+                if (usernameChanged || profileImageChanged) {
+                    val postsQuery = firestore.collection("posts")
+                        .whereEqualTo("userId", userId)
+                        .get()
+                        .await()
+                    
+                    Log.d("ProfileViewModel", "Found ${postsQuery.size()} posts to update")
+                    
+                    for (postDoc in postsQuery.documents) {
+                        val updates = mutableMapOf<String, Any>()
+                        if (usernameChanged) updates["username"] = newUsername
+                        if (profileImageChanged) updates["profileImageUrl"] = newProfileImage
+                        
+                        currentBatch.update(postDoc.reference, updates)
+                        operationCount++
+                        
+                        if (operationCount >= MAX_BATCH_SIZE) {
+                            batches.add(currentBatch)
+                            currentBatch = firestore.batch()
+                            operationCount = 0
+                        }
+                    }
+                }
+                
+                // 2. Cập nhật bình luận (Comments)
+                if (usernameChanged || profileImageChanged) {
+                    // Lấy tất cả bài posts (không chỉ của user hiện tại)
+                    val allPostsQuery = firestore.collection("posts").get().await()
+                    
+                    for (postDoc in allPostsQuery.documents) {
+                        val commentsQuery = firestore.collection("posts")
+                            .document(postDoc.id)
+                            .collection("comments")
+                            .whereEqualTo("userId", userId)
+                            .get()
+                            .await()
+                        
+                        Log.d("ProfileViewModel", "Found ${commentsQuery.size()} comments to update in post ${postDoc.id}")
+                        
+                        for (commentDoc in commentsQuery.documents) {
+                            val updates = mutableMapOf<String, Any>()
+                            if (usernameChanged) updates["username"] = newUsername
+                            if (profileImageChanged) updates["profileImage"] = newProfileImage
+                            
+                            currentBatch.update(commentDoc.reference, updates)
+                            operationCount++
+                            
+                            if (operationCount >= MAX_BATCH_SIZE) {
+                                batches.add(currentBatch)
+                                currentBatch = firestore.batch()
+                                operationCount = 0
+                            }
+                        }
+                    }
+                }
+                
+                // 3. Cập nhật thông báo (Notifications)
+                if (usernameChanged || profileImageChanged) {
+                    // Cập nhật notifications mà user gửi đi
+                    val sentNotificationsQuery = firestore.collection("notifications")
+                        .whereEqualTo("senderId", userId)
+                        .get()
+                        .await()
+                    
+                    Log.d("ProfileViewModel", "Found ${sentNotificationsQuery.size()} sent notifications to update")
+                    
+                    for (notifDoc in sentNotificationsQuery.documents) {
+                        val updates = mutableMapOf<String, Any>()
+                        if (usernameChanged) updates["senderUsername"] = newUsername
+                        if (profileImageChanged) updates["senderProfileImage"] = newProfileImage
+                        
+                        currentBatch.update(notifDoc.reference, updates)
+                        operationCount++
+                        
+                        if (operationCount >= MAX_BATCH_SIZE) {
+                            batches.add(currentBatch)
+                            currentBatch = firestore.batch()
+                            operationCount = 0
+                        }
+                    }
+                }
+                
+                // 4. Cập nhật chat
+                if (usernameChanged || profileImageChanged) {
+                    // Chats nơi user là user1
+                    val chatsAsUser1Query = firestore.collection("chats")
+                        .whereEqualTo("user1Id", userId)
+                        .get()
+                        .await()
+                    
+                    Log.d("ProfileViewModel", "Found ${chatsAsUser1Query.size()} chats as user1 to update")
+                    
+                    for (chatDoc in chatsAsUser1Query.documents) {
+                        val updates = mutableMapOf<String, Any>()
+                        if (usernameChanged) updates["user1Username"] = newUsername
+                        if (profileImageChanged) updates["user1ProfileImage"] = newProfileImage
+                        
+                        currentBatch.update(chatDoc.reference, updates)
+                        operationCount++
+                        
+                        if (operationCount >= MAX_BATCH_SIZE) {
+                            batches.add(currentBatch)
+                            currentBatch = firestore.batch()
+                            operationCount = 0
+                        }
+                    }
+                    
+                    // Chats nơi user là user2
+                    val chatsAsUser2Query = firestore.collection("chats")
+                        .whereEqualTo("user2Id", userId)
+                        .get()
+                        .await()
+                    
+                    Log.d("ProfileViewModel", "Found ${chatsAsUser2Query.size()} chats as user2 to update")
+                    
+                    for (chatDoc in chatsAsUser2Query.documents) {
+                        val updates = mutableMapOf<String, Any>()
+                        if (usernameChanged) updates["user2Username"] = newUsername
+                        if (profileImageChanged) updates["user2ProfileImage"] = newProfileImage
+                        
+                        currentBatch.update(chatDoc.reference, updates)
+                        operationCount++
+                        
+                        if (operationCount >= MAX_BATCH_SIZE) {
+                            batches.add(currentBatch)
+                            currentBatch = firestore.batch()
+                            operationCount = 0
+                        }
+                    }
+                }
+                
+                // 5. Cập nhật stories
+                if (usernameChanged || profileImageChanged) {
+                    // Cập nhật trong collection stories (các story đơn lẻ)
+                    val storiesQuery = firestore.collection("stories")
+                        .whereEqualTo("userId", userId)
+                        .get()
+                        .await()
+                    
+                    Log.d("ProfileViewModel", "Found ${storiesQuery.size()} individual stories to update")
+                    
+                    for (storyDoc in storiesQuery.documents) {
+                        val updates = mutableMapOf<String, Any>()
+                        if (usernameChanged) updates["username"] = newUsername
+                        if (profileImageChanged) updates["profileImage"] = newProfileImage
+                        
+                        currentBatch.update(storyDoc.reference, updates)
+                        operationCount++
+                        
+                        if (operationCount >= MAX_BATCH_SIZE) {
+                            batches.add(currentBatch)
+                            currentBatch = firestore.batch()
+                            operationCount = 0
+                        }
+                    }
+                    
+                    // Cập nhật trong collection userStories (tập hợp stories của user)
+                    val userStoriesQuery = firestore.collection("userStories")
+                        .whereEqualTo("userId", userId)
+                        .get()
+                        .await()
+                    
+                    Log.d("ProfileViewModel", "Found ${userStoriesQuery.size()} userStory entries to update")
+                    
+                    for (userStoryDoc in userStoriesQuery.documents) {
+                        val updates = mutableMapOf<String, Any>()
+                        if (usernameChanged) updates["username"] = newUsername
+
+                        
+                        currentBatch.update(userStoryDoc.reference, updates)
+                        operationCount++
+                        
+                        if (operationCount >= MAX_BATCH_SIZE) {
+                            batches.add(currentBatch)
+                            currentBatch = firestore.batch()
+                            operationCount = 0
+                        }
+                    }
+                }
+                
+                // Thêm batch cuối cùng nếu còn operations
+                if (operationCount > 0) {
+                    batches.add(currentBatch)
+                }
+                
+                // Commit tất cả các batches
+                Log.d("ProfileViewModel", "Committing ${batches.size} batches")
+                
+                for (batchToCommit in batches) {
+                    batchToCommit.commit().await()
+                }
+                
+                Log.d("ProfileViewModel", "Successfully updated all user data across collections")
+                onSuccess()
+                
+            } catch (e: Exception) {
+                Log.e("ProfileViewModel", "Error updating user data across collections", e)
+                onFailure(e)
+            }
+        }
     }
 
     fun updateLocalUserLocation(newLocation: String) {
