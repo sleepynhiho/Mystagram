@@ -1,12 +1,6 @@
 package com.forrestgump.ig.ui.screens.search
 
 import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -39,20 +33,14 @@ import androidx.compose.material.Divider
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.outlined.CalendarToday
-import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PlayCircle
 import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -94,7 +82,6 @@ import com.forrestgump.ig.ui.navigation.Routes
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -689,6 +676,9 @@ fun InitialSuggestionsContent(
     onTabSelected: (String) -> Unit,
     viewModel: SearchViewModel
 ) {
+    // Lấy danh sách friend suggestions từ viewModel
+    val friendSuggestions = viewModel.getUiState().friendSuggestions
+    
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -754,10 +744,11 @@ fun InitialSuggestionsContent(
                 contentPadding = PaddingValues(start = 0.dp, top = 8.dp, end = 0.dp, bottom = 80.dp)
             ) {
                 items(postSuggestions) { suggestion ->
-                    PostSuggestionItem(
+                    com.forrestgump.ig.ui.screens.search.EnhancedPostSuggestionItem(
                         suggestion = suggestion,
                         navController = navController,
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        suggestedUsers = friendSuggestions
                     )
                     Divider(
                         color = Color.LightGray.copy(alpha = 0.5f),
@@ -781,6 +772,9 @@ fun SuggestionsContent(
     onTabSelected: (String) -> Unit,
     viewModel: SearchViewModel
 ) {
+    // Lấy danh sách friend suggestions từ viewModel
+    val friendSuggestions = viewModel.getUiState().friendSuggestions
+    
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -850,10 +844,11 @@ fun SuggestionsContent(
                 contentPadding = PaddingValues(start = 0.dp, top = 8.dp, end = 0.dp, bottom = 80.dp)
             ) {
                 items(postSuggestions) { suggestion ->
-                    PostSuggestionItem(
+                    com.forrestgump.ig.ui.screens.search.EnhancedPostSuggestionItem(
                         suggestion = suggestion,
                         navController = navController,
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        suggestedUsers = friendSuggestions
                     )
                     Divider(
                         color = Color.LightGray.copy(alpha = 0.5f),

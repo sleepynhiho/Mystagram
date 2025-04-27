@@ -66,46 +66,14 @@ class SearchViewModel @Inject constructor(
                     val users = querySnapshot.documents.mapNotNull { doc ->
                         doc.toObject(User::class.java)
                     }
-                    uiState.update { it.copy(users = users) }
+                    uiState.update { it.copy(users = users, isLoading = false) }
                 }
                 .addOnFailureListener { exception ->
                     Log.e("SearchViewModel", "Error loading users", exception)
-                }
-                
-            // Load all posts
-            firestore.collection("posts")
-                .orderBy("timestamp", Query.Direction.DESCENDING) // Sort by newest
-                .get()
-                .addOnSuccessListener { querySnapshot ->
-                    val postSuggestions = querySnapshot.documents.mapNotNull { doc ->
-                        val post = doc.toObject(Post::class.java)
-                        post?.let {
-                            PostSuggestion(
-                                postId = it.postId,
-                                userId = it.userId,
-                                caption = it.caption ?: "",
-                                imageUrl = it.mediaUrls.firstOrNull() ?: ""
-                            )
-                        }
-                    }
-                    
-                    uiState.update { 
-                        it.copy(
-                            postSuggestions = postSuggestions,
-                            isLoading = false
-                        ) 
-                    }
-                    
-                    // Also store complete post objects
-                    val posts = querySnapshot.documents.mapNotNull { doc ->
-                        doc.toObject(Post::class.java)
-                    }
-                    uiState.update { it.copy(posts = posts) }
-                }
-                .addOnFailureListener { exception ->
-                    Log.e("SearchViewModel", "Error loading posts", exception)
                     uiState.update { it.copy(isLoading = false) }
                 }
+                
+            // Posts are loaded in loadRecommendedPosts() which is called after loadFriendSuggestions()
         }
     }
     
@@ -140,8 +108,78 @@ class SearchViewModel @Inject constructor(
                     it.copy(friendSuggestions = friendSuggestions)
                 }
                 
+                // After updating friend suggestions, load posts from these users
+                loadRecommendedPosts(friendSuggestions.map { it.userId })
+                
             } catch (e: Exception) {
                 Log.e("SearchViewModel", "Error loading friend suggestions", e)
+            }
+        }
+    }
+    
+    // Function to load posts from recommended users
+    private fun loadRecommendedPosts(suggestedUserIds: List<String>) {
+        viewModelScope.launch {
+            try {
+                if (suggestedUserIds.isEmpty()) {
+                    return@launch
+                }
+                
+                // Get posts from Firestore
+                val postsSnapshot = firestore.collection("posts")
+                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                    .get()
+                    .await()
+                
+                val allPosts = postsSnapshot.documents.mapNotNull { 
+                    it.toObject(Post::class.java) 
+                }
+                
+                // Filter posts from suggested users
+                val recommendedPosts = allPosts.filter { 
+                    suggestedUserIds.contains(it.userId) 
+                }
+                
+                // If we don't have enough posts from suggested users, add random posts
+                val minPostCount = 10 // Minimum number of posts to show
+                val randomPosts = if (recommendedPosts.size < minPostCount) {
+                    // Get posts from users not in the suggestion list
+                    val otherPosts = allPosts.filter { 
+                        !suggestedUserIds.contains(it.userId) 
+                    }
+                    
+                    // Shuffle and take enough to reach minPostCount
+                    otherPosts.shuffled().take(minPostCount - recommendedPosts.size)
+                } else {
+                    emptyList()
+                }
+                
+                // Combine recommended and random posts
+                val finalPosts = (recommendedPosts + randomPosts).take(minPostCount)
+                
+                // Map to post suggestions
+                val postSuggestions = finalPosts.map { post ->
+                    PostSuggestion(
+                        postId = post.postId,
+                        userId = post.userId,
+                        caption = post.caption ?: "",
+                        imageUrl = post.mediaUrls.firstOrNull() ?: ""
+                    )
+                }
+                
+                // Update UI state with the post suggestions
+                uiState.update { 
+                    it.copy(
+                        postSuggestions = postSuggestions,
+                        posts = finalPosts
+                    ) 
+                }
+                
+                Log.d("SearchViewModel", "Loaded ${postSuggestions.size} post suggestions " +
+                        "(${recommendedPosts.size} from recommended users, ${randomPosts.size} random)")
+                
+            } catch (e: Exception) {
+                Log.e("SearchViewModel", "Error loading recommended posts", e)
             }
         }
     }
@@ -204,7 +242,9 @@ class SearchViewModel @Inject constructor(
     // Simple search function that filters locally instead of using complex Firestore queries
     fun searchSuggestions(query: String) {
         if (query.isEmpty()) {
-            loadBasicData() // Show all data when search is cleared
+            // Just reload basic data, friend suggestions will trigger post loading
+            loadBasicData() 
+            loadFriendSuggestions()
             return
         }
         
@@ -229,8 +269,9 @@ class SearchViewModel @Inject constructor(
                 )
             }
             
-            // Filter posts by caption
-            val filteredPosts = uiState.value.posts.filter { post ->
+            // Filter posts by caption - search in all posts
+            val allPosts = uiState.value.posts
+            val filteredPosts = allPosts.filter { post ->
                 post.caption?.contains(query, ignoreCase = true) ?: false
             }
             
