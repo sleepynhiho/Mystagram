@@ -7,13 +7,13 @@ import com.cloudinary.Cloudinary
 import com.forrestgump.ig.BuildConfig
 import com.forrestgump.ig.data.repositories.FriendSuggestionRepository
 import com.forrestgump.ig.data.repositories.StoryRepository
+import com.forrestgump.ig.utils.constants.EncryptionUtils
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import java.util.Properties
 import javax.inject.Singleton
 
 @Module
@@ -65,4 +65,10 @@ object AppModule {
     ): FriendSuggestionRepository {
         return FriendSuggestionRepository(firestore)
     }
+
+//    @Provides
+//    @Singleton
+//    fun provideEncryptionUtils(@ApplicationContext context: Context): EncryptionUtils {
+//        return EncryptionUtils(context)
+//    }
 }

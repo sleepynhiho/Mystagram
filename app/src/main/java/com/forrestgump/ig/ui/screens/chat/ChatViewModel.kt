@@ -1,8 +1,7 @@
 package com.forrestgump.ig.ui.screens.chat
 
+import android.content.Context
 import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,8 +10,10 @@ import com.forrestgump.ig.data.models.Chat
 import com.forrestgump.ig.data.models.Message
 import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.data.repositories.ChatRepository
+import com.forrestgump.ig.utils.constants.EncryptionUtils
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -22,7 +23,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ChatViewModel @Inject constructor(
     private val firestore: FirebaseFirestore,
-    private val chatRepository: ChatRepository
+    private val chatRepository: ChatRepository,
+    private val encryptionUtils: EncryptionUtils // Inject the encryption utils
 ) : ViewModel() {
     private val _messages = MutableStateFlow<List<Message>>(emptyList())
     val messages: StateFlow<List<Message>> = _messages
@@ -37,7 +39,6 @@ class ChatViewModel @Inject constructor(
     val chat: LiveData<Chat?> = _chat
 
     fun loadUsers() {
-        // Fetch the users from Firestore
         firestore.collection("users")
             .get()
             .addOnSuccessListener { result ->
@@ -49,10 +50,8 @@ class ChatViewModel @Inject constructor(
                     )
                 }
                 _users.postValue(userList) // Use postValue to ensure updates on the main thread
-                Log.d("NHII", userList.toString())
             }
             .addOnFailureListener { exception ->
-                // Handle error here
                 Log.e("ChatViewModel", "Error fetching users: ", exception)
             }
     }
@@ -78,8 +77,6 @@ class ChatViewModel @Inject constructor(
                 )
 
                 onChatCreated(chat)
-
-                // Update the chat list state after creating the new chat
                 _chatsState.value += chat
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error creating chat: ", e)
@@ -90,9 +87,18 @@ class ChatViewModel @Inject constructor(
     fun loadChatAndMessages(chatId: String) {
         viewModelScope.launch {
             try {
-                val (chatData, messagesList) = chatRepository.loadChatAndMessages(chatId)
-                _chat.postValue(chatData) // Use postValue for LiveData
-                _messages.value = messagesList // Update StateFlow directly
+                val (chatData, encryptedMessages) = chatRepository.loadChatAndMessages(chatId)
+                _chat.postValue(chatData)
+
+                val decryptedMessages = encryptedMessages.map { message ->
+                    if (message.content?.isNotEmpty() == true) {
+                        message.copy(content = encryptionUtils.decrypt(message.content))
+                    } else {
+                        message
+                    }
+                }
+
+                _messages.value = decryptedMessages
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error loading chat and messages: ", e)
             }
@@ -100,39 +106,97 @@ class ChatViewModel @Inject constructor(
     }
 
     fun listenForMessages(chatId: String) {
-        chatRepository.listenForMessages(chatId) { updatedMessages ->
-            _messages.value = updatedMessages
-            Log.d("ChatViewModel", "Messages updated: $updatedMessages")
+        chatRepository.listenForMessages(chatId) { updatedEncryptedMessages ->
+            val decryptedMessages = updatedEncryptedMessages.map { message ->
+                if (message.content?.isNotEmpty() == true) {
+                    message.copy(content = encryptionUtils.decrypt(message.content))
+                } else {
+                    message
+                }
+            }
+
+            _messages.value = decryptedMessages
         }
     }
 
     fun saveMessageToFirestore(chat: Chat, message: Message, currentUserId: String) {
         val messageId = message.messageID.ifEmpty {
-            UUID.randomUUID().toString()  // Tạo ID nếu bị null hoặc trống
+            UUID.randomUUID().toString()
         }
 
-        firestore.collection("chats")
-            .document(chat.chatId)  // 🟢 Đây là Document (số chẵn segment)
-            .collection("messages") // 🟢 Đây là Collection (số lẻ segment)
-            .document(messageId)    // 🟢 Thêm document ID vào (để có số chẵn segment)
-            .set(message.copy(messageID = messageId)) // Gán lại message với ID hợp lệ
-            .addOnSuccessListener {
-                Log.d("ChatViewModel", "Message saved successfully!")
-            }
-            .addOnFailureListener { e ->
-                Log.e("ChatViewModel", "Error saving message: $e")
+        try {
+            if (message.content.isNullOrEmpty()) {
+                Log.w("ChatViewModel", "Message content is empty, not encrypting")
+
+                firestore.collection("chats")
+                    .document(chat.chatId)
+                    .collection("messages")
+                    .document(messageId)
+                    .set(message.copy(messageID = messageId))
+                    .addOnSuccessListener {
+                        Log.d("ChatViewModel", "Empty message saved successfully")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("ChatViewModel", "Error saving empty message: $e")
+                    }
+
+                return
             }
 
-        // Update last message in chat
-        firestore.collection("chats")
-            .document(chat.chatId)
-            .update(
-                mapOf(
-                    "lastMessage" to message.content,
-                    "lastMessageTime" to message.timestamp,
-                    "user1Read" to (chat.user1Id == currentUserId),
-                    "user2Read" to (chat.user2Id == currentUserId)
-                )
+            val encryptedContent = encryptionUtils.encrypt(message.content)
+
+            if (encryptedContent == "ENCRYPTION_FAILED") {
+                firestore.collection("chats")
+                    .document(chat.chatId)
+                    .collection("messages")
+                    .document(messageId)
+                    .set(message.copy(messageID = messageId))
+                return
+            }
+
+            val encryptedMessage = message.copy(
+                messageID = messageId,
+                content = encryptedContent
             )
+
+            firestore.collection("chats")
+                .document(chat.chatId)
+                .collection("messages")
+                .document(messageId)
+                .set(encryptedMessage)
+                .addOnSuccessListener {
+                    Log.d("ChatViewModel", "Encrypted message saved successfully!")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("ChatViewModel", "Error saving encrypted message: $e")
+                }
+
+            // Update last message in chat
+            firestore.collection("chats")
+                .document(chat.chatId)
+                .update(
+                    mapOf(
+                        "lastMessage" to encryptedContent,
+                        "lastMessageTime" to message.timestamp,
+                        "user1Read" to (chat.user1Id == currentUserId),
+                        "user2Read" to (chat.user2Id == currentUserId)
+                    )
+                )
+                .addOnSuccessListener {
+                    Log.d("ChatViewModel", "Chat last message updated successfully")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("ChatViewModel", "Error updating chat last message: $e")
+                }
+        } catch (e: Exception) {
+            Log.e("ChatViewModel", "Unexpected error in saveMessageToFirestore", e)
+
+            // Save original message as fallback
+            firestore.collection("chats")
+                .document(chat.chatId)
+                .collection("messages")
+                .document(messageId)
+                .set(message.copy(messageID = messageId))
+        }
     }
 }
