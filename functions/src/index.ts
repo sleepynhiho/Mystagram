@@ -97,7 +97,7 @@ exports.sendNotificationOnNewMessage = functions.firestore
         token: fcmToken,
         notification: {
           title: "New Message",
-          body: messageData.content,
+          body: "",
           imageUrl:
             senderImage && senderImage.startsWith("http")
               ? senderImage

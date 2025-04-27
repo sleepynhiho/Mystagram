@@ -1,5 +1,6 @@
 package com.forrestgump.ig.ui.screens.story
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -7,10 +8,24 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.forrestgump.ig.data.models.Story
 import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.data.models.UserStory
@@ -24,8 +39,18 @@ fun StoryScreen(
     onDismiss: () -> Unit,
     userStories: () -> List<UserStory>,
     userStoryIndex: Int,
-    onUserStoryIndexChanged: (Int) -> Unit
+    onUserStoryIndexChanged: (Int) -> Unit,
+    viewModel: StoryViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val deleteStoryResult by viewModel.deleteStoryResult.observeAsState()
+
+    // Handle delete story result
+    LaunchedEffect(deleteStoryResult) {
+        deleteStoryResult?.onFailure { error ->
+            Toast.makeText(context, "Failed to delete story: ${error.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     AnimatedVisibility(
         visible = visible,
@@ -42,7 +67,6 @@ fun StoryScreen(
 
         val currentUserStory = userStories().getOrNull(userStoryIndex) ?: return@AnimatedVisibility
         val stories = currentUserStory.stories
-
 
         UserStoryDetail(
             currentUser = currentUser,
@@ -66,6 +90,13 @@ fun StoryScreen(
                 }
             },
             onCloseStory = {
+                onDismiss()
+            },
+            onDeleteStory = {
+                val currentStory = stories[currentStoryIndex]
+                viewModel.deleteStory(currentUserStory.userId, currentStory.storyId)
+                
+                // If this is the last story, close the story screen
                 onDismiss()
             }
         )
@@ -143,6 +174,7 @@ fun StoryScreenPreview() {
         onDismiss = {},
         userStories = { sampleStories },
         userStoryIndex = 0,
-        onUserStoryIndexChanged = {}
+        onUserStoryIndexChanged = {},
+        viewModel = TODO()
     )
 }

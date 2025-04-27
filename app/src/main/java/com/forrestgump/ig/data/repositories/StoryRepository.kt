@@ -148,5 +148,86 @@ class StoryRepository @Inject constructor(
         awaitClose { listener.remove() }
     }
 
+    suspend fun deleteStory(userId: String, storyId: String): Result<Unit> {
+        return try {
+            // Delete the story document
+            firestore.collection("stories")
+                .document(userId)
+                .collection("stories")
+                .document(storyId)
+                .delete()
+                .await()
 
+            // Check if this was the last story
+            val remainingStories = firestore.collection("stories")
+                .document(userId)
+                .collection("stories")
+                .get()
+                .await()
+
+            // If no stories left, delete the user's story document
+            if (remainingStories.isEmpty) {
+                firestore.collection("stories")
+                    .document(userId)
+                    .delete()
+                    .await()
+            }
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    fun observeUserStories(callback: (List<UserStory>) -> Unit): ListenerRegistration {
+        return firestore.collection("stories")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    callback(emptyList())
+                    return@addSnapshotListener
+                }
+
+                val userStoriesList = mutableListOf<UserStory>()
+
+                snapshot?.documents?.forEach { userDoc ->
+                    val userId = userDoc.id
+                    val username = userDoc.getString("username") ?: "Unknown"
+                    val profileImage = userDoc.getString("profileImage") ?: R.drawable.default_profile_image.toString()
+
+                    // Get stories for this user
+                    firestore.collection("stories").document(userId)
+                        .collection("stories")
+                        .orderBy("timestamp", Query.Direction.DESCENDING)
+                        .get()
+                        .addOnSuccessListener { storySnapshot ->
+                            val storyList = storySnapshot.documents.mapNotNull { doc ->
+                                doc.toObject(Story::class.java)?.copy(storyId = doc.id)
+                            }
+
+                            // Add or update UserStory
+                            val userStory = UserStory(
+                                userId = userId,
+                                username = username,
+                                profileImage = profileImage,
+                                stories = storyList
+                            )
+
+                            // Remove existing entry if any
+                            userStoriesList.removeAll { it.userId == userId }
+                            userStoriesList.add(userStory)
+
+                            // Notify with updated list
+                            callback(userStoriesList.toList())
+                        }
+                        .addOnFailureListener {
+                            callback(emptyList())
+                        }
+                }
+
+                // If no documents found, notify with empty list
+                if (snapshot?.documents?.isEmpty() == true) {
+                    callback(emptyList())
+                }
+            }
+    }
 }

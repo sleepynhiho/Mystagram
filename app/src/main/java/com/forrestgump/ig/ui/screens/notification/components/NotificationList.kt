@@ -57,11 +57,13 @@ fun NotificationList(
     onAcceptFollowRequest: (Notification) -> Unit = {},
     onRejectFollowRequest: (Notification) -> Unit = {}
 ) {
-    // Filter out read follow requests since they've been handled already
-    val filteredNotifications = notifications.filter { notification ->
-        // Keep unread notifications and all non-follow-request notifications
-        notification.type != NotificationType.FOLLOW_REQUEST || !notification.isRead
-    }
+    // Filter out read follow requests and sort by timestamp
+    val filteredNotifications = notifications
+        .filter { notification ->
+            // Keep unread notifications and all non-follow-request notifications
+            notification.type != NotificationType.FOLLOW_REQUEST || !notification.isRead
+        }
+        .sortedByDescending { it.timestamp } // Sort by timestamp, newest first
     
     LazyColumn(
         contentPadding = innerPadding,

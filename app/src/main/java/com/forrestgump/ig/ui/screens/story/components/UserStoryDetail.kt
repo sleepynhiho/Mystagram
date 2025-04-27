@@ -54,7 +54,7 @@ fun UserStoryDetail(
     isPaused: Boolean,
     onProgressComplete: () -> Unit, // Story tự hết
     onCloseStory: () -> Unit,        // User bấm nút Close
-
+    onDeleteStory: () -> Unit,       // User bấm nút Delete
 ) {
     val alphaOnPress by animateFloatAsState(
         targetValue = if (isPaused) 0f else 1f,
@@ -138,7 +138,8 @@ fun UserStoryDetail(
                             currentUser = currentUser,
                             userStory = sortedUserStory,
                             currentStoryIndex = currentStoryIndex,
-                            onCloseStory = onCloseStory
+                            onCloseStory = onCloseStory,
+                            onDeleteStory = onDeleteStory
                         )
                     }
                 }
@@ -154,6 +155,7 @@ fun StoryHeader(
     currentStoryIndex: Int,
     modifier: Modifier = Modifier,
     onCloseStory: () -> Unit,        // User bấm nút Close
+    onDeleteStory: () -> Unit,       // User bấm nút Delete
 ) {
     Row(
         modifier = modifier
@@ -212,14 +214,32 @@ fun StoryHeader(
             }
         }
 
+        // Only show trash bin for your own story
+        if (userStory.userId == currentUser.userId) {
+            Icon(
+                painter = painterResource(R.drawable.trash_bin),
+                tint = Color.White,
+                contentDescription = "Delete story",
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable {
+                        onDeleteStory()
+                    }
+            )
+
+            Spacer(modifier = Modifier.width(10.dp))
+        }
+
         // Close story button
         Icon(
             painter = painterResource(R.drawable.close_story),
             tint = Color.White,
             contentDescription = stringResource(R.string.close_story),
-            modifier = Modifier.clickable {
-                onCloseStory()
-            }
+            modifier = Modifier
+                .size(24.dp)
+                .clickable {
+                    onCloseStory()
+                }
         )
     }
 }
@@ -248,6 +268,7 @@ private fun UserStoryDetailPreview() {
         isStoryActive = true,
         onProgressComplete = { },
         currentUser = User(),
-        onCloseStory = {}
+        onCloseStory = {},
+        onDeleteStory = {}
     )
 }

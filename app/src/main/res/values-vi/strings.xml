@@ -120,7 +120,7 @@
     <string name="to_time">Đến</string>
     <string name="chat_placeholder">Tin nhắn...</string>
     <string name="comment_header">Bình luận</string>
-    <string name="react_noti"> đã phản ứng bài viết của bạn. </string>
+    <string name="react_noti">" đã phản ứng bài viết của bạn. "</string>
     <string name="comment_noti">" đã bình luận bài viết của bạn. "</string>
     <string name="follow_noti">" đã bắt đầu theo dõi bạn. "</string>
     <string name="follow_req_noti">" đã yêu cầu theo dõi bạn. "</string>

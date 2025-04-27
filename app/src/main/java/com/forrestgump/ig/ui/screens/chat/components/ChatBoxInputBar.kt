@@ -107,16 +107,16 @@ fun ChatBoxInputBar(
 //            )
 
             if (message.isEmpty()) {
-                IconButton(
-                    onClick = onUploadImage,
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.upload_image),
-                        contentDescription = stringResource(id = R.string.upload_image),
-                        tint = Color.Gray
-                    )
-                }
+//                IconButton(
+//                    onClick = onUploadImage,
+//                    modifier = Modifier.size(32.dp)
+//                ) {
+//                    Icon(
+//                        painter = painterResource(id = R.drawable.upload_image),
+//                        contentDescription = stringResource(id = R.string.upload_image),
+//                        tint = Color.Gray
+//                    )
+//                }
             } else {
                 IconButton(
                     onClick = {
