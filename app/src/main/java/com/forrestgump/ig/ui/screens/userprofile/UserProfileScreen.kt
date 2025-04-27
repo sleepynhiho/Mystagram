@@ -27,21 +27,31 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.forrestgump.ig.R
+import com.forrestgump.ig.data.models.Chat
 import com.forrestgump.ig.data.models.Post
+import com.forrestgump.ig.data.models.User
 import com.forrestgump.ig.ui.components.Loading
+import com.forrestgump.ig.ui.screens.chat.ChatViewModel
 import com.forrestgump.ig.utils.constants.Utils.MainBackground
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserProfileScreen(
-    navController: NavController,
-    viewModel: UserProfileViewModel
+    navController: NavHostController,
+    viewModel: UserProfileViewModel,
+    currentUser: User,
+    chatViewModel: ChatViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val chats by chatViewModel.chatsState.collectAsState()
 
+    LaunchedEffect(Unit) {
+        chatViewModel.loadUsers()
+    }
 
     if (uiState.isLoading) {
         Loading()
@@ -53,7 +63,12 @@ fun UserProfileScreen(
             Column {
                 // Top bar
                 TopAppBar(
-                    title = { Text(text = uiState.user.username, color = MaterialTheme.colorScheme.onBackground) },
+                    title = {
+                        Text(
+                            text = uiState.user.username,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    },
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(
@@ -88,7 +103,12 @@ fun UserProfileScreen(
                     isFollowing = uiState.isCurrentUserFollowingThisUser,
                     isFollowRequestPending = uiState.isFollowRequestPending,
                     onFollowClick = { viewModel.followUser() },
-                    onUnfollowClick = { viewModel.unfollowUser() }
+                    onUnfollowClick = { viewModel.unfollowUser() },
+                    navHostController = navController,
+                    currentUser = currentUser,
+                    otherUser = uiState.user,
+                    filterChats = chats,
+                    chatViewModel = chatViewModel
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -122,7 +142,7 @@ fun UserProfileInfoSection(
     following: Int,
     isPrivate: Boolean,
     isFollowing: Boolean,
-    navController: NavController,
+    navController: NavHostController,
     canViewFollowers: Boolean,
     userId: String // Add userId parameter
 ) {
@@ -217,7 +237,12 @@ fun UserProfileActionButtons(
     isFollowing: Boolean,
     isFollowRequestPending: Boolean = false,
     onFollowClick: () -> Unit,
-    onUnfollowClick: () -> Unit
+    onUnfollowClick: () -> Unit,
+    navHostController: NavHostController,
+    currentUser: User,
+    otherUser: User,
+    filterChats: List<Chat>,
+    chatViewModel: ChatViewModel
 ) {
     Row(
         modifier = Modifier
@@ -242,7 +267,10 @@ fun UserProfileActionButtons(
                     else -> Color.White
                 }
             ),
-            border = if (isFollowing || isFollowRequestPending) BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground) else null
+            border = if (isFollowing || isFollowRequestPending) BorderStroke(
+                1.dp,
+                MaterialTheme.colorScheme.onBackground
+            ) else null
         ) {
             Text(
                 text = when {
@@ -254,7 +282,18 @@ fun UserProfileActionButtons(
         }
 
         Button(
-            onClick = { /* Add navigation to chat screen */ },
+            onClick = {
+                val chat = filterChats.firstOrNull { chat ->
+                    (chat.user1Id == otherUser.userId || chat.user2Id == otherUser.userId)
+                }
+                if (chat != null) {
+                    navHostController.navigate("ChatBoxScreen/${chat.chatId}")
+                } else {
+                    chatViewModel.createChatIfNotExists(currentUser, otherUser) { newChat ->
+                        navHostController.navigate("ChatBoxScreen/${newChat.chatId}")
+                    }
+                }
+            },
             modifier = Modifier.weight(1f),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.White,

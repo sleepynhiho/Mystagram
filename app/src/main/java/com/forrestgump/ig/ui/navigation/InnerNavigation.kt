@@ -581,7 +581,8 @@ fun InnerNavigation(
             currentUser?.let { currentUser ->
                 UserProfileScreen(
                     navController = navHostController,
-                    viewModel = viewModelOtherUserProfile
+                    viewModel = viewModelOtherUserProfile,
+                    currentUser = currentUser
                 )
             }
         }
