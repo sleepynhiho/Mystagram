@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PlayCircle
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -33,6 +34,48 @@ import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.*
 
+// Simple cache to avoid reloading user data multiple times
+object UserCache {
+    private val userCache = mutableMapOf<String, User>()
+    
+    fun getUser(userId: String): User? {
+        return userCache[userId]
+    }
+    
+    fun cacheUser(user: User) {
+        userCache[user.userId] = user
+    }
+    
+    fun clearCache() {
+        userCache.clear()
+    }
+}
+
+// Post cache to store post timestamps
+object PostCache {
+    private val postTimestamps = mutableMapOf<String, Date>()
+    
+    fun getPostTime(postId: String): Date? {
+        return postTimestamps[postId]
+    }
+    
+    fun cachePostTime(postId: String, timestamp: Date) {
+        postTimestamps[postId] = timestamp
+    }
+    
+    fun clearCache() {
+        postTimestamps.clear()
+    }
+    
+    // Check if cache is older than 60 seconds
+    fun isCacheValid(postId: String): Boolean {
+        val timestamp = postTimestamps[postId] ?: return false
+        val currentTime = Date()
+        // Cache valid for 60 seconds to ensure fresh data on app restart
+        return (currentTime.time - timestamp.time) < 60000
+    }
+}
+
 @Composable
 fun EnhancedPostSuggestionItem(
     suggestion: PostSuggestion,
@@ -40,10 +83,13 @@ fun EnhancedPostSuggestionItem(
     viewModel: SearchViewModel,
     suggestedUsers: List<FriendSuggestion> = emptyList()
 ) {
+    // Check for cached date first to avoid flickering
+    val cachedTime = remember { PostCache.getPostTime(suggestion.postId) }
+    
     // Get post date and user info from Firestore
-    var postTime by remember { mutableStateOf<Date?>(null) }
+    var postTime by remember { mutableStateOf<Date?>(cachedTime) }
     var postOwner by remember { mutableStateOf<User?>(null) }
-    var isLoading by remember { mutableStateOf(true) }
+    var isLoading by remember { mutableStateOf(cachedTime == null) } // Only show loading if no cached data
     
     // Find if this post's user is in suggested users for username display
     val matchingSuggestedUser = suggestedUsers.find { it.userId == suggestion.userId }
@@ -57,50 +103,60 @@ fun EnhancedPostSuggestionItem(
         }
     }
     
-    // Use static companion object to cache user data across recompositions
-    LaunchedEffect(suggestion.userId) {
-        // Check if already in cache before fetching
-        val cachedUser = UserCache.getUser(suggestion.userId)
-        if (cachedUser != null) {
-            postOwner = cachedUser
-            isLoading = false
-            return@LaunchedEffect
-        }
-        
-        // Fetch the complete post data to get the timestamp
-        FirebaseFirestore.getInstance().collection("posts")
-            .document(suggestion.postId)
-            .get()
-            .addOnSuccessListener { document ->
-                val post = document.toObject(Post::class.java)
-                postTime = post?.timestamp
-                
-                // Get user who posted this
-                if (post != null) {
-                    FirebaseFirestore.getInstance().collection("users")
-                        .document(post.userId)
-                        .get()
-                        .addOnSuccessListener { userDoc ->
-                            val user = userDoc.toObject(User::class.java)
-                            postOwner = user
-                            
-                            // Cache the user data for future use
-                            if (user != null) {
-                                UserCache.cacheUser(user)
-                            }
-                            
+    // Always refresh post timestamp data - this is key to fixing the issue
+    LaunchedEffect(suggestion.postId) {
+        // Skip Firestore query if we already have a valid cached timestamp
+        if (cachedTime == null || !PostCache.isCacheValid(suggestion.postId)) {
+            // Always fetch the post data to get the latest timestamp
+            FirebaseFirestore.getInstance().collection("posts")
+                .document(suggestion.postId)
+                .get()
+                .addOnSuccessListener { document ->
+                    val post = document.toObject(Post::class.java)
+                    post?.timestamp?.let { timestamp ->
+                        postTime = timestamp
+                        // Cache the timestamp
+                        PostCache.cachePostTime(suggestion.postId, timestamp)
+                    }
+                    
+                    // If we already have the user data, no need to fetch it again
+                    if (postOwner == null && post != null) {
+                        // Check if user is already in cache
+                        val cachedUser = UserCache.getUser(post.userId)
+                        if (cachedUser != null) {
+                            postOwner = cachedUser
                             isLoading = false
+                        } else {
+                            // Fetch user data if not in cache
+                            FirebaseFirestore.getInstance().collection("users")
+                                .document(post.userId)
+                                .get()
+                                .addOnSuccessListener { userDoc ->
+                                    val user = userDoc.toObject(User::class.java)
+                                    postOwner = user
+                                    
+                                    // Cache the user data for future use
+                                    if (user != null) {
+                                        UserCache.cacheUser(user)
+                                    }
+                                    
+                                    isLoading = false
+                                }
+                                .addOnFailureListener {
+                                    isLoading = false
+                                }
                         }
-                        .addOnFailureListener {
-                            isLoading = false
-                        }
-                } else {
+                    } else {
+                        isLoading = false
+                    }
+                }
+                .addOnFailureListener {
                     isLoading = false
                 }
-            }
-            .addOnFailureListener {
-                isLoading = false
-            }
+        } else {
+            // If we have cached data, mark as not loading immediately
+            isLoading = false
+        }
     }
 
     // Generate reason text based on available data
@@ -161,20 +217,28 @@ fun EnhancedPostSuggestionItem(
             
             Spacer(modifier = Modifier.weight(1f))
             
-            // Post date
-            if (!isLoading && postTime != null) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.CalendarToday,
-                        contentDescription = "Date",
-                        tint = Color(0xFF3897F0),
-                        modifier = Modifier.size(12.dp)
+            // Post date with better handling
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.CalendarToday,
+                    contentDescription = "Date",
+                    tint = Color(0xFF3897F0),
+                    modifier = Modifier.size(12.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                if (isLoading) {
+                    // Show a mini loading indicator instead of text
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(10.dp),
+                        strokeWidth = 1.dp,
+                        color = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                } else {
                     Text(
-                        text = SimpleDateFormat("MMM dd", Locale.getDefault()).format(postTime!!),
+                        text = postTime?.let { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(it) }
+                            ?: "Date unavailable",
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                         fontSize = 12.sp
                     )
@@ -240,22 +304,5 @@ fun EnhancedPostSuggestionItem(
                 )
             }
         }
-    }
-}
-
-// Simple cache to avoid reloading user data multiple times
-object UserCache {
-    private val userCache = mutableMapOf<String, User>()
-    
-    fun getUser(userId: String): User? {
-        return userCache[userId]
-    }
-    
-    fun cacheUser(user: User) {
-        userCache[user.userId] = user
-    }
-    
-    fun clearCache() {
-        userCache.clear()
     }
 } 

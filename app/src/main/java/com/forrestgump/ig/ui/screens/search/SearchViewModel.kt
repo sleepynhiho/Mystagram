@@ -30,12 +30,23 @@ class SearchViewModel @Inject constructor(
     private val currentUser = FirebaseAuth.getInstance().currentUser
 
     init {
+        // Load all posts and users first
         loadBasicData()
+        // Then load friend suggestions, which will also load recommended posts
         loadFriendSuggestions()
+    }
+    
+    // Function to clear caches
+    fun clearCaches() {
+        com.forrestgump.ig.ui.screens.search.UserCache.clearCache()
+        com.forrestgump.ig.ui.screens.search.PostCache.clearCache()
     }
     
     // Simple function to load all users and posts
     fun loadBasicData() {
+        // Clear caches first to ensure fresh data
+        clearCaches()
+        
         viewModelScope.launch {
             uiState.update { it.copy(isLoading = true) }
             
@@ -66,14 +77,35 @@ class SearchViewModel @Inject constructor(
                     val users = querySnapshot.documents.mapNotNull { doc ->
                         doc.toObject(User::class.java)
                     }
-                    uiState.update { it.copy(users = users, isLoading = false) }
+                    uiState.update { it.copy(users = users) }
                 }
                 .addOnFailureListener { exception ->
                     Log.e("SearchViewModel", "Error loading users", exception)
                     uiState.update { it.copy(isLoading = false) }
                 }
                 
-            // Posts are loaded in loadRecommendedPosts() which is called after loadFriendSuggestions()
+            // Load all posts for search functionality
+            firestore.collection("posts")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener { postsSnapshot ->
+                    val allPosts = postsSnapshot.documents.mapNotNull { 
+                        it.toObject(Post::class.java) 
+                    }
+                    
+                    uiState.update { 
+                        it.copy(
+                            posts = allPosts,
+                            isLoading = false
+                        ) 
+                    }
+                    
+                    Log.d("SearchViewModel", "Loaded ${allPosts.size} posts for search")
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("SearchViewModel", "Error loading posts", exception)
+                    uiState.update { it.copy(isLoading = false) }
+                }
         }
     }
     
@@ -122,11 +154,10 @@ class SearchViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 if (suggestedUserIds.isEmpty()) {
-                    // Nếu không có người dùng được đề xuất, cập nhật UI với danh sách rỗng
+                    // If no suggested users, update UI with empty recommendations
                     uiState.update { 
                         it.copy(
-                            postSuggestions = emptyList(),
-                            posts = emptyList()
+                            postSuggestions = emptyList()
                         ) 
                     }
                     return@launch
@@ -147,8 +178,18 @@ class SearchViewModel @Inject constructor(
                     suggestedUserIds.contains(it.userId) 
                 }
                 
-                // Map to post suggestions (chỉ dùng các bài đăng từ người dùng được đề xuất)
-                val postSuggestions = recommendedPosts.map { post ->
+                // Group posts by user and take the most recent post from each user
+                val onePostPerUser = recommendedPosts
+                    .groupBy { it.userId } // Group by user ID
+                    .mapValues { (_, posts) -> 
+                        // Take the first post in each group (posts are already sorted by timestamp DESC)
+                        posts.firstOrNull() 
+                    }
+                    .values
+                    .filterNotNull() // Remove null values if any
+                
+                // Map to post suggestions (only use posts from suggested users)
+                val postSuggestions = onePostPerUser.map { post ->
                     PostSuggestion(
                         postId = post.postId,
                         userId = post.userId,
@@ -157,15 +198,15 @@ class SearchViewModel @Inject constructor(
                     )
                 }
                 
-                // Update UI state with the post suggestions
+                // Update UI state with the post suggestions ONLY
+                // Don't update the complete posts list which is needed for search
                 uiState.update { 
                     it.copy(
-                        postSuggestions = postSuggestions,
-                        posts = recommendedPosts
+                        postSuggestions = postSuggestions
                     ) 
                 }
                 
-                Log.d("SearchViewModel", "Loaded ${postSuggestions.size} post suggestions from recommended users")
+                Log.d("SearchViewModel", "Loaded ${postSuggestions.size} post suggestions from recommended users (one per user)")
                 
             } catch (e: Exception) {
                 Log.e("SearchViewModel", "Error loading recommended posts", e)
@@ -228,9 +269,18 @@ class SearchViewModel @Inject constructor(
         }
     }
     
-    // Simple search function that filters locally instead of using complex Firestore queries
-    fun searchSuggestions(query: String) {
+    // Function to search for posts and users by query
+    fun searchSuggestions(
+        query: String,
+        filterByLocation: Boolean = false,
+        location: String? = null,
+        filterByTimeRange: Boolean = false,
+        fromTime: String? = null,
+        toTime: String? = null
+    ) {
         if (query.isEmpty()) {
+            // Clear caches to ensure fresh data on subsequent searches
+            clearCaches()
             // Just reload basic data, friend suggestions will trigger post loading
             loadBasicData() 
             loadFriendSuggestions()
@@ -240,11 +290,19 @@ class SearchViewModel @Inject constructor(
         viewModelScope.launch {
             uiState.update { it.copy(isLoading = true) }
             
-            // Filter users by username
+            // Filter users based on criteria
             val filteredUsers = uiState.value.users.filter { user ->
-                user.username.contains(query, ignoreCase = true) ||
-                user.fullName.contains(query, ignoreCase = true) ||
-                user.location.contains(query, ignoreCase = true)
+                val matchesQuery = user.username.contains(query, ignoreCase = true) ||
+                                  user.fullName.contains(query, ignoreCase = true)
+                
+                // Apply location filter if enabled
+                val matchesLocation = if (filterByLocation && !location.isNullOrEmpty()) {
+                    user.location.contains(location, ignoreCase = true)
+                } else {
+                    true // No location filter or empty location means all users match
+                }
+                
+                matchesQuery && matchesLocation
             }
             
             // Create user suggestions from filtered users
@@ -254,18 +312,62 @@ class SearchViewModel @Inject constructor(
                     username = user.username,
                     fullName = user.fullName,
                     profilePicture = user.profileImage,
-                    reason = ""
+                    reason = if (filterByLocation && !location.isNullOrEmpty() && user.location.contains(location, ignoreCase = true)) 
+                              "Lives in $location" else ""
                 )
             }
             
-            // Filter posts by caption - search in all posts
+            // Filter posts by criteria - using all posts from the database
             val allPosts = uiState.value.posts
             val filteredPosts = allPosts.filter { post ->
-                post.caption?.contains(query, ignoreCase = true) ?: false
+                // Match by caption content
+                val matchesContent = post.caption?.contains(query, ignoreCase = true) ?: false
+                
+                // Apply time filter if enabled
+                val matchesTimeRange = if (filterByTimeRange && (!fromTime.isNullOrEmpty() || !toTime.isNullOrEmpty())) {
+                    try {
+                        val postDate = post.timestamp
+                        if (postDate != null) {
+                            val dateFormat = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
+                            
+                            val fromDate = if (!fromTime.isNullOrEmpty()) {
+                                dateFormat.parse(fromTime)
+                            } else null
+                            
+                            val toDate = if (!toTime.isNullOrEmpty()) {
+                                dateFormat.parse(toTime)
+                            } else null
+                            
+                            val isAfterFromDate = fromDate?.let { postDate.after(it) || postDate == it } ?: true
+                            val isBeforeToDate = toDate?.let { postDate.before(it) || postDate == it } ?: true
+                            
+                            isAfterFromDate && isBeforeToDate
+                        } else {
+                            false
+                        }
+                    } catch (e: Exception) {
+                        Log.e("SearchViewModel", "Error parsing dates", e)
+                        true // If date parsing fails, include the post
+                    }
+                } else {
+                    true // No time filter means all posts match
+                }
+                
+                matchesContent && matchesTimeRange
             }
             
+            // Group posts by user and take the most recent post from each user
+            val onePostPerUser = filteredPosts
+                .groupBy { it.userId } // Group by user ID
+                .mapValues { (_, posts) -> 
+                    // Take the first post in each group (posts are already sorted by timestamp DESC)
+                    posts.firstOrNull() 
+                }
+                .values
+                .filterNotNull()
+            
             // Create post suggestions from filtered posts
-            val postSuggestions = filteredPosts.map { post ->
+            val postSuggestions = onePostPerUser.map { post ->
                 PostSuggestion(
                     postId = post.postId,
                     userId = post.userId,
@@ -282,6 +384,8 @@ class SearchViewModel @Inject constructor(
                     isLoading = false
                 ) 
             }
+            
+            Log.d("SearchViewModel", "Search results: ${userSuggestions.size} users, ${postSuggestions.size} posts")
         }
     }
 

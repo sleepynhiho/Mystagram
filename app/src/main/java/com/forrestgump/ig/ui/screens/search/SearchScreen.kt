@@ -84,7 +84,17 @@ import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerState
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.Button
+import androidx.compose.material3.DatePickerDialog
+import java.util.Calendar
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.shrinkHorizontally
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,7 +114,17 @@ fun SearchScreen(
         if (searchQuery.isEmpty()) {
             // Clear suggestions when query is empty
             viewModel.searchSuggestions("")
+            // Also hide filters when search is cleared
+            showFilters = false
         }
+    }
+    
+    // Refresh data when the screen is first displayed
+    LaunchedEffect(Unit) {
+        // Clear caches and reload data when screen is first displayed
+        viewModel.clearCaches()
+        viewModel.loadBasicData()
+        viewModel.loadFriendSuggestions()
     }
 
     // Consolidated filter states
@@ -114,14 +134,20 @@ fun SearchScreen(
     var postTimeFilter by remember { mutableStateOf(false) }
 
     var locationInput by remember { mutableStateOf("") }
-    var timeInput by remember { mutableStateOf("") }
     var fromTimeInput by remember { mutableStateOf("") }
     var toTimeInput by remember { mutableStateOf("") }
 
     // Function to apply search with current filters
     val applySearch = {
         if (searchQuery.isNotEmpty()) {
-            viewModel.searchSuggestions(searchQuery)
+            viewModel.searchSuggestions(
+                query = searchQuery,
+                filterByLocation = userLocationFilter,
+                location = locationInput.takeIf { userLocationFilter },
+                filterByTimeRange = postTimeFilter,
+                fromTime = fromTimeInput.takeIf { postTimeFilter },
+                toTime = toTimeInput.takeIf { postTimeFilter }
+            )
         }
     }
 
@@ -137,8 +163,8 @@ fun SearchScreen(
 
     val tabs = listOf("Users", "Posts")
 
-    // Select appropriate data source based on whether we're showing suggestions
-    val showingSuggestions = searchQuery.isNotEmpty()
+    // Select appropriate data source based on whether we're showing search results
+    val showingSearchResults = searchQuery.isNotEmpty()
 
     if (uiState.isLoading) {
         Box(
@@ -220,11 +246,57 @@ fun SearchScreen(
                         keyboardActions = KeyboardActions(
                             onSearch = { 
                                 if (searchQuery.isNotEmpty()) {
-                                    viewModel.searchSuggestions(searchQuery)
+                                    applySearch()
                                 }
                                 focusManager.clearFocus() 
                             }
                         ),
+                    )
+
+                    // Filter button with animation
+                    AnimatedVisibility(
+                        visible = searchQuery.isNotEmpty(),
+                        enter = fadeIn() + expandHorizontally(),
+                        exit = fadeOut() + shrinkHorizontally()
+                    ) {
+                        IconButton(
+                            onClick = { showFilters = !showFilters }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_filter),
+                                contentDescription = "Filter",
+                                tint = if (showFilters || userLocationFilter || postTimeFilter) 
+                                       MaterialTheme.colorScheme.primary 
+                                       else MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+                }
+
+                // Filters section
+                if (showFilters) {
+                    SearchFilters(
+                        selectedTab = selectedTab,
+                        userNameFilter = userNameFilter,
+                        userLocationFilter = userLocationFilter,
+                        locationInput = locationInput,
+                        postContentFilter = postContentFilter,
+                        postTimeFilter = postTimeFilter,
+                        fromTimeInput = fromTimeInput,
+                        toTimeInput = toTimeInput,
+                        onUserNameFilterChanged = { userNameFilter = it },
+                        onUserLocationFilterChanged = { userLocationFilter = it },
+                        onLocationInputChanged = { locationInput = it },
+                        onPostContentFilterChanged = { postContentFilter = it },
+                        onPostTimeFilterChanged = { postTimeFilter = it },
+                        onFromTimeInputChanged = { fromTimeInput = it },
+                        onToTimeInputChanged = { toTimeInput = it },
+                        onApplyFilters = { 
+                            applySearch()
+                            showFilters = false
+                            focusManager.clearFocus()
+                        }
                     )
                 }
 
@@ -254,9 +326,9 @@ fun SearchScreen(
                          !uiState.isLoading) {
                     EmptySearchResults()
                 } 
-                // Show query-based suggestions if we have a query
-                else if (showingSuggestions) {
-                    SuggestionsContent(
+                // Show query-based search results if we have a query
+                else if (showingSearchResults) {
+                    SearchResultsContent(
                         userSuggestions = uiState.userSuggestions,
                         postSuggestions = uiState.postSuggestions,
                         selectedTab = selectedTab,
@@ -764,7 +836,7 @@ fun InitialSuggestionsContent(
 }
 
 @Composable
-fun SuggestionsContent(
+fun SearchResultsContent(
     userSuggestions: List<UserSuggestion>,
     postSuggestions: List<PostSuggestion>,
     selectedTab: String,
@@ -796,7 +868,7 @@ fun SuggestionsContent(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "Suggestions",
+                text = "Results",
                 color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
@@ -994,23 +1066,34 @@ fun PostSuggestionItem(
     navController: NavController,
     viewModel: SearchViewModel
 ) {
-    // Get post date from Firestore
-    var postTime by remember { mutableStateOf<Date?>(null) }
-    var isLoading by remember { mutableStateOf(true) }
+    // Check for cached date first to avoid flickering during scroll
+    val cachedTime = remember { com.forrestgump.ig.ui.screens.search.PostCache.getPostTime(suggestion.postId) }
     
+    // Get post date from Firestore
+    var postTime by remember { mutableStateOf<Date?>(cachedTime) }
+    var isLoading by remember { mutableStateOf(cachedTime == null) } // Only show loading if no cached date
+    
+    // Always fetch post timestamp on each composition
     LaunchedEffect(suggestion.postId) {
-        // Fetch the complete post data to get the timestamp
-        FirebaseFirestore.getInstance().collection("posts")
-            .document(suggestion.postId)
-            .get()
-            .addOnSuccessListener { document ->
-                val post = document.toObject(Post::class.java)
-                postTime = post?.timestamp
-                isLoading = false
-            }
-            .addOnFailureListener {
-                isLoading = false
-            }
+        // Only fetch from Firestore if we don't have a valid cached time
+        if (cachedTime == null || !com.forrestgump.ig.ui.screens.search.PostCache.isCacheValid(suggestion.postId)) {
+            // Fetch the complete post data to get the timestamp
+            FirebaseFirestore.getInstance().collection("posts")
+                .document(suggestion.postId)
+                .get()
+                .addOnSuccessListener { document ->
+                    val post = document.toObject(Post::class.java)
+                    post?.timestamp?.let { timestamp ->
+                        postTime = timestamp
+                        // Cache the timestamp
+                        com.forrestgump.ig.ui.screens.search.PostCache.cachePostTime(suggestion.postId, timestamp)
+                    }
+                    isLoading = false
+                }
+                .addOnFailureListener {
+                    isLoading = false
+                }
+        }
     }
 
     Row(
@@ -1061,21 +1144,30 @@ fun PostSuggestionItem(
                 overflow = TextOverflow.Ellipsis
             )
             
-            // Display post time if available
-            if (!isLoading && postTime != null) {
-                Row(
-                    modifier = Modifier.padding(top = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.CalendarToday,
-                        contentDescription = "Date",
-                        tint = Color(0xFF3897F0),
-                        modifier = Modifier.size(12.dp)
+            // Date row with better handling
+            Row(
+                modifier = Modifier.padding(top = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.CalendarToday,
+                    contentDescription = "Date",
+                    tint = Color(0xFF3897F0),
+                    modifier = Modifier.size(12.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                
+                if (isLoading) {
+                    // Show a mini loading indicator instead of text
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(10.dp),
+                        strokeWidth = 1.dp,
+                        color = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                } else {
                     Text(
-                        text = SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(postTime!!),
+                        text = postTime?.let { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(it) }
+                            ?: "Date unavailable",
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                         fontSize = 12.sp
                     )
@@ -1150,3 +1242,375 @@ fun EmptyTabResults(tabName: String) {
         )
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SearchFilters(
+    selectedTab: String,
+    userNameFilter: Boolean,
+    userLocationFilter: Boolean,
+    locationInput: String,
+    postContentFilter: Boolean,
+    postTimeFilter: Boolean,
+    fromTimeInput: String,
+    toTimeInput: String,
+    onUserNameFilterChanged: (Boolean) -> Unit,
+    onUserLocationFilterChanged: (Boolean) -> Unit,
+    onLocationInputChanged: (String) -> Unit,
+    onPostContentFilterChanged: (Boolean) -> Unit,
+    onPostTimeFilterChanged: (Boolean) -> Unit,
+    onFromTimeInputChanged: (String) -> Unit,
+    onToTimeInputChanged: (String) -> Unit,
+    onApplyFilters: () -> Unit
+) {
+    // State to track if date pickers are showing
+    var showFromDatePicker by remember { mutableStateOf(false) }
+    var showToDatePicker by remember { mutableStateOf(false) }
+    
+    // Store dates in milliseconds for DatePicker
+    var fromDateMillis by remember { mutableStateOf<Long?>(null) }
+    var toDateMillis by remember { mutableStateOf<Long?>(null) }
+    
+    // Format dates for display
+    val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    
+    // Initialize date milliseconds from string inputs if possible
+    LaunchedEffect(fromTimeInput, toTimeInput) {
+        if (fromTimeInput.isNotEmpty()) {
+            try {
+                val date = dateFormatter.parse(fromTimeInput)
+                fromDateMillis = date?.time
+            } catch (e: Exception) {
+                Log.e("SearchFilters", "Error parsing fromTimeInput", e)
+            }
+        }
+        
+        if (toTimeInput.isNotEmpty()) {
+            try {
+                val date = dateFormatter.parse(toTimeInput)
+                toDateMillis = date?.time
+            } catch (e: Exception) {
+                Log.e("SearchFilters", "Error parsing toTimeInput", e)
+            }
+        }
+    }
+    
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Filter Options",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        // Users filters
+        if (selectedTab == "Users") {
+            Text(
+                text = "Find users by:",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterToggleButton(
+                    icon = Icons.Outlined.LocationOn,
+                    text = "Location",
+                    isSelected = userLocationFilter,
+                    onToggle = onUserLocationFilterChanged
+                )
+            }
+
+            if (userLocationFilter) {
+                OutlinedTextField(
+                    value = locationInput,
+                    onValueChange = onLocationInputChanged,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    label = { Text("Enter location") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Outlined.LocationOn,
+                            contentDescription = null
+                        )
+                    },
+                    singleLine = true
+                )
+            }
+        }
+        // Posts filters
+        else {
+            Text(
+                text = "Find posts by:",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterToggleButton(
+                    icon = Icons.Outlined.CalendarToday,
+                    text = "Time",
+                    isSelected = postTimeFilter,
+                    onToggle = onPostTimeFilterChanged
+                )
+            }
+
+            if (postTimeFilter) {
+                Text(
+                    text = "Date range:",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+                
+                // From Date Picker
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "From:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.width(50.dp)
+                    )
+                    
+                    Spacer(modifier = Modifier.width(8.dp))
+                    
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(8.dp))
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .clickable { showFromDatePicker = true }
+                            .padding(vertical = 12.dp, horizontal = 16.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.CalendarToday,
+                                contentDescription = "Select Date",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            
+                            Spacer(modifier = Modifier.width(8.dp))
+                            
+                            Text(
+                                text = if (fromTimeInput.isNotEmpty()) fromTimeInput else "Select date",
+                                color = if (fromTimeInput.isNotEmpty()) 
+                                    MaterialTheme.colorScheme.onSurface 
+                                else 
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+                        }
+                    }
+                    
+                    if (fromTimeInput.isNotEmpty()) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        
+                        // Clear button
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Clear",
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            modifier = Modifier
+                                .size(18.dp)
+                                .clickable { 
+                                    onFromTimeInputChanged("")
+                                    fromDateMillis = null
+                                }
+                        )
+                    }
+                }
+                
+                // To Date Picker
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "To:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.width(50.dp)
+                    )
+                    
+                    Spacer(modifier = Modifier.width(8.dp))
+                    
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(8.dp))
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .clickable { showToDatePicker = true }
+                            .padding(vertical = 12.dp, horizontal = 16.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.CalendarToday,
+                                contentDescription = "Select Date",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            
+                            Spacer(modifier = Modifier.width(8.dp))
+                            
+                            Text(
+                                text = if (toTimeInput.isNotEmpty()) toTimeInput else "Select date",
+                                color = if (toTimeInput.isNotEmpty()) 
+                                    MaterialTheme.colorScheme.onSurface 
+                                else 
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+                        }
+                    }
+                    
+                    if (toTimeInput.isNotEmpty()) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        
+                        // Clear button
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Clear",
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            modifier = Modifier
+                                .size(18.dp)
+                                .clickable { 
+                                    onToTimeInputChanged("")
+                                    toDateMillis = null
+                                }
+                        )
+                    }
+                }
+            }
+        }
+
+        // Apply button
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primary)
+                    .clickable { onApplyFilters() }
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = "Apply Filters",
+                    color = Color.White,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    }
+    
+    // Date picker dialogs
+    if (showFromDatePicker) {
+        // Create a date picker state
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = fromDateMillis
+        )
+        
+        DatePickerDialog(
+            onDismissRequest = { showFromDatePicker = false },
+            confirmButton = {
+                Button(onClick = {
+                    // Get the selected date from the state
+                    datePickerState.selectedDateMillis?.let { selectedDateMillis ->
+                        fromDateMillis = selectedDateMillis
+                        val date = Date(selectedDateMillis)
+                        onFromTimeInputChanged(dateFormatter.format(date))
+                    }
+                    showFromDatePicker = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showFromDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(
+                state = datePickerState
+            )
+        }
+    }
+    
+    if (showToDatePicker) {
+        // Create a date picker state
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = toDateMillis
+        )
+        
+        DatePickerDialog(
+            onDismissRequest = { showToDatePicker = false },
+            confirmButton = {
+                Button(onClick = {
+                    // Get the selected date from the state
+                    datePickerState.selectedDateMillis?.let { selectedDateMillis ->
+                        // Set time to end of day for "to" date
+                        val calendar = Calendar.getInstance().apply {
+                            timeInMillis = selectedDateMillis
+                            set(Calendar.HOUR_OF_DAY, 23)
+                            set(Calendar.MINUTE, 59)
+                            set(Calendar.SECOND, 59)
+                        }
+                        toDateMillis = calendar.timeInMillis
+                        onToTimeInputChanged(dateFormatter.format(calendar.time))
+                    }
+                    showToDatePicker = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showToDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(
+                state = datePickerState
+            )
+        }
+    }
+}
+
