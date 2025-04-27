@@ -53,18 +53,18 @@ fun UserProfileScreen(
             Column {
                 // Top bar
                 TopAppBar(
-                    title = { Text(text = uiState.user.username, color = Color.White) },
+                    title = { Text(text = uiState.user.username, color = MaterialTheme.colorScheme.onBackground) },
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Back",
-                                tint = Color.White
+                                tint = MaterialTheme.colorScheme.onBackground
                             )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Black
+                        containerColor = MaterialTheme.colorScheme.background
                     )
                 )
 
@@ -232,12 +232,12 @@ fun UserProfileActionButtons(
             modifier = Modifier.weight(1f),
             colors = ButtonDefaults.buttonColors(
                 containerColor = when {
-                    isFollowing -> Color.White 
+                    isFollowing -> Color.White
                     isFollowRequestPending -> Color.White
                     else -> MaterialTheme.colorScheme.primary
                 },
                 contentColor = when {
-                    isFollowing -> Color.Black 
+                    isFollowing -> Color.Black
                     isFollowRequestPending -> Color.Black
                     else -> Color.White
                 }
