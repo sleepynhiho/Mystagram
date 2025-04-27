@@ -30,5 +30,6 @@ module.exports = {
     "import/no-unresolved": 0,
     "indent": ["error", 2],
     "operator-linebreak": ["off"],
+    "linebreak-style": 0, // This will disable the linebreak-style rule
   },
 };

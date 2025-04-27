@@ -124,6 +124,7 @@ fun getNotificationMessage(notification: Notification): AnnotatedString {
                 NotificationType.FOLLOW -> stringResource(R.string.follow_noti)
                 NotificationType.FOLLOW_REQUEST -> stringResource(R.string.follow_req_noti)
                 NotificationType.FOLLOW_ACCEPTED -> stringResource(R.string.follow_accepted_noti)
+                NotificationType.FOLLOW_REJECTED -> stringResource(R.string.follow_rejected_noti)
             }
         )
 

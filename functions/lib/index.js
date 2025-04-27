@@ -184,6 +184,11 @@ exports.sendNotificationOnAction = functions.firestore
             notificationTitle = `${notificationData.senderUsername} accepted your follow request`;
             notificationBody = "Your follow request has been accepted!";
             break;
+        case "FOLLOW_REJECTED":
+            // eslint-disable-next-line max-len
+            notificationTitle = `${notificationData.senderUsername} rejected your follow request`;
+            notificationBody = "Your follow request has been rejected.";
+            break;
         default:
             notificationTitle = "New Notification";
             notificationBody = "You have a new notification!";
