@@ -199,4 +199,24 @@ class ChatViewModel @Inject constructor(
                 .set(message.copy(messageID = messageId))
         }
     }
+
+    fun updateChatReadStatus(chatId: String, user1Read: Boolean, user2Read: Boolean) {
+        val chatRef = FirebaseFirestore.getInstance().collection("chats").document(chatId)
+
+        val updates = mutableMapOf<String, Any>()
+        if (user1Read) {
+            updates["user1Read"] = true
+        }
+        if (user2Read) {
+            updates["user2Read"] = true
+        }
+
+        chatRef.update(updates)
+            .addOnSuccessListener {
+                Log.d("ChatViewModel", "Chat read status updated successfully")
+            }
+            .addOnFailureListener { e ->
+                Log.e("ChatViewModel", "Error updating chat read status", e)
+            }
+    }
 }

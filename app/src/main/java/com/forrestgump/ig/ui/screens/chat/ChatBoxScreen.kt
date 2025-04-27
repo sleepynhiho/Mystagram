@@ -31,11 +31,36 @@ fun ChatBoxScreen(
     // Lấy chat và messages từ ViewModel
     val chat by chatViewModel.chat.observeAsState()
 
-
     // Tải chat và messages nếu chưa tải
     LaunchedEffect(chatId) {
         chatViewModel.loadChatAndMessages(chatId)
         chatViewModel.listenForMessages(chatId)
+    }
+
+    Log.d("chatviewmodel", chat.toString())
+
+    // Đánh dấu chat là đã đọc khi vào màn hình
+    LaunchedEffect(chatId, currentUser.userId) {
+        // Wait until chat is not null
+        while (chat == null) {
+            kotlinx.coroutines.delay(100)
+        }
+
+        // Once chat is non-null, proceed with marking it as read
+        chat?.let { updatedChat ->
+            Log.d("chatviewmodel", "Chat loaded for ${updatedChat.chatId}")
+            if (updatedChat.user1Id == currentUser.userId) {
+                // Người dùng hiện tại là user1, đánh dấu user1 là đã đọc
+                chatViewModel.updateChatReadStatus(
+                    updatedChat.chatId, user1Read = true, user2Read = false
+                )
+            } else {
+                // Người dùng hiện tại là user2, đánh dấu user2 là đã đọc
+                chatViewModel.updateChatReadStatus(
+                    updatedChat.chatId, user1Read = false, user2Read = true
+                )
+            }
+        }
     }
 
     // Lắng nghe cập nhật messages
@@ -57,7 +82,6 @@ fun ChatBoxScreen(
                         val newMessage = Message(
                             senderId = currentUser.userId,
                             content = messageContent,
-                            isRead = true,
                             messageType = MessageType.TEXT,
                             timestamp = Date()
                         )

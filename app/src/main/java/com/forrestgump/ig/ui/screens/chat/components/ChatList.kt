@@ -95,7 +95,6 @@ fun ChatListItem(
 ) {
     val isRead = if (chat.user1Id == myUserId) chat.user1Read else chat.user2Read
 
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
