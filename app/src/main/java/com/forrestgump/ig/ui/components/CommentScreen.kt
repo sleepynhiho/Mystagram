@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.forrestgump.ig.R
 import com.forrestgump.ig.data.models.User
-import com.forrestgump.ig.utils.constants.Utils.MainBackground
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
@@ -79,7 +78,7 @@ fun CommentScreen(
                 Surface(
                     shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
                     tonalElevation = 8.dp,
-                    color = MainBackground,
+                    color = MaterialTheme.colorScheme.background,
                     modifier = Modifier
                         .fillMaxSize()
                         .offset { IntOffset(x = 0, y = offsetY.toInt()) }
@@ -101,7 +100,7 @@ fun CommentScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(MainBackground)
+                            .background(MaterialTheme.colorScheme.background)
                     ) {
                         CommentTopBar()
 
@@ -150,7 +149,7 @@ fun CommentBottomBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MainBackground)
+            .background(MaterialTheme.colorScheme.background)
             .padding(vertical = 20.dp)
             .padding(bottom = 10.dp)
             .drawBehind {
@@ -184,7 +183,7 @@ fun CommentBottomBar(
             modifier = Modifier
                 .weight(1f)
                 .background(
-                    color = MainBackground,
+                    color = MaterialTheme.colorScheme.background,
                 )
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
@@ -242,14 +241,13 @@ fun CommentBottomBar(
 }
 
 
-
 @Composable
 fun CommentTopBar() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(60.dp)
-            .background(MainBackground)
+            .background(MaterialTheme.colorScheme.background)
             .drawBehind {
                 val strokeWidth = 1.dp.toPx()
                 val y = size.height - strokeWidth / 2
@@ -279,7 +277,8 @@ fun CommentTopBar() {
             Text(
                 text = stringResource(R.string.comment_header),
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
     }
@@ -305,14 +304,13 @@ fun CommentList(
         contentPadding = innerPadding,
         modifier = modifier
             .fillMaxWidth()
-            .background(MainBackground)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         items(comments) { comment ->
             CommentItem(comment = comment)
         }
     }
 }
-
 
 
 @Preview(showBackground = true)

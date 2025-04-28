@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.forrestgump.ig.data.models.Comment
-import com.forrestgump.ig.utils.constants.Utils.MainBackground
+import androidx.compose.ui.graphics.Color
 import com.forrestgump.ig.utils.constants.formatAsElapsedTime
 import java.util.Date
 
