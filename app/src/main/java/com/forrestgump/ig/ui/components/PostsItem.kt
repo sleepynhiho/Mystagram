@@ -376,7 +376,7 @@ fun PostActions(
                         modifier = Modifier
                             .padding(start = 10.dp)
                             .shadow(2.dp, shape = RoundedCornerShape(20.dp))
-                            .background(MainBackground, shape = RoundedCornerShape(20.dp))
+                            .background(MaterialTheme.colorScheme.background, shape = RoundedCornerShape(20.dp))
                             .padding(8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {

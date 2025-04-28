@@ -58,7 +58,7 @@ fun UserProfileScreen(
     } else {
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = MainBackground
+            color = MaterialTheme.colorScheme.background
         ) {
             Column {
                 // Top bar

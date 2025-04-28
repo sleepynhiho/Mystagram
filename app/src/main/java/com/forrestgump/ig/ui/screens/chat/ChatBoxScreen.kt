@@ -68,7 +68,7 @@ fun ChatBoxScreen(
         Scaffold(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MainBackground),
+                .background(MaterialTheme.colorScheme.background),
             topBar = {
                 ChatBoxTopBar(
                     navHostController = navHostController,
